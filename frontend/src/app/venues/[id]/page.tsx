@@ -42,7 +42,7 @@ export default async function VenueDetailPage({ params }: VenuePageProps) {
     <div className="flex min-h-screen flex-col bg-background antialiased">
       <SiteNavbar />
 
-      <main className="mx-auto w-full max-w-[var(--container-max)] flex-1 px-gutter pt-32 pb-16">
+      <main className="mx-auto w-full max-w-[var(--container-max)] flex-1 px-gutter py-8 pb-16">
         <VenueGallery venue={venue} />
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">

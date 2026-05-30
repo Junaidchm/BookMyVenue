@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import type { Venue } from "@/lib/venues/data";
+import { formatVenuePrice } from "@/lib/venues/listing";
 
 type VenueBookingCardProps = {
   venue: Venue;
@@ -31,7 +32,7 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
       <CardContent className="flex flex-col gap-6 p-6">
         <div className="flex items-end justify-between">
           <div className="text-headline-md text-on-surface">
-            ${venue.pricePerDay.toLocaleString()}{" "}
+            {formatVenuePrice(venue.pricePerDay)}{" "}
             <span className="text-body-md font-normal text-text-muted">
               / day
             </span>
@@ -100,7 +101,7 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
         <div className="flex justify-between text-body-md text-on-surface-variant">
           <span className="underline">Total before taxes</span>
           <span className="font-semibold text-on-surface">
-            ${venue.pricePerDay.toLocaleString()}
+            {formatVenuePrice(venue.pricePerDay)}
           </span>
         </div>
       </CardContent>
