@@ -16,7 +16,7 @@ export function VenueCard({ venue }: VenueCardProps) {
       href={`/venues/${venue.id}`}
       className="group overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-elevation-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-elevation-card-hover"
     >
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative aspect-4/3 overflow-hidden">
         <Image
           src={venue.image}
           alt={venue.title}

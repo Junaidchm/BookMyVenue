@@ -18,7 +18,7 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-on-surface/20" />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-[var(--container-max)] px-margin-mobile md:px-margin-desktop">
+      <div className="relative z-10 mx-auto w-full max-w-max px-margin-mobile md:px-margin-desktop">
         <div className="max-w-2xl space-y-6">
           <p className="inline-flex rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-label-md text-white backdrop-blur-md">
             Premium venues for every occasion

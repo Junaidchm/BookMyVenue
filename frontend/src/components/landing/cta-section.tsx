@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react";
 export function CtaSection() {
   return (
     <section id="about" className="bg-surface-container-low py-16 md:py-24">
-      <div className="mx-auto max-w-[var(--container-max)] px-margin-mobile md:px-margin-desktop">
+      <div className="mx-auto max-w-max px-margin-mobile md:px-margin-desktop">
         <div className="relative overflow-hidden rounded-3xl border border-border-subtle bg-surface px-8 py-12 shadow-elevation-card md:px-16 md:py-16">
           <div className="pointer-events-none absolute -top-24 -right-24 size-64 rounded-full bg-primary-container/10 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 -left-24 size-64 rounded-full bg-secondary-container/10 blur-3xl" />

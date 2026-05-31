@@ -7,7 +7,7 @@ import { FEATURED_VENUES } from "@/lib/venues/data";
 export function FeaturedVenuesSection() {
   return (
     <section className="bg-background py-16 md:py-24">
-      <div className="mx-auto max-w-[var(--container-max)] px-margin-mobile md:px-margin-desktop">
+      <div className="mx-auto max-w-max px-margin-mobile md:px-margin-desktop">
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-headline-md text-on-surface">Trending Venues</h2>
