@@ -4,6 +4,8 @@ import { CategorySection } from "@/components/landing/category-section";
 import { CtaSection } from "@/components/landing/cta-section";
 import { FeaturedVenuesSection } from "@/components/landing/featured-venues-section";
 import { HeroSection } from "@/components/landing/hero-section";
+import { HowItWorksSection } from "@/components/landing/how-it-works-section";
+import { ReviewsSection } from "@/components/landing/reviews-section";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteNavbar } from "@/components/layout/site-navbar";
 
@@ -21,6 +23,8 @@ export default function Home() {
         <HeroSection />
         <FeaturedVenuesSection />
         <CategorySection />
+        <HowItWorksSection />
+        <ReviewsSection />
         <CtaSection />
       </main>
       <SiteFooter />

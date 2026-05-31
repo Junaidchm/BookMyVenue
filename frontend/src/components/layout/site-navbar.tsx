@@ -27,7 +27,7 @@ export function SiteNavbar() {
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary-container shadow-md transition-transform group-hover:scale-105">
               <Building2 className="size-4 fill-white text-white" />
             </div>
-            <span className="font-display text-base font-bold text-primary-container">
+            <span className="font-display text-base font-bold text-on-surface">
               BookMy<span className="text-primary-container">Venue</span>
             </span>
           </Link>
