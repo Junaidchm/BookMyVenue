@@ -26,7 +26,7 @@ documentation:
       - any-glob-to-any-file:
           - "**/*.md"
 
-ci-cd:
+CI/CD:
   - changed-files:
       - any-glob-to-any-file:
           - ".github/**"

@@ -17,3 +17,8 @@ jobs:
 
     steps:
       - uses: actions/labeler@v5
+
+      - name: Add needs-review label
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: needs-review
