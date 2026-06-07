@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -77,7 +77,7 @@ function Pagination({
         aria-label="Previous page"
         disabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
-        className="size-10 rounded-full border-border-subtle"
+        className="size-10 rounded-full border-border-subtle transition-all duration-200 hover:-translate-y-0.5"
       >
         <ChevronLeft className="size-4" />
       </Button>
@@ -97,10 +97,10 @@ function Pagination({
             aria-current={page === currentPage ? "page" : undefined}
             onClick={() => onPageChange(page)}
             className={cn(
-              "size-10 rounded-full text-sm font-medium",
+              "size-10 rounded-full text-sm font-medium transition-all duration-200",
               page === currentPage
-                ? "bg-brand-muted text-on-brand hover:bg-brand-muted/90"
-                : "border-border-subtle text-on-surface-variant"
+                ? "bg-primary-container text-white shadow-lg shadow-primary-container/20 hover:bg-secondary-container"
+                : "border-border-subtle text-on-surface-variant hover:-translate-y-0.5"
             )}
           >
             {page}
@@ -115,7 +115,7 @@ function Pagination({
         aria-label="Next page"
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
-        className="size-10 rounded-full border-border-subtle"
+        className="size-10 rounded-full border-border-subtle transition-all duration-200 hover:-translate-y-0.5"
       >
         <ChevronRight className="size-4" />
       </Button>
@@ -124,8 +124,10 @@ function Pagination({
 }
 
 export function VenuesListing({ venues }: VenuesListingProps) {
-  const [draftFilters, setDraftFilters] = useState<VenueFilters>(DEFAULT_FILTERS);
-  const [appliedFilters, setAppliedFilters] = useState<VenueFilters>(DEFAULT_FILTERS);
+  const [draftFilters, setDraftFilters] =
+    useState<VenueFilters>(DEFAULT_FILTERS);
+  const [appliedFilters, setAppliedFilters] =
+    useState<VenueFilters>(DEFAULT_FILTERS);
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("popular");
   const [currentPage, setCurrentPage] = useState(1);
@@ -135,11 +137,12 @@ export function VenuesListing({ venues }: VenuesListingProps) {
     [venues, appliedFilters, searchQuery, sort]
   );
 
-  const { items, currentPage: page, totalPages, totalItems } = paginateVenues(
-    filteredVenues,
-    currentPage,
-    VENUES_PER_PAGE
-  );
+  const {
+    items,
+    currentPage: page,
+    totalPages,
+    totalItems,
+  } = paginateVenues(filteredVenues, currentPage, VENUES_PER_PAGE);
 
   const cityLabel = appliedFilters.location.split(",")[0].trim() || "London";
 
@@ -157,12 +160,13 @@ export function VenuesListing({ venues }: VenuesListingProps) {
       />
 
       <section>
-        <div className="mb-6 flex flex-col gap-4">
+        <div className="mb-8 flex flex-col gap-5">
+          {/* Header */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-on-surface">
+              <h1 className="font-display text-headline-md text-on-surface">
                 {totalItems} venues in{" "}
-                <span className="text-brand-muted">{cityLabel}</span>
+                <span className="text-primary-container">{cityLabel}</span>
               </h1>
               <p className="mt-1 text-sm text-text-muted">
                 Showing unique spaces for your upcoming events
@@ -178,21 +182,26 @@ export function VenuesListing({ venues }: VenuesListingProps) {
                   setCurrentPage(1);
                 }}
               >
-                <SelectTrigger className="h-10 min-w-[150px] rounded-xl border-outline-variant bg-surface">
+                <SelectTrigger className="h-10 min-w-[150px] rounded-full border-border-subtle bg-surface text-sm font-medium">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="popular">Most Popular</SelectItem>
                   <SelectItem value="rating">Highest Rated</SelectItem>
-                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                  <SelectItem value="price-asc">
+                    Price: Low to High
+                  </SelectItem>
+                  <SelectItem value="price-desc">
+                    Price: High to Low
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
+          {/* Search bar */}
           <div className="relative">
-            <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-text-muted" />
+            <Search className="absolute top-1/2 left-5 size-4 -translate-y-1/2 text-text-muted" />
             <Input
               type="search"
               placeholder="Search venues by name or location..."
@@ -201,7 +210,7 @@ export function VenuesListing({ venues }: VenuesListingProps) {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="h-12 rounded-xl border-outline-variant bg-surface pr-4 pl-11 text-sm shadow-sm"
+              className="h-12 rounded-full border-border-subtle bg-surface pr-5 pl-12 text-sm shadow-sm transition-all focus:border-primary-container focus:ring-2 focus:ring-primary-container/15"
             />
           </div>
         </div>
@@ -220,15 +229,21 @@ export function VenuesListing({ venues }: VenuesListingProps) {
             />
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant bg-surface px-6 py-16 text-center">
-            <p className="text-lg font-semibold text-on-surface">No venues found</p>
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant bg-surface px-6 py-20 text-center">
+            <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary-container/10">
+              <Sparkles className="size-7 text-primary-container" />
+            </div>
+            <p className="font-display text-lg font-bold text-on-surface">
+              No venues found
+            </p>
             <p className="mt-2 max-w-sm text-sm text-text-muted">
-              Try adjusting your filters or search query to discover more spaces.
+              Try adjusting your filters or search query to discover more
+              spaces.
             </p>
             <Button
               type="button"
               variant="outline"
-              className="mt-6 rounded-xl"
+              className="mt-6 rounded-full border-border-subtle px-6 transition-all duration-200 hover:-translate-y-0.5"
               onClick={() => {
                 setDraftFilters(DEFAULT_FILTERS);
                 setAppliedFilters(DEFAULT_FILTERS);

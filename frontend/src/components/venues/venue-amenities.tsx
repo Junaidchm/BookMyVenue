@@ -6,10 +6,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
 import type { VenueAmenity } from "@/lib/venues/data";
 
 const ICONS: Record<VenueAmenity["icon"], LucideIcon> = {
@@ -25,21 +21,21 @@ type VenueAmenitiesProps = {
 
 export function VenueAmenities({ amenities }: VenueAmenitiesProps) {
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
       {amenities.map((amenity) => {
         const Icon = ICONS[amenity.icon];
         return (
-          <Card
+          <div
             key={amenity.label}
-            className="gap-0 rounded-xl border border-stone-100 bg-surface py-0 shadow-sm"
+            className="group flex flex-col items-center justify-center gap-3 rounded-xl border border-border-subtle bg-surface p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-container/30 hover:shadow-md"
           >
-            <CardContent className="flex flex-col items-center justify-center p-4">
-              <Icon className="mb-2 size-8 text-brand-muted" />
-              <span className="text-center text-label-md text-on-surface">
-                {amenity.label}
-              </span>
-            </CardContent>
-          </Card>
+            <div className="flex size-11 items-center justify-center rounded-xl bg-primary-container/10 transition-colors group-hover:bg-primary-container/15">
+              <Icon className="size-5 text-primary-container" />
+            </div>
+            <span className="text-center text-label-md text-on-surface">
+              {amenity.label}
+            </span>
+          </div>
         );
       })}
     </div>

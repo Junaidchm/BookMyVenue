@@ -28,50 +28,52 @@ const GUEST_OPTIONS = ["1 guest", "2 guests", "50+ guests"];
 
 export function VenueBookingCard({ venue }: VenueBookingCardProps) {
   return (
-    <Card className="sticky top-32 gap-0 rounded-xl border border-stone-100 bg-surface py-0 shadow-elevation-floating">
+    <Card className="sticky top-32 gap-0 rounded-2xl border border-border-subtle bg-surface py-0 shadow-elevation-floating">
       <CardContent className="flex flex-col gap-6 p-6">
+        {/* Price & rating header */}
         <div className="flex items-end justify-between">
-          <div className="text-headline-md text-on-surface">
+          <div className="font-display text-headline-md text-on-surface">
             {formatVenuePrice(venue.pricePerDay)}{" "}
-            <span className="text-body-md font-normal text-text-muted">
+            <span className="font-sans text-body-md font-normal text-text-muted">
               / day
             </span>
           </div>
-          <div className="flex items-center gap-1 text-label-md text-on-surface">
-            <Star className="size-4 fill-secondary-container text-secondary-container" />
-            {venue.rating} ({venue.reviewCount} reviews)
+          <div className="flex items-center gap-1 rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm font-semibold text-on-surface">
+            <Star className="size-3.5 fill-amber-400 text-amber-400" />
+            {venue.rating} ({venue.reviewCount})
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-stone-200">
-          <div className="flex border-b border-stone-200">
-            <div className="flex-1 border-r border-stone-200 p-3 transition-colors focus-within:bg-surface-container-low">
+        {/* Date & guests input card */}
+        <div className="overflow-hidden rounded-xl border border-border-subtle">
+          <div className="flex border-b border-border-subtle">
+            <div className="flex-1 border-r border-border-subtle p-3.5 transition-colors focus-within:bg-surface-container-low">
               <Label className="mb-1 block text-label-sm tracking-wider text-text-muted uppercase">
                 Check-in
               </Label>
               <Input
                 type="text"
                 placeholder="Add date"
-                className="h-auto border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+                className="h-auto border-0 bg-transparent p-0 text-sm font-medium text-on-surface shadow-none focus-visible:ring-0"
               />
             </div>
-            <div className="flex-1 p-3 transition-colors focus-within:bg-surface-container-low">
+            <div className="flex-1 p-3.5 transition-colors focus-within:bg-surface-container-low">
               <Label className="mb-1 block text-label-sm tracking-wider text-text-muted uppercase">
                 Check-out
               </Label>
               <Input
                 type="text"
                 placeholder="Add date"
-                className="h-auto border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+                className="h-auto border-0 bg-transparent p-0 text-sm font-medium text-on-surface shadow-none focus-visible:ring-0"
               />
             </div>
           </div>
-          <div className="p-3 transition-colors focus-within:bg-surface-container-low">
+          <div className="p-3.5 transition-colors focus-within:bg-surface-container-low">
             <Label className="mb-1 block text-label-sm tracking-wider text-text-muted uppercase">
               Guests
             </Label>
             <Select defaultValue="1 guest">
-              <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 shadow-none focus-visible:ring-0">
+              <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 text-sm font-medium text-on-surface shadow-none focus-visible:ring-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -85,9 +87,10 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
           </div>
         </div>
 
+        {/* CTA */}
         <Button
           size="lg"
-          className="w-full rounded-full bg-primary-container py-6 text-label-md text-on-primary shadow-md shadow-primary-container/20 hover:-translate-y-0.5 hover:bg-secondary-container"
+          className="w-full rounded-full bg-primary-container py-6 text-label-md text-white shadow-lg shadow-primary-container/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary-container active:scale-[0.98]"
         >
           Reserve Now
         </Button>
@@ -96,11 +99,14 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
           You won&apos;t be charged yet
         </p>
 
-        <Separator className="bg-stone-100" />
+        <Separator className="bg-border-subtle" />
 
+        {/* Total */}
         <div className="flex justify-between text-body-md text-on-surface-variant">
-          <span className="underline">Total before taxes</span>
-          <span className="font-semibold text-on-surface">
+          <span className="underline decoration-dotted underline-offset-4">
+            Total before taxes
+          </span>
+          <span className="font-display font-bold text-on-surface">
             {formatVenuePrice(venue.pricePerDay)}
           </span>
         </div>

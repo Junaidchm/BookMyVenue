@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin } from "lucide-react";
+import { MapPin, SlidersHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,13 +32,13 @@ function FilterCheckbox({
   return (
     <label
       htmlFor={id}
-      className="flex cursor-pointer items-center gap-3 py-1.5 text-sm text-on-surface-variant"
+      className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low"
     >
       <span
         className={cn(
-          "flex size-5 shrink-0 items-center justify-center rounded border transition-colors",
+          "flex size-5 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200",
           checked
-            ? "border-brand-muted bg-brand-muted text-on-brand"
+            ? "border-primary-container bg-primary-container text-white shadow-sm shadow-primary-container/20"
             : "border-outline-variant bg-surface"
         )}
       >
@@ -67,7 +67,11 @@ function FilterCheckbox({
   );
 }
 
-export function VenueFiltersSidebar({ filters, onChange, onApply }: VenueFiltersProps) {
+export function VenueFiltersSidebar({
+  filters,
+  onChange,
+  onApply,
+}: VenueFiltersProps) {
   const toggleEventType = (type: string, checked: boolean) => {
     const eventTypes = checked
       ? [...filters.eventTypes, type]
@@ -83,28 +87,39 @@ export function VenueFiltersSidebar({ filters, onChange, onApply }: VenueFilters
   };
 
   return (
-    <aside className="rounded-2xl bg-surface-container-low p-6 lg:sticky lg:top-28 lg:self-start">
-      <div className="mb-6">
-        <h2 className="text-headline-sm text-on-surface">Filters</h2>
-        <p className="mt-1 text-sm text-text-muted">Refine your perfect space</p>
+    <aside className="rounded-2xl border border-border-subtle bg-surface p-6 shadow-elevation-card lg:sticky lg:top-28 lg:self-start">
+      <div className="mb-6 flex items-center gap-3">
+        <div className="flex size-10 items-center justify-center rounded-xl bg-primary-container/10">
+          <SlidersHorizontal className="size-5 text-primary-container" />
+        </div>
+        <div>
+          <h2 className="font-display text-lg font-bold text-on-surface">
+            Filters
+          </h2>
+          <p className="text-xs text-text-muted">Refine your perfect space</p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-6">
+        {/* Location */}
         <div className="flex flex-col gap-2">
           <Label className="text-xs font-semibold tracking-wider text-text-muted uppercase">
             Location
           </Label>
           <div className="relative">
-            <MapPin className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-muted" />
+            <MapPin className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-text-muted" />
             <Input
               value={filters.location}
-              onChange={(e) => onChange({ ...filters, location: e.target.value })}
-              className="h-11 rounded-xl border-outline-variant bg-surface pl-10 text-sm"
+              onChange={(e) =>
+                onChange({ ...filters, location: e.target.value })
+              }
+              className="h-12 rounded-xl border-outline-variant bg-surface pl-10 text-sm transition-all focus:border-primary-container focus:ring-2 focus:ring-primary-container/15"
               placeholder="London, UK"
             />
           </div>
         </div>
 
+        {/* Capacity slider */}
         <div className="flex flex-col gap-3">
           <Label className="text-xs font-semibold tracking-wider text-text-muted uppercase">
             Guest Capacity
@@ -118,16 +133,17 @@ export function VenueFiltersSidebar({ filters, onChange, onApply }: VenueFilters
             onChange={(e) =>
               onChange({ ...filters, capacity: Number(e.target.value) })
             }
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-outline-variant accent-brand-muted"
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-outline-variant accent-primary-container"
           />
           <div className="flex justify-between text-xs text-text-muted">
             <span>50</span>
-            <span className="font-medium text-on-surface">
+            <span className="rounded-full bg-surface-container-low px-2.5 py-0.5 font-semibold text-on-surface">
               {filters.capacity >= 500 ? "500+" : filters.capacity}
             </span>
           </div>
         </div>
 
+        {/* Price range */}
         <div className="flex flex-col gap-2">
           <Label className="text-xs font-semibold tracking-wider text-text-muted uppercase">
             Price Range (Daily)
@@ -137,19 +153,24 @@ export function VenueFiltersSidebar({ filters, onChange, onApply }: VenueFilters
               type="number"
               placeholder="Min"
               value={filters.priceMin}
-              onChange={(e) => onChange({ ...filters, priceMin: e.target.value })}
-              className="h-11 rounded-xl border-outline-variant bg-surface text-sm"
+              onChange={(e) =>
+                onChange({ ...filters, priceMin: e.target.value })
+              }
+              className="h-12 rounded-xl border-outline-variant bg-surface text-sm transition-all focus:border-primary-container focus:ring-2 focus:ring-primary-container/15"
             />
             <Input
               type="number"
               placeholder="Max"
               value={filters.priceMax}
-              onChange={(e) => onChange({ ...filters, priceMax: e.target.value })}
-              className="h-11 rounded-xl border-outline-variant bg-surface text-sm"
+              onChange={(e) =>
+                onChange({ ...filters, priceMax: e.target.value })
+              }
+              className="h-12 rounded-xl border-outline-variant bg-surface text-sm transition-all focus:border-primary-container focus:ring-2 focus:ring-primary-container/15"
             />
           </div>
         </div>
 
+        {/* Event types */}
         <div className="flex flex-col gap-1">
           <Label className="mb-1 text-xs font-semibold tracking-wider text-text-muted uppercase">
             Event Type
@@ -165,6 +186,7 @@ export function VenueFiltersSidebar({ filters, onChange, onApply }: VenueFilters
           ))}
         </div>
 
+        {/* Amenities */}
         <div className="flex flex-col gap-1">
           <Label className="mb-1 text-xs font-semibold tracking-wider text-text-muted uppercase">
             Amenities
@@ -180,10 +202,11 @@ export function VenueFiltersSidebar({ filters, onChange, onApply }: VenueFilters
           ))}
         </div>
 
+        {/* Apply button */}
         <Button
           type="button"
           onClick={onApply}
-          className="h-12 w-full rounded-xl bg-brand-muted text-sm font-semibold text-on-brand hover:bg-brand-muted/90"
+          className="h-12 w-full rounded-full bg-primary-container text-sm font-semibold text-white shadow-lg shadow-primary-container/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary-container active:scale-[0.98]"
         >
           Apply Filters
         </Button>
