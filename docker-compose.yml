@@ -10,6 +10,8 @@ services:
       POSTGRES_DB: bmv_db
     ports:
       - "5432:5432"
+    volumes:
+      - ./infra/postgres/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql
     networks:
       - bmv-mesh-network
 
@@ -29,7 +31,7 @@ services:
     ports:
       - "5001:5001"
     environment:
-      DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_db
+      DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_venue
     depends_on:
       - bmv_db
     networks:
@@ -40,6 +42,10 @@ services:
     build: ./services/booking-service
     ports:
       - "5002:5002"
+    environment:
+      DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_booking
+    depends_on:
+      - bmv_db
     networks:
       - bmv-mesh-network
 
@@ -48,6 +54,10 @@ services:
     build: ./services/auth-service
     ports:
       - "5003:5003"
+    environment:
+      DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_auth
+    depends_on:
+      - bmv_db
     networks:
       - bmv-mesh-network
 
