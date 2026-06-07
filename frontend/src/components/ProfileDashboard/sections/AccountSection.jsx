@@ -32,13 +32,15 @@ function Toggle({ id, label, description, checked, onChange, disabled }) {
  * No password change per spec — that lives in Security Settings.
  */
 export default function AccountSection({ settings, loading, onLogout }) {
-  const [prefs, setPrefs] = useState(null);   // null until loaded
-  const [saving, setSaving] = useState(false);
+  const [prefs, setPrefs] = useState(settings);
+  const [prevSettings, setPrevSettings] = useState(settings);
 
-  // Sync local state when settings prop arrives
-  React.useEffect(() => {
-    if (settings) setPrefs(settings);
-  }, [settings]);
+  if (settings !== prevSettings) {
+    setPrefs(settings);
+    setPrevSettings(settings);
+  }
+
+  const [saving, setSaving] = useState(false);
 
   const handleToggle = async (group, key, value) => {
     const next = {
