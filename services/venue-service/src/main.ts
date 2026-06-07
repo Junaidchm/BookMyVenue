@@ -5,7 +5,7 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   // Configure CORS
   app.enableCors({
     origin: true,
@@ -29,7 +29,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('BookMyVenue - Venue Service')
-    .setDescription('The Proximity Feeds & Location Indexes microservice API documentation')
+    .setDescription(
+      'The Proximity Feeds & Location Indexes microservice API documentation',
+    )
     .setVersion('1.0')
     .addTag('venue')
     .addBearerAuth(
@@ -50,4 +52,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

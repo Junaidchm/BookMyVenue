@@ -7,7 +7,7 @@ export class UsersService {
 
   async findByEmail(email: string) {
     const sanitizedEmail = email.toLowerCase().trim();
-    return this.prisma.user.findUnique({
+    return await this.prisma.user.findUnique({
       where: { email: sanitizedEmail },
       include: {
         userRoles: {

@@ -6,9 +6,9 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   app.useGlobalFilters(new PrismaExceptionFilter());
-  
+
   // Configure CORS
   app.enableCors({
     origin: true,
@@ -32,7 +32,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('BookMyVenue - Auth Service')
-    .setDescription('The Authentication and Identity microservice API documentation')
+    .setDescription(
+      'The Authentication and Identity microservice API documentation',
+    )
     .setVersion('1.0')
     .addTag('auth')
     .addBearerAuth(

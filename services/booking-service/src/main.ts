@@ -5,7 +5,7 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   // Configure CORS
   app.enableCors({
     origin: true,
@@ -29,7 +29,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('BookMyVenue - Booking Service')
-    .setDescription('The Availability Grids & Reservation States microservice API documentation')
+    .setDescription(
+      'The Availability Grids & Reservation States microservice API documentation',
+    )
     .setVersion('1.0')
     .addTag('booking')
     .addBearerAuth(
@@ -50,4 +52,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

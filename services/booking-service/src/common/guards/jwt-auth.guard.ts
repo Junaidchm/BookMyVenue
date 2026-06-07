@@ -8,6 +8,13 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 
+export interface JwtPayload {
+  sub: number;
+  email: string;
+  fullName: string;
+  roles: string[];
+}
+
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
@@ -16,7 +23,9 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user?: JwtPayload }>();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException('Authentication token is missing.');
@@ -25,13 +34,15 @@ export class JwtAuthGuard implements CanActivate {
       const secret =
         this.configService.get<string>('JWT_SECRET') ||
         'super_secret_jwt_key_bmv_2026';
-      
-      const payload = await this.jwtService.verifyAsync(token, {
+
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: secret,
       });
-      request['user'] = payload;
+      request.user = payload;
     } catch {
-      throw new UnauthorizedException('Authentication token is invalid or expired.');
+      throw new UnauthorizedException(
+        'Authentication token is invalid or expired.',
+      );
     }
     return true;
   }
