@@ -1,14 +1,14 @@
 frontend:
   - changed-files:
       - any-glob-to-any-file:
-          - "src/components/**"
-          - "src/app/**"
+          - "frontend/src/components/**"
+          - "frontend/src/app/**"
 
 backend:
   - changed-files:
       - any-glob-to-any-file:
-          - "src/server/**"
-          - "src/api/**"
+          - "services/**"
+          - "services/**"
 
 database:
   - changed-files:
@@ -19,7 +19,7 @@ database:
 auth:
   - changed-files:
       - any-glob-to-any-file:
-          - "src/lib/auth/**"
+          - "frontend/src/lib/auth/**"
 
 documentation:
   - changed-files:
