@@ -1,7 +1,7 @@
-import 'dotenv/config';
 import app from './app';
+import { env } from './config/env';
 
-const PORT = process.env.PORT || 8000;
+const PORT = env.PORT;
 
 async function bootstrap() {
   const server = app.listen(PORT, () => {

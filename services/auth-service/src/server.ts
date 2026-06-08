@@ -1,8 +1,8 @@
-import 'dotenv/config';
 import app from './app';
-import { connectDb, disconnectDb } from './prisma';
+import { env } from './config/env';
+import { connectDb, disconnectDb } from './prisma/prisma';
 
-const PORT = process.env.PORT || 5003;
+const PORT = env.PORT;
 
 async function bootstrap() {
   try {

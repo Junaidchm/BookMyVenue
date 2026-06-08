@@ -10,12 +10,12 @@ export class AuthController {
     try {
       const { email, password, fullName, roles } = req.body;
       const user = await this.authService.register(email, password, fullName, roles);
-      res.status(201).json(user);
+      res.status(201).json({ success: true, data: user });
     } catch (err: any) {
       if (err.message.includes('already exists')) {
-        res.status(409).json({ message: err.message });
+        res.status(409).json({ success: false, message: err.message });
       } else {
-        res.status(400).json({ message: err.message });
+        next(err);
       }
     }
   };
@@ -24,9 +24,9 @@ export class AuthController {
     try {
       const { email, password } = req.body;
       const result = await this.authService.login(email, password);
-      res.status(200).json(result);
+      res.status(200).json({ success: true, data: result });
     } catch (err: any) {
-      res.status(401).json({ message: err.message });
+      res.status(401).json({ success: false, message: err.message });
     }
   };
 
@@ -44,23 +44,23 @@ export class AuthController {
 
       if (!jwtToken) {
         return res.status(401).json({
+          success: false,
           message: 'Token must be provided in body or Authorization header.',
         });
       }
 
       const payload = this.authService.verifyToken(jwtToken);
-      res.status(200).json(payload);
+      res.status(200).json({ success: true, data: payload });
     } catch (err: any) {
-      res.status(401).json({ message: err.message });
+      res.status(401).json({ success: false, message: err.message });
     }
   };
 
   updateProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // User ID can come from custom header injected by gateway
       const userIdStr = req.headers['x-user-id'] as string;
       if (!userIdStr) {
-        return res.status(401).json({ message: 'User context missing.' });
+        return res.status(401).json({ success: false, message: 'User context missing.' });
       }
       const userId = parseInt(userIdStr, 10);
 
@@ -72,9 +72,9 @@ export class AuthController {
         bankAccountNumber,
       });
 
-      res.status(200).json(profile);
+      res.status(200).json({ success: true, data: profile });
     } catch (err: any) {
-      res.status(400).json({ message: err.message });
+      next(err);
     }
   };
 }

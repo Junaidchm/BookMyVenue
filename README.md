@@ -45,3 +45,80 @@ To maintain a high standard of code, all Pull Requests must use our [standard te
 5. **Attach Screenshots** (If your PR includes UI changes).
 
 **BookMyVenue belongs to all of us. Join WeCode today and let's build something amazing together!**
+
+---
+
+## 🛠️ Development Setup Guide
+
+You can develop BookMyVenue using either **Docker-based workflow (Recommended)** or a **Local development workflow** (running databases in Docker and service code locally).
+
+### 🐳 Workflow A: Docker-based Development (Primary)
+
+This workflow runs the entire service mesh (Postgres Database, API Gateway, Front-end, and all microservices) in Docker containers.
+
+#### Prerequisites
+- Docker & Docker Compose installed.
+
+#### Steps
+1. **Start the complete mesh:**
+   ```bash
+   docker compose up --build
+   ```
+2. **Accessing services:**
+   - **Frontend UI:** `http://localhost:3000`
+   - **API Gateway proxy:** `http://localhost:8000`
+3. **Database Ports:**
+   - Postgres remains exposed on host port `5432` for GUI management/inspection.
+
+---
+
+### 💻 Workflow B: Local Development (Secondary)
+
+If you prefer to debug Node.js code locally without container rebuild overhead, you can run the services on your host machine while keeping the relational database container running.
+
+#### Prerequisites
+- Node.js (version 20 or higher is recommended) & npm installed.
+
+#### Steps
+
+1. **Start only the Database container:**
+   ```bash
+   docker compose up -d bmv_db
+   ```
+   This spins up PostgreSQL on port `5432` with multiple database schemas (`bmv_auth`, `bmv_venue`, `bmv_booking`).
+
+2. **Configure Environment Variables:**
+   For each service (`services/api-gateway`, `services/auth-service`, `services/venue-service`, `services/booking-service`), copy the `.env.example` file to `.env`:
+   ```bash
+   cp services/api-gateway/.env.example services/api-gateway/.env
+   cp services/auth-service/.env.example services/auth-service/.env
+   cp services/venue-service/.env.example services/venue-service/.env
+   cp services/booking-service/.env.example services/booking-service/.env
+   ```
+   *(Note: The default database URLs in `.env.example` point to `localhost:5432` which maps correctly to the active Docker Postgres container).*
+
+3. **Install Dependencies & Generate Prisma Clients:**
+   Inside each service directory, run dependency installation and client generation:
+   ```bash
+   # In services/auth-service, services/venue-service, services/booking-service
+   npm install
+   npx prisma generate
+   ```
+
+4. **Launch the services:**
+   Open separate terminal windows and run `start:dev` inside each service folder:
+   ```bash
+   # In services/api-gateway
+   npm run start # (Launches HTTP Gateway on port 8000)
+
+   # In services/auth-service
+   npm run start:dev # (Launches Auth Service on port 5003)
+
+   # In services/venue-service
+   npm run start:dev # (Launches Venue Service on port 5001)
+
+   # In services/booking-service
+   npm run start:dev # (Launches Booking Service on port 5002)
+   ```
+   Now you can hit `http://localhost:8000/health` or `http://localhost:8000/api/...` locally, and the API gateway will route directly to your local service instances.
+

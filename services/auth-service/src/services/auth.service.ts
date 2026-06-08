@@ -9,8 +9,7 @@ export interface JwtPayload {
   roles: string[];
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+import { env } from '../config/env';
 
 export class AuthService {
   private usersService = new UsersService();
@@ -62,7 +61,7 @@ export class AuthService {
       roles: roles,
     };
 
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
+    const token = jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN } as jwt.SignOptions);
 
     return {
       access_token: token,
@@ -78,7 +77,7 @@ export class AuthService {
 
   verifyToken(token: string): JwtPayload {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, env.JWT_SECRET);
       return decoded as any as JwtPayload;
     } catch {
       throw new Error('Invalid or expired token.');

@@ -1,11 +1,12 @@
-import { PrismaClient } from '../generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import { env } from '../config/env';
 
 let prisma: PrismaClient;
 let pool: Pool | undefined;
 
-const databaseUrl = process.env.DATABASE_URL || '';
+const databaseUrl = env.DATABASE_URL;
 
 if (
   databaseUrl.startsWith('postgresql://') ||

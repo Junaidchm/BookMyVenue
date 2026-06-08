@@ -1,14 +1,14 @@
-import 'dotenv/config';
 import app from './app';
-import { connectDb, disconnectDb } from './prisma';
+import { env } from './config/env';
+import { connectDb, disconnectDb } from './prisma/prisma';
 
-const PORT = process.env.PORT || 5002;
+const PORT = env.PORT;
 
 async function bootstrap() {
   try {
     await connectDb();
     const server = app.listen(PORT, () => {
-      console.log(`Booking Service listening on port ${PORT}`);
+      console.log(`Venue Service listening on port ${PORT}`);
     });
 
     const gracefulShutdown = async () => {

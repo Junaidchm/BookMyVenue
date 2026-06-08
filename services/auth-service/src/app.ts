@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import authRoutes from './routes/auth.routes';
+import { errorHandler } from './middlewares/error.middleware';
 
 const app = express();
 
@@ -30,18 +31,15 @@ app.use('/auth', authRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'UP', service: 'auth-service' });
+  res.status(200).json({ success: true, status: 'UP', service: 'auth-service' });
 });
 
 // Generic 404 handler
 app.use((req, res) => {
-  res.status(404).json({ message: 'Resource not found' });
+  res.status(404).json({ success: false, message: 'Resource not found' });
 });
 
-// Generic error handler
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error(err);
-  res.status(500).json({ message: err.message || 'Internal server error' });
-});
+// Register global error handler middleware (must be registered last)
+app.use(errorHandler);
 
 export default app;
