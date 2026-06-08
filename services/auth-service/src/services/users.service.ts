@@ -1,13 +1,9 @@
-import { Injectable, ConflictException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { prisma } from '../prisma';
 
-@Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
-
   async findByEmail(email: string) {
     const sanitizedEmail = email.toLowerCase().trim();
-    return await this.prisma.user.findUnique({
+    return await prisma.user.findUnique({
       where: { email: sanitizedEmail },
       include: {
         userRoles: {
@@ -15,6 +11,7 @@ export class UsersService {
             role: true,
           },
         },
+        ownerProfile: true,
       },
     });
   }
@@ -31,10 +28,10 @@ export class UsersService {
     // Check if user already exists
     const existingUser = await this.findByEmail(sanitizedEmail);
     if (existingUser) {
-      throw new ConflictException('User with this email already exists.');
+      throw new Error('User with this email already exists.');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx) => {
       // Create user
       const user = await tx.user.create({
         data: {
@@ -48,7 +45,7 @@ export class UsersService {
       for (const roleName of sanitizedRoles) {
         const upperRoleName = roleName.toUpperCase().trim();
 
-        // Upsert the role to ensure it exists in the database
+        // Upsert the role
         const role = await tx.role.upsert({
           where: { name: upperRoleName },
           update: {},
@@ -73,6 +70,25 @@ export class UsersService {
         fullName: user.fullName,
         roles: sanitizedRoles.map((r) => r.toUpperCase().trim()),
       };
+    });
+  }
+
+  async updateOwnerProfile(
+    userId: number,
+    profileData: {
+      phoneNumber?: string;
+      businessName?: string;
+      bankRoutingNumber?: string;
+      bankAccountNumber?: string;
+    },
+  ) {
+    return await prisma.ownerProfile.upsert({
+      where: { userId },
+      update: profileData,
+      create: {
+        userId,
+        ...profileData,
+      },
     });
   }
 }

@@ -1,11 +1,6 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
+import { UsersService } from './users.service';
 import * as bcrypt from 'bcryptjs';
+import * as jwt from 'jsonwebtoken';
 
 export interface JwtPayload {
   sub: number;
@@ -14,12 +9,11 @@ export interface JwtPayload {
   roles: string[];
 }
 
-@Injectable()
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+
 export class AuthService {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
-  ) {}
+  private usersService = new UsersService();
 
   /**
    * Registers a new user with their email, password, fullName, and roles.
@@ -31,9 +25,7 @@ export class AuthService {
     roles: string[] = ['USER'],
   ) {
     if (!email || !password || !fullName) {
-      throw new ConflictException(
-        'Email, password, and fullName are required.',
-      );
+      throw new Error('Email, password, and fullName are required.');
     }
 
     const passwordHash = await this.hashPassword(password);
@@ -41,36 +33,36 @@ export class AuthService {
   }
 
   /**
-   * Logs in a user, verifying email/password and minting a JWT with ID and exact roles.
+   * Logs in a user, verifying email/password and minting a JWT.
    */
   async login(email: string, password: string) {
     if (!email || !password) {
-      throw new UnauthorizedException('Email and password must be provided.');
+      throw new Error('Email and password must be provided.');
     }
 
     const user = await this.usersService.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password.');
+      throw new Error('Invalid email or password.');
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid email or password.');
+      throw new Error('Invalid email or password.');
     }
 
     // Extract exact roles
     const roles = user.userRoles.map((ur) => ur.role.name);
 
-    // Mint stateless JWT containing ID (sub) and exact roles
-    const payload = {
+    // Mint stateless JWT containing ID (sub) and roles
+    const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       fullName: user.fullName,
       roles: roles,
     };
 
-    const token = this.jwtService.sign(payload);
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
 
     return {
       access_token: token,
@@ -79,15 +71,17 @@ export class AuthService {
         email: user.email,
         fullName: user.fullName,
         roles: roles,
+        ownerProfile: user.ownerProfile,
       },
     };
   }
 
   verifyToken(token: string): JwtPayload {
     try {
-      return this.jwtService.verify<JwtPayload>(token);
+      const decoded = jwt.verify(token, JWT_SECRET);
+      return decoded as any as JwtPayload;
     } catch {
-      throw new UnauthorizedException('Invalid or expired token.');
+      throw new Error('Invalid or expired token.');
     }
   }
 
