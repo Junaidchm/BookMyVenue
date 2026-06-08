@@ -39,6 +39,7 @@ model Venue {
   pricingType       PricingType @default(PER_HOUR)
   bufferTimeMinutes Int         @default(60) // Crucial for turnaround gaps
   status            VenueStatus @default(PENDING)
+  imageUrls         String[]
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
