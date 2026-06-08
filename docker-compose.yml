@@ -21,15 +21,31 @@ services:
     ports:
       - "3000:3000"
     depends_on:
+      - api-gateway
+    networks:
+      - bmv-mesh-network
+
+  # API Gateway: Single entry point and routing proxy
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      JWT_SECRET: secret
+      AUTH_SERVICE_URL: http://auth-service:5003
+      VENUE_SERVICE_URL: http://venue-service:5001
+      BOOKING_SERVICE_URL: http://booking-service:5002
+    depends_on:
+      - auth-service
       - venue-service
+      - booking-service
     networks:
       - bmv-mesh-network
 
   # Microservice 1: Proximity Feeds & Location Indexes
   venue-service:
     build: ./services/venue-service
-    ports:
-      - "5001:5001"
     environment:
       DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_venue
     depends_on:
@@ -40,8 +56,6 @@ services:
   # Microservice 2: Availability Grids & Reservation States
   booking-service:
     build: ./services/booking-service
-    ports:
-      - "5002:5002"
     environment:
       DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_booking
     depends_on:
@@ -52,10 +66,9 @@ services:
   # Microservice 3: Decoupled Authentication & Identity Tokens
   auth-service:
     build: ./services/auth-service
-    ports:
-      - "5003:5003"
     environment:
       DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_auth
+      JWT_SECRET: secret
     depends_on:
       - bmv_db
     networks:
