@@ -1,5 +1,12 @@
 import { z } from 'zod';
 import 'dotenv/config';
+import fs from 'fs';
+
+const isDocker = fs.existsSync('/.dockerenv');
+
+if (isDocker && process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = process.env.DATABASE_URL.replace('@localhost:', '@bmv_db:');
+}
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(5003),

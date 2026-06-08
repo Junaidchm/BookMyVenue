@@ -1,5 +1,20 @@
 import { z } from 'zod';
 import 'dotenv/config';
+import fs from 'fs';
+
+const isDocker = fs.existsSync('/.dockerenv');
+
+if (isDocker) {
+  if (process.env.AUTH_SERVICE_URL) {
+    process.env.AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL.replace('//localhost:', '//auth-service:');
+  }
+  if (process.env.VENUE_SERVICE_URL) {
+    process.env.VENUE_SERVICE_URL = process.env.VENUE_SERVICE_URL.replace('//localhost:', '//venue-service:');
+  }
+  if (process.env.BOOKING_SERVICE_URL) {
+    process.env.BOOKING_SERVICE_URL = process.env.BOOKING_SERVICE_URL.replace('//localhost:', '//booking-service:');
+  }
+}
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(8000),

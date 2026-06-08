@@ -4,10 +4,8 @@ services:
   # Relational Database Engine with Spatial Extensions
   bmv_db:
     image: postgis/postgis:15-3.3
-    environment:
-      POSTGRES_USER: bmv_dev_user
-      POSTGRES_PASSWORD: bmv_ssh
-      POSTGRES_DB: bmv_db
+    env_file:
+      - ./services/auth-service/.env
     ports:
       - "5432:5432"
     volumes:
@@ -30,12 +28,8 @@ services:
     build: ./services/api-gateway
     ports:
       - "8000:8000"
-    environment:
-      PORT: 8000
-      JWT_SECRET: secret
-      AUTH_SERVICE_URL: http://auth-service:5003
-      VENUE_SERVICE_URL: http://venue-service:5001
-      BOOKING_SERVICE_URL: http://booking-service:5002
+    env_file:
+      - ./services/api-gateway/.env
     depends_on:
       - auth-service
       - venue-service
@@ -46,8 +40,8 @@ services:
   # Microservice 1: Proximity Feeds & Location Indexes
   venue-service:
     build: ./services/venue-service
-    environment:
-      DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_venue
+    env_file:
+      - ./services/venue-service/.env
     depends_on:
       - bmv_db
     networks:
@@ -56,8 +50,8 @@ services:
   # Microservice 2: Availability Grids & Reservation States
   booking-service:
     build: ./services/booking-service
-    environment:
-      DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_booking
+    env_file:
+      - ./services/booking-service/.env
     depends_on:
       - bmv_db
     networks:
@@ -66,9 +60,8 @@ services:
   # Microservice 3: Decoupled Authentication & Identity Tokens
   auth-service:
     build: ./services/auth-service
-    environment:
-      DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_auth
-      JWT_SECRET: secret
+    env_file:
+      - ./services/auth-service/.env
     depends_on:
       - bmv_db
     networks:
