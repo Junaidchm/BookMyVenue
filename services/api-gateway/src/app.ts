@@ -65,11 +65,11 @@ const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
 app.use(authenticateJWT);
 
 // Setup Proxies
-const createServiceProxy = (targetUrl: string) => {
+const createServiceProxy = (targetUrl: string, prefix: string) => {
   return createProxyMiddleware({
     target: targetUrl,
     changeOrigin: true,
-    pathRewrite: { '^/api': '' },
+    pathRewrite: { '^/': `/${prefix}/` },
     // Ensure request body is correctly parsed and rewritten for downstream post requests
     on: {
       proxyReq: (proxyReq, req, res) => {
@@ -83,9 +83,9 @@ const createServiceProxy = (targetUrl: string) => {
   });
 };
 
-app.use('/api/auth', createServiceProxy(AUTH_SERVICE_URL));
-app.use('/api/venues', createServiceProxy(VENUE_SERVICE_URL));
-app.use('/api/bookings', createServiceProxy(BOOKING_SERVICE_URL));
+app.use('/api/auth', createServiceProxy(AUTH_SERVICE_URL, 'auth'));
+app.use('/api/venues', createServiceProxy(VENUE_SERVICE_URL, 'venues'));
+app.use('/api/bookings', createServiceProxy(BOOKING_SERVICE_URL, 'bookings'));
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'UP', service: 'api-gateway' });
