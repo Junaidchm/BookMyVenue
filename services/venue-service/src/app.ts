@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import healthRoutes from './routes/health.routes';
+import venueRoutes from './routes/venue.routes';
 import { errorHandler } from './middlewares/error.middleware';
 
 const app = express();
@@ -17,7 +18,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Register routes
-app.use('/venues', healthRoutes);
+app.use('/api/health', healthRoutes);
+app.use('/api/venues', venueRoutes);
 
 // Generic 404 handler
 app.use((req, res) => {
