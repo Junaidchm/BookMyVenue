@@ -17,9 +17,9 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Register routes
-app.use('/api/health', healthRoutes);
-app.use('/api/venues', venueRoutes);
+// Register routes (paths match api-gateway proxy rewrite: /api/venues → /venues)
+app.use('/health', healthRoutes);
+app.use('/venues', venueRoutes);
 
 // Generic 404 handler
 app.use((req, res) => {

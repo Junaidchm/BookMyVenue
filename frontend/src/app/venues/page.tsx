@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { SiteNavbar } from "@/components/layout/site-navbar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { VenuesListing } from "@/components/venues/venues-listing";
-import { getAllVenues } from "@/lib/venues/data";
 
 export const metadata: Metadata = {
   title: "Discover Venues | BookMyVenue",
@@ -12,8 +11,6 @@ export const metadata: Metadata = {
 };
 
 export default function VenuesPage() {
-  const venues = getAllVenues();
-
   return (
     <div className="flex min-h-screen flex-col bg-background antialiased">
       <SiteNavbar />
@@ -23,7 +20,7 @@ export default function VenuesPage() {
       <div className="pointer-events-none fixed bottom-0 left-1/3 -z-10 size-96 rounded-full bg-secondary-container/5 blur-[150px]" />
 
       <main className="mx-auto w-full max-w-[var(--container-max)] flex-1 px-gutter pt-28 pb-16">
-        <VenuesListing venues={venues} />
+        <VenuesListing />
       </main>
 
       <SiteFooter />
