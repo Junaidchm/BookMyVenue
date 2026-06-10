@@ -2,13 +2,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { VenueCard } from "@/components/venues/venue-card";
-import { getAllVenues } from "@/lib/venues/data";
+import { FEATURED_VENUES } from "@/lib/venues/data";
 
 export function FeaturedVenuesSection() {
-  const featuredVenues = getAllVenues().filter((venue) =>
-    venue.badges?.includes("featured")
-  );
-
   return (
     <section className="bg-background py-16 md:py-24">
       <div className="mx-auto max-w-max px-margin-mobile md:px-margin-desktop">
@@ -35,7 +31,7 @@ export function FeaturedVenuesSection() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredVenues.map((venue) => (
+          {FEATURED_VENUES.map((venue) => (
             <VenueCard key={venue.id} venue={venue} />
           ))}
         </div>
