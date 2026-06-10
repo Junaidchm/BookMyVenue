@@ -17,9 +17,13 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.config';
+
 // Register routes (paths match api-gateway proxy rewrite: /api/venues → /venues)
 app.use('/health', healthRoutes);
 app.use('/venues', venueRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Generic 404 handler
 app.use((req, res) => {
