@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { MapPin, Clock, Search, Filter, CheckCircle } from "lucide-react";
+import { MapPin, Clock, Search, Filter, CheckCircle, XCircle } from "lucide-react";
 
 const initialVenues = [
   {
@@ -52,6 +52,10 @@ export default function ApprovalsPage() {
   const [search, setSearch] = useState("");
 
   const handleApprove = (id: number) => {
+    setVenues((prev) => prev.filter((v) => v.id !== id));
+  };
+
+  const handleReject = (id: number) => {
     setVenues((prev) => prev.filter((v) => v.id !== id));
   };
 
@@ -196,6 +200,13 @@ export default function ApprovalsPage() {
                   >
                     <CheckCircle className="w-4 h-4" />
                     Approve
+                  </button>
+                  <button
+                    onClick={() => handleReject(venue.id)}
+                    className="flex-1 bg-red-50 text-red-600 text-sm font-medium py-2 rounded-lg hover:bg-red-100 flex items-center justify-center gap-1"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Reject
                   </button>
                 </div>
               </div>

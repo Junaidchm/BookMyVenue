@@ -81,16 +81,6 @@ export default function AdminLayout({
 
         {/* Bottom */}
         <div className="flex flex-col gap-2">
-          <button
-            onClick={() => alert("Report generation coming soon!")}
-            className="w-full bg-orange-700 hover:bg-orange-800 text-white text-sm font-medium py-2.5 px-4 rounded-lg flex items-center gap-2"
-          >
-            <FileText className="w-4 h-4" />
-            Generate Report
-          </button>
-
-          <hr className="border-black-200 my-1" />
-
           <Link
             href="mailto:support@bookmyvenue.com"
             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg"
