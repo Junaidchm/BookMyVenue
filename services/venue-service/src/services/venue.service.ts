@@ -19,4 +19,22 @@ export class VenueService {
 
     return venues;
   }
+
+  /**
+   * Retrieve a single venue by its ID.
+   */
+  async getVenueById(id: number) {
+    const venue = await prisma.venue.findUnique({
+      where: { id },
+      include: {
+        amenities: {
+          include: { amenity: true },
+        },
+        capacities: true,
+        sessions: true,
+      },
+    });
+
+    return venue;
+  }
 }
