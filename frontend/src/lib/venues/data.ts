@@ -413,9 +413,6 @@ export type VenueCategory = {
   icon: "heart" | "briefcase" | "cake" | "camera";
 };
 
-export const VENUE_CATEGORIES: VenueCategory[] = [
-  { id: "weddings", label: "Weddings", icon: "heart" },
-  { id: "corporate", label: "Corporate", icon: "briefcase" },
-  { id: "birthdays", label: "Birthdays", icon: "cake" },
-  { id: "studios", label: "Studios", icon: "camera" },
-];
+export function getAllVenues(): Venue[] {
+  return Object.values(VENUES);
+}
