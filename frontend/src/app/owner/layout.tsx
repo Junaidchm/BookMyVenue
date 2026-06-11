@@ -23,7 +23,6 @@ const navigationItems = [
   { name: "My Venues", href: "/owner/venues", icon: Building2 },
   { name: "Calendar", href: "/owner/calendar", icon: Calendar },
   { name: "Analytics", href: "/owner/analytics", icon: BarChart3 },
-  { name: "Payouts", href: "/owner/payouts", icon: Wallet },
 ];
 
 export default function DashboardLayout({
@@ -89,23 +88,6 @@ export default function DashboardLayout({
 
         {/* Bottom Sidebar Widgets */}
         <div className="flex flex-col gap-5">
-          {/* Upgrade Plan Widget */}
-          <div className="relative overflow-hidden rounded-2xl bg-surface-container-low p-4 border border-border-subtle">
-            <div className="flex items-center justify-between">
-              <span className="text-label-sm text-text-muted">Current Plan</span>
-              <span className="rounded bg-[#fce3d9] px-1.5 py-0.5 text-[10px] font-bold text-primary-container">
-                PREMIUM
-              </span>
-            </div>
-            <p className="mt-2 text-label-md font-bold text-on-surface">Upgrade your plan to unlock elite perks</p>
-            <button className="mt-3.5 w-full rounded-xl bg-[#582200] py-3 text-label-sm font-bold text-white shadow-md transition-all duration-200 hover:bg-[#3c2d26] hover:-translate-y-0.5 active:scale-[0.98]">
-              Upgrade Plan
-            </button>
-            <div className="absolute -right-4 -bottom-4 opacity-5">
-              <Sparkles className="h-24 w-24 text-primary-container" />
-            </div>
-          </div>
-
           {/* Settings & Logout */}
           <div className="flex flex-col gap-1 border-t border-border-subtle pt-4">
             <Link
