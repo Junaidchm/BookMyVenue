@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import {
   USER_NAV,
@@ -45,16 +46,22 @@ export function UserNav({ onNavigate, className }: UserNavProps) {
 
   return (
     <div className={cn("flex h-full flex-col", className)}>
-      <div className="mb-8 px-4 py-2">
-        <h2 className="font-display text-headline-sm text-brand-muted">
-          Welcome back
-        </h2>
-        <p className="mt-1 text-label-sm text-on-surface-variant">
-          Manage your events
-        </p>
+      <div className="mb-8 flex items-center gap-3 rounded-2xl bg-[#FDF7F3] p-4">
+        <Avatar className="size-10 border border-[color:var(--outline-variant)]">
+          <AvatarImage src={USER_PROFILE.avatar} alt={USER_PROFILE.name} />
+          <AvatarFallback>{USER_PROFILE.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col">
+          <span className="text-label-sm text-on-surface-variant">
+            Welcome back,
+          </span>
+          <span className="font-display text-label-lg font-bold text-on-surface">
+            {USER_PROFILE.name}
+          </span>
+        </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-2 px-2">
+      <nav className="flex flex-1 flex-col gap-2">
         {USER_NAV.map((item) => {
           const Icon = ICONS[item.icon];
           const active = isActive(item.href);
@@ -67,7 +74,7 @@ export function UserNav({ onNavigate, className }: UserNavProps) {
               className={cn(
                 "flex items-center gap-3 rounded-xl px-4 py-3 text-label-md transition-all",
                 active
-                  ? "translate-x-1 bg-primary-container font-bold text-on-primary-container"
+                  ? "bg-primary font-bold text-on-primary"
                   : "text-on-surface-variant hover:bg-surface-variant"
               )}
             >
@@ -78,7 +85,7 @@ export function UserNav({ onNavigate, className }: UserNavProps) {
         })}
       </nav>
 
-      <div className="mt-auto flex flex-col gap-2 border-t border-[color:var(--outline-variant)]/30 px-2 pt-4 pb-2">
+      <div className="mt-auto flex flex-col gap-2 border-t border-[color:var(--outline-variant)]/30 pt-4 pb-2">
         {USER_NAV_BOTTOM.map((item) => {
           const Icon = ICONS[item.icon];
           return (

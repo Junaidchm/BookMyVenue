@@ -20,7 +20,7 @@ export function UserHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-50 mx-auto flex h-20 max-w-[var(--container-max)] items-center justify-between border-b border-[color:var(--outline-variant)]/30 bg-surface/80 px-margin-mobile shadow-sm backdrop-blur-md md:px-margin-desktop">
+    <header className="fixed top-0 right-0 left-0 z-50 mx-auto flex h-20 max-w-[var(--container-max)] items-center justify-between border-b border-[color:var(--outline-variant)]/30 bg-surface/80 px-margin-mobile shadow-sm backdrop-blur-md md:hidden">
       <div className="flex items-center gap-4">
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
