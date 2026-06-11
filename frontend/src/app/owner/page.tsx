@@ -176,18 +176,6 @@ export default function OverviewPage() {
             Here&apos;s what&apos;s happening with your venues today.
           </p>
         </div>
-        <div>
-          <button
-            onClick={() => {
-              setShowPromoAlert(true);
-              setTimeout(() => setShowPromoAlert(false), 5000);
-            }}
-            className="flex items-center gap-2 rounded-full bg-[#fce3d9] px-6 py-3.5 text-label-md font-bold text-[#9d4300] border border-[#fce3d9] transition-all duration-200 hover:-translate-y-0.5 shadow-sm active:scale-98"
-          >
-            <Megaphone className="h-4.5 w-4.5" />
-            <span>Create Promotion</span>
-          </button>
-        </div>
       </div>
 
       {/* ─── LIVE ALERT (PROMOTIONS FEEDBACK) ───────────────────────────────── */}
