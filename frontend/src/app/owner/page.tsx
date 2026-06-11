@@ -283,7 +283,7 @@ export default function OverviewPage() {
             <span className="text-3xl font-bold tracking-tight text-on-surface">7</span>
             <div className="mt-3.5">
               <Link
-                href="/dashboard/owner/venues"
+                href="/owner/venues"
                 className="inline-flex items-center gap-1 text-label-sm font-bold text-primary-container group-hover:underline"
               >
                 <span>Review now</span>
@@ -301,7 +301,7 @@ export default function OverviewPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-on-surface">Recent Bookings</h2>
             <Link
-              href="/dashboard/owner/venues"
+              href="/owner/venues"
               className="text-label-sm font-semibold text-primary-container hover:underline"
             >
               View All
@@ -422,7 +422,7 @@ export default function OverviewPage() {
           {/* Outline action button */}
           <div className="mt-8">
             <Link
-              href="/dashboard/owner/calendar"
+              href="/owner/calendar"
               className="flex w-full items-center justify-center rounded-full border border-border-subtle py-3 text-label-md font-bold text-on-surface hover:bg-stone-50 active:scale-[0.98] transition-all duration-200"
             >
               Open Full Calendar
