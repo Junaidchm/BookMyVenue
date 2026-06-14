@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import authRoutes from './routes/auth.routes';
+import adminRoutes from './routes/admin.routes';
 import { errorHandler } from './middlewares/error.middleware';
 
 const app = express();
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Register routes
 app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
