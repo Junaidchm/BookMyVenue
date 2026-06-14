@@ -406,3 +406,13 @@ export function getAllVenueIds(): string[] {
 export function getAllVenues(): Venue[] {
   return Object.values(VENUES);
 }
+
+export type VenueCategory = {
+  id: string;
+  label: string;
+  icon: "heart" | "briefcase" | "cake" | "camera";
+};
+
+export function getAllVenues(): Venue[] {
+  return Object.values(VENUES);
+}

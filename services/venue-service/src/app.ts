@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import healthRoutes from './routes/health.routes';
+import venueRoutes from './routes/venue.routes';
 import { errorHandler } from './middlewares/error.middleware';
 
 const app = express();
@@ -16,8 +17,13 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Register routes
-app.use('/venues', healthRoutes);
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.config';
+
+// Register routes (paths match api-gateway proxy rewrite: /api/venues → /venues)
+app.use('/health', healthRoutes);
+app.use('/venues', venueRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Generic 404 handler
 app.use((req, res) => {
