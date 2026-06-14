@@ -12,6 +12,7 @@ import {
   FileText,
 } from "lucide-react";
 import React from "react";
+import { useAuth } from "@/components/auth/session-provider";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -28,6 +29,7 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { signOut } = useAuth();
 
   return (
     <div className="flex min-h-screen bg-[#FDF8F4]">
@@ -100,7 +102,7 @@ export default function AdminLayout({
           </Link>
 
           <button
-            onClick={() => router.push("/login")}
+            onClick={() => signOut()}
             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg w-full"
           >
             <LogOut className="w-4 h-4" />

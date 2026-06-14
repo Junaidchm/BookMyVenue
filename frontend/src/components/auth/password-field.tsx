@@ -11,6 +11,7 @@ type PasswordFieldProps = {
   label: string;
   placeholder?: string;
   autoComplete?: string;
+  required?: boolean;
 };
 
 export function PasswordField({
@@ -18,6 +19,7 @@ export function PasswordField({
   label,
   placeholder = "••••••••",
   autoComplete = "current-password",
+  required,
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
 
@@ -29,9 +31,11 @@ export function PasswordField({
       <div className="relative">
         <input
           id={id}
+          name={id}
           type={visible ? "text" : "password"}
           placeholder={placeholder}
           autoComplete={autoComplete}
+          required={required}
           className={cn(inputClassName, "pr-12")}
         />
         <button
