@@ -58,3 +58,8 @@ Desktop.ini
 *.njsproj
 *.sln
 *.swp
+
+# ==========================================
+# Prisma Generated Clients
+# ==========================================
+services/*/generated/
