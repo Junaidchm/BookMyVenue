@@ -11,11 +11,12 @@ async function bootstrap() {
       console.log(`Venue Service listening on port ${PORT}`);
     });
 
-    const gracefulShutdown = async () => {
+    const gracefulShutdown = () => {
       console.log('Shutting down gracefully...');
-      server.close(async () => {
-        await disconnectDb();
-        process.exit(0);
+      server.close(() => {
+        void disconnectDb().then(() => {
+          process.exit(0);
+        });
       });
     };
 
