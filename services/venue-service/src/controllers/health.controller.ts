@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 export class HealthController {
-  check = async (req: Request, res: Response, next: NextFunction) => {
+  check = (req: Request, res: Response, next: NextFunction) => {
     try {
       res.status(200).json({
         success: true,
