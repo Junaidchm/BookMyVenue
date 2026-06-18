@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Search, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Sparkles, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useVenues } from "@/hooks/queries/use-venues";
 import { cn } from "@/lib/utils";
-import type { Venue } from "@/lib/venues/data";
 import {
   DEFAULT_FILTERS,
   filterVenues,
@@ -28,9 +28,7 @@ import { VenueFiltersSidebar } from "./venue-filters";
 
 const VENUES_PER_PAGE = 6;
 
-type VenuesListingProps = {
-  venues: Venue[];
-};
+
 
 function Pagination({
   currentPage,
@@ -123,7 +121,9 @@ function Pagination({
   );
 }
 
-export function VenuesListing({ venues }: VenuesListingProps) {
+export function VenuesListing() {
+  const { data: venues = [], isLoading, isError } = useVenues();
+
   const [draftFilters, setDraftFilters] =
     useState<VenueFilters>(DEFAULT_FILTERS);
   const [appliedFilters, setAppliedFilters] =
@@ -144,7 +144,10 @@ export function VenuesListing({ venues }: VenuesListingProps) {
     totalItems,
   } = paginateVenues(filteredVenues, currentPage, VENUES_PER_PAGE);
 
-  const cityLabel = appliedFilters.location.split(",")[0].trim() || "London";
+  const cityLabel =
+    appliedFilters.location.split(",")[0].trim() ||
+    venues[0]?.city ||
+    "all locations";
 
   const handleApplyFilters = () => {
     setAppliedFilters(draftFilters);
@@ -160,7 +163,21 @@ export function VenuesListing({ venues }: VenuesListingProps) {
       />
 
       <section>
-        <div className="mb-8 flex flex-col gap-5">
+        {isLoading && (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="size-8 animate-spin text-primary-container" />
+          </div>
+        )}
+        
+        {isError && (
+          <div className="flex h-64 items-center justify-center text-error">
+            <p>Failed to load venues. Please try again later.</p>
+          </div>
+        )}
+
+        {!isLoading && !isError && (
+          <>
+            <div className="mb-8 flex flex-col gap-5">
           {/* Header */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -254,6 +271,8 @@ export function VenuesListing({ venues }: VenuesListingProps) {
               Reset all filters
             </Button>
           </div>
+        )}
+        </>
         )}
       </section>
     </div>

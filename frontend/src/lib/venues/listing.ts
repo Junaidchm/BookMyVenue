@@ -27,11 +27,11 @@ export type VenueFilters = {
 };
 
 export const DEFAULT_FILTERS: VenueFilters = {
-  location: "London, UK",
+  location: "",
   capacity: 500,
   priceMin: "",
   priceMax: "",
-  eventTypes: ["Wedding Reception"],
+  eventTypes: [],
   amenities: [],
 };
 
