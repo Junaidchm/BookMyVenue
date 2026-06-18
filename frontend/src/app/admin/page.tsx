@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
-import { Search, Bell, Settings, Filter, Download, Users, CheckSquare, TrendingUp, ArrowUpRight, ArrowUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import React, { useMemo } from "react";
+import { Search, Bell, Settings, Filter, Download, Users, CheckSquare, ArrowUpRight, ArrowUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -79,41 +79,58 @@ const recentApprovals = [
 ];
 
 export default function AdminDashboard() {
+  // Dynamic date
+  const formattedDate = useMemo(() => {
+    return new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }, []);
+
   return (
     <div className="flex flex-col gap-8 pb-8">
       {/* Top Bar */}
-      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="relative w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input 
-            type="text" 
-            placeholder="Search venues, users, or reports..." 
-            className="pl-10 bg-gray-50/50 border-gray-200 focus-visible:ring-orange-500 rounded-full h-10"
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface p-4 rounded-xl border border-border-subtle shadow-elevation-card">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+          <Input
+            id="admin-search"
+            type="text"
+            placeholder="Search venues, users, or reports..."
+            className="pl-10 bg-surface-container-lowest border-border-subtle focus-visible:ring-ring rounded-full h-10"
           />
         </div>
-        <div className="flex items-center gap-4">
-          <button className="relative p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors">
+        <div className="flex items-center gap-2">
+          <button
+            className="relative p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors duration-200"
+            aria-label="Notifications — 3 unread"
+          >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-2 w-2 h-2 bg-orange-500 rounded-full border border-white"></span>
+            <span className="absolute top-1.5 right-2 w-2 h-2 bg-primary-container rounded-full border-2 border-surface animate-pulse" />
           </button>
-          <button className="p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors">
+          <button
+            className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors duration-200"
+            aria-label="Settings"
+          >
             <Settings className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {/* Header Section */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-1">Platform Overview</h1>
-          <p className="text-gray-500 text-sm">Sunday, May 31, 2026</p>
+          <h1 className="text-headline-md text-on-surface mb-1">Platform Overview</h1>
+          <p className="text-text-muted text-label-md">{formattedDate}</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex items-center gap-2 bg-white h-10 border-gray-200">
+          <Button variant="outline" className="flex items-center gap-2 bg-surface h-10 border-border-subtle hover:bg-surface-container-low transition-colors">
             <Filter className="w-4 h-4" />
             Filters
           </Button>
-          <Button variant="outline" className="flex items-center gap-2 bg-white h-10 border-gray-200">
+          <Button variant="outline" className="flex items-center gap-2 bg-surface h-10 border-border-subtle hover:bg-surface-container-low transition-colors">
             <Download className="w-4 h-4" />
             Export
           </Button>
@@ -123,60 +140,60 @@ export default function AdminDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total Revenue */}
-        <Card className="border-gray-100 shadow-sm bg-white overflow-hidden relative">
+        <Card className="border-border-subtle shadow-elevation-card bg-surface overflow-hidden relative group hover:shadow-elevation-card-hover transition-shadow duration-300">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-2">
-              <span className="text-sm font-medium text-gray-500">Total Revenue</span>
-              <Badge variant="secondary" className="bg-green-50 text-green-600 hover:bg-green-100 border-none px-2 py-0.5 flex gap-1 items-center font-medium">
+              <span className="text-label-md text-text-muted">Total Revenue</span>
+              <Badge variant="secondary" className="bg-status-success-bg text-status-success-text hover:bg-status-success-bg border-none px-2 py-0.5 flex gap-1 items-center font-medium">
                 <ArrowUpRight className="w-3 h-3" />
                 +12.5%
               </Badge>
             </div>
-            <div className="text-4xl font-bold text-gray-900 mb-6">$124,500</div>
-            
-            {/* Fake sparkline with SVG */}
-            <div className="absolute bottom-0 left-0 w-full h-24 pointer-events-none opacity-20">
-              <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full text-orange-500 fill-current">
-                <path d="M0,30 L0,20 C10,15 20,25 30,22 C40,18 50,10 60,15 C70,20 80,5 90,10 L100,15 L100,30 Z"></path>
+            <div className="text-4xl font-bold text-on-surface mb-6">$124,500</div>
+
+            {/* Sparkline area */}
+            <div className="absolute bottom-0 left-0 w-full h-24 pointer-events-none opacity-15 group-hover:opacity-25 transition-opacity duration-300">
+              <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full fill-primary-container">
+                <path d="M0,30 L0,20 C10,15 20,25 30,22 C40,18 50,10 60,15 C70,20 80,5 90,10 L100,15 L100,30 Z" />
               </svg>
             </div>
             <div className="absolute bottom-0 left-0 w-full h-24 pointer-events-none">
-              <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full text-orange-500 stroke-current" fill="none" strokeWidth="1">
-                <path d="M0,20 C10,15 20,25 30,22 C40,18 50,10 60,15 C70,20 80,5 90,10 L100,15"></path>
+              <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-full stroke-primary-container" fill="none" strokeWidth="1">
+                <path d="M0,20 C10,15 20,25 30,22 C40,18 50,10 60,15 C70,20 80,5 90,10 L100,15" />
               </svg>
             </div>
           </CardContent>
         </Card>
 
         {/* Active Users */}
-        <Card className="border-gray-100 shadow-sm bg-white">
+        <Card className="border-border-subtle shadow-elevation-card bg-surface group hover:shadow-elevation-card-hover transition-shadow duration-300">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
+              <div className="w-10 h-10 rounded-lg bg-primary-container/15 flex items-center justify-center text-primary-container">
                 <Users className="w-5 h-5" />
               </div>
-              <Badge variant="secondary" className="bg-green-50 text-green-600 hover:bg-green-100 border-none px-2 py-0.5 flex gap-1 items-center font-medium">
+              <Badge variant="secondary" className="bg-status-success-bg text-status-success-text hover:bg-status-success-bg border-none px-2 py-0.5 flex gap-1 items-center font-medium">
                 <ArrowUp className="w-3 h-3" />
                 +4%
               </Badge>
             </div>
-            <div className="text-sm font-medium text-gray-500 mb-1">Active Users</div>
-            <div className="text-2xl font-bold text-gray-900">8,249</div>
+            <div className="text-label-md text-text-muted mb-1">Active Users</div>
+            <div className="text-2xl font-bold text-on-surface">8,249</div>
           </CardContent>
         </Card>
 
         {/* Pending Approvals */}
-        <Card className="border-gray-100 shadow-sm bg-white">
+        <Card className="border-border-subtle shadow-elevation-card bg-surface group hover:shadow-elevation-card-hover transition-shadow duration-300">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center text-yellow-600 border border-yellow-100">
+              <div className="w-10 h-10 rounded-lg bg-status-warning-bg flex items-center justify-center text-status-warning-text border border-outline-variant/20">
                 <CheckSquare className="w-5 h-5" />
               </div>
             </div>
-            <div className="text-sm font-medium text-gray-500 mb-1">Pending Approvals</div>
+            <div className="text-label-md text-text-muted mb-1">Pending Approvals</div>
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold text-gray-900">24</div>
-              <span className="text-xs font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">Requires attention</span>
+              <div className="text-2xl font-bold text-on-surface">24</div>
+              <span className="text-xs font-medium text-status-warning-text bg-status-warning-bg px-2 py-0.5 rounded-full">Requires attention</span>
             </div>
           </CardContent>
         </Card>
@@ -185,10 +202,10 @@ export default function AdminDashboard() {
       {/* Middle Row: Charts & Lists */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Platform Activity Chart */}
-        <Card className="lg:col-span-2 border-gray-100 shadow-sm bg-white">
+        <Card className="lg:col-span-2 border-border-subtle shadow-elevation-card bg-surface">
           <CardHeader className="flex flex-row items-center justify-between pb-2 border-b-0">
-            <CardTitle className="text-xl font-bold text-gray-900">Platform Activity</CardTitle>
-            <Button variant="outline" size="sm" className="h-8 text-xs font-medium text-gray-600 border-gray-200 bg-white">
+            <CardTitle className="text-headline-sm text-on-surface">Platform Activity</CardTitle>
+            <Button variant="outline" size="sm" className="h-8 text-xs font-medium text-on-surface-variant border-border-subtle bg-surface hover:bg-surface-container-low">
               Last 30 Days
             </Button>
           </CardHeader>
@@ -196,29 +213,35 @@ export default function AdminDashboard() {
             <div className="h-[300px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={activityData} margin={{ top: 5, right: 20, bottom: 5, left: -20 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#9ca3af', fontSize: 12 }} 
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
                     dy={10}
                   />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#9ca3af', fontSize: 12 }} 
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
                   />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-subtle)',
+                      boxShadow: 'var(--shadow-card-hover)',
+                      backgroundColor: 'var(--surface)',
+                      color: 'var(--on-surface)',
+                    }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="value" 
-                    stroke="#0ea5e9" 
-                    strokeWidth={3} 
-                    dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#0ea5e9' }} 
-                    activeDot={{ r: 6, strokeWidth: 0, fill: '#0ea5e9' }}
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="var(--tertiary-container)"
+                    strokeWidth={3}
+                    dot={{ r: 4, strokeWidth: 2, fill: 'var(--surface)', stroke: 'var(--tertiary-container)' }}
+                    activeDot={{ r: 6, strokeWidth: 0, fill: 'var(--tertiary-container)' }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -227,29 +250,29 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Top Venues List */}
-        <Card className="border-gray-100 shadow-sm bg-white">
+        <Card className="border-border-subtle shadow-elevation-card bg-surface">
           <CardHeader className="flex flex-row items-center justify-between pb-2 border-b-0">
-            <CardTitle className="text-xl font-bold text-gray-900">Top Venues</CardTitle>
-            <Button variant="ghost" size="sm" className="h-8 text-xs font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 px-2 flex items-center gap-1">
+            <CardTitle className="text-headline-sm text-on-surface">Top Venues</CardTitle>
+            <Button variant="ghost" size="sm" className="h-8 text-xs font-medium text-primary-container hover:text-primary-container hover:bg-primary-container/10 px-2 flex items-center gap-1">
               View All <ArrowUpRight className="w-3 h-3" />
             </Button>
           </CardHeader>
           <CardContent className="mt-4 flex flex-col gap-6">
             {topVenues.map((venue) => (
-              <div key={venue.id} className="flex items-center justify-between">
+              <div key={venue.id} className="flex items-center justify-between group cursor-pointer rounded-lg p-2 -mx-2 hover:bg-surface-container-low transition-colors duration-200">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 rounded-lg border border-gray-100">
+                  <Avatar className="h-12 w-12 rounded-lg border border-border-subtle">
                     <AvatarImage src={venue.image} alt={venue.name} className="object-cover" />
-                    <AvatarFallback className="rounded-lg bg-gray-100 text-gray-500">VN</AvatarFallback>
+                    <AvatarFallback className="rounded-lg bg-surface-container text-text-muted">VN</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900">{venue.name}</h4>
-                    <p className="text-xs text-gray-500">{venue.location}</p>
+                    <h4 className="text-sm font-semibold text-on-surface">{venue.name}</h4>
+                    <p className="text-xs text-text-muted">{venue.location}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-bold text-gray-900">{venue.revenue}</div>
-                  <div className="text-xs font-medium text-green-600">{venue.bookings}</div>
+                  <div className="text-sm font-bold text-on-surface">{venue.revenue}</div>
+                  <div className="text-xs font-medium text-status-success-text">{venue.bookings}</div>
                 </div>
               </div>
             ))}
@@ -258,62 +281,64 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent Venue Approvals Table */}
-      <Card className="border-gray-100 shadow-sm bg-white">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 pb-4">
-          <CardTitle className="text-xl font-bold text-gray-900">Recent Venue Approvals</CardTitle>
-          <Button variant="secondary" size="sm" className="h-8 text-xs font-medium bg-orange-100 text-orange-700 hover:bg-orange-200">
+      <Card className="border-border-subtle shadow-elevation-card bg-surface">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-border-subtle pb-4">
+          <CardTitle className="text-headline-sm text-on-surface">Recent Venue Approvals</CardTitle>
+          <Button variant="secondary" size="sm" className="h-8 text-xs font-medium bg-primary-container/15 text-primary-container hover:bg-primary-container/25">
             View Queue
           </Button>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-transparent">
-              <TableRow className="border-b border-gray-100 hover:bg-transparent">
-                <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider py-4 pl-6">Venue Name</TableHead>
-                <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider py-4">Owner</TableHead>
-                <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider py-4">Category</TableHead>
-                <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider py-4">Date Submitted</TableHead>
-                <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider py-4">Status</TableHead>
-                <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider py-4 text-right pr-6">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentApprovals.map((approval) => (
-                <TableRow key={approval.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                  <TableCell className="pl-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10 rounded-lg border border-gray-100">
-                        <AvatarImage src={approval.image} alt={approval.name} className="object-cover" />
-                        <AvatarFallback className="rounded-lg bg-gray-100">VN</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium text-gray-900">{approval.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-4 text-sm text-gray-600">{approval.owner}</TableCell>
-                  <TableCell className="py-4 text-sm text-gray-600">{approval.category}</TableCell>
-                  <TableCell className="py-4 text-sm text-gray-600">{approval.date}</TableCell>
-                  <TableCell className="py-4">
-                    <Badge 
-                      variant="outline" 
-                      className={`font-medium border-0 px-2.5 py-0.5 ${
-                        approval.status === 'Approved' ? 'bg-green-50 text-green-700' :
-                        approval.status === 'Pending' ? 'bg-yellow-50 text-yellow-700' :
-                        'bg-red-50 text-red-700'
-                      }`}
-                    >
-                      {approval.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="py-4 text-right pr-6">
-                     <Button variant="ghost" size="sm" className="h-8 text-gray-400 hover:text-gray-900">
-                       <span className="sr-only">Open menu</span>
-                       ...
-                     </Button>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-transparent">
+                <TableRow className="border-b border-border-subtle hover:bg-transparent">
+                  <TableHead className="text-xs font-medium text-text-muted uppercase tracking-wider py-4 pl-6">Venue Name</TableHead>
+                  <TableHead className="text-xs font-medium text-text-muted uppercase tracking-wider py-4">Owner</TableHead>
+                  <TableHead className="text-xs font-medium text-text-muted uppercase tracking-wider py-4 hidden md:table-cell">Category</TableHead>
+                  <TableHead className="text-xs font-medium text-text-muted uppercase tracking-wider py-4 hidden sm:table-cell">Date Submitted</TableHead>
+                  <TableHead className="text-xs font-medium text-text-muted uppercase tracking-wider py-4">Status</TableHead>
+                  <TableHead className="text-xs font-medium text-text-muted uppercase tracking-wider py-4 text-right pr-6">Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {recentApprovals.map((approval) => (
+                  <TableRow key={approval.id} className="border-b border-border-subtle/50 hover:bg-surface-container-low/50 transition-colors duration-200">
+                    <TableCell className="pl-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10 rounded-lg border border-border-subtle">
+                          <AvatarImage src={approval.image} alt={approval.name} className="object-cover" />
+                          <AvatarFallback className="rounded-lg bg-surface-container">VN</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium text-on-surface">{approval.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4 text-sm text-on-surface-variant">{approval.owner}</TableCell>
+                    <TableCell className="py-4 text-sm text-on-surface-variant hidden md:table-cell">{approval.category}</TableCell>
+                    <TableCell className="py-4 text-sm text-on-surface-variant hidden sm:table-cell">{approval.date}</TableCell>
+                    <TableCell className="py-4">
+                      <Badge
+                        variant="outline"
+                        className={`font-medium border-0 px-2.5 py-0.5 ${
+                          approval.status === 'Approved' ? 'bg-status-success-bg text-status-success-text' :
+                          approval.status === 'Pending' ? 'bg-status-warning-bg text-status-warning-text' :
+                          'bg-error-container text-on-error-container'
+                        }`}
+                      >
+                        {approval.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-4 text-right pr-6">
+                       <Button variant="ghost" size="sm" className="h-8 text-text-muted hover:text-on-surface" aria-label={`Open menu for ${approval.name}`}>
+                         <span className="sr-only">Open menu</span>
+                         •••
+                       </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
