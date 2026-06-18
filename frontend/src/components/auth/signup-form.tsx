@@ -73,10 +73,10 @@ function getStrength(pwd: string) {
   if (/[A-Z]/.test(pwd)) s++;
   if (/[0-9]/.test(pwd)) s++;
   if (/[^A-Za-z0-9]/.test(pwd)) s++;
-  if (s <= 1) return { score: s, label: "Weak",   color: "bg-red-500" };
-  if (s === 2) return { score: s, label: "Fair",   color: "bg-amber-400" };
-  if (s === 3) return { score: s, label: "Good",   color: "bg-brand" };
-  return             { score: s, label: "Strong", color: "bg-emerald-500" };
+  if (s <= 1) return { score: s, label: "Weak", color: "bg-red-500" };
+  if (s === 2) return { score: s, label: "Fair", color: "bg-amber-400" };
+  if (s === 3) return { score: s, label: "Good", color: "bg-brand" };
+  return { score: s, label: "Strong", color: "bg-emerald-500" };
 }
 
 /* ── Divider ── */
@@ -111,13 +111,20 @@ export function SignupForm() {
     try {
       await authService.register({
         fullName: fd.get("name") as string,
-        email:    fd.get("email") as string,
+        email: fd.get("email") as string,
         password: fd.get("password") as string,
-        roles:    ["USER"],
+        roles: ["USER"],
       });
       router.push("/login?registered=true");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to register");
+    } catch (err: any) {
+      let errorMessage = "Failed to register";
+      if (err.response?.data?.message) {
+        const backendMsg = err.response.data.message;
+        errorMessage = Array.isArray(backendMsg) ? backendMsg.join(", ") : backendMsg;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -129,13 +136,16 @@ export function SignupForm() {
       {error && (
         <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700 animate-in fade-in slide-in-from-top-2 duration-200">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
-          <p className="text-xs font-medium">{error}</p>
+          <div className="flex flex-col">
+            <span className="text-[13px] font-semibold">Registration failed</span>
+            <span className="text-[12px]">{error}</span>
+          </div>
         </div>
       )}
 
       {/* Fields */}
-      <Field id="name"     label="Full name"      placeholder="Jane Doe"           autoComplete="name"         required />
-      <Field id="email"    label="Email address"  placeholder="name@example.com"  type="email"  autoComplete="email"  required />
+      <Field id="name" label="Full name" placeholder="Jane Doe" autoComplete="name" required />
+      <Field id="email" label="Email address" placeholder="name@example.com" type="email" autoComplete="email" required />
 
       <Field
         id="password"
@@ -164,9 +174,9 @@ export function SignupForm() {
           <div className="flex justify-between text-[11px]">
             <span className="text-stone-400">Password strength</span>
             <span className={cn("font-semibold",
-              strength.label === "Weak"   && "text-red-500",
-              strength.label === "Fair"   && "text-amber-500",
-              strength.label === "Good"   && "text-brand",
+              strength.label === "Weak" && "text-red-500",
+              strength.label === "Fair" && "text-amber-500",
+              strength.label === "Good" && "text-brand",
               strength.label === "Strong" && "text-emerald-500",
             )}>
               {strength.label}

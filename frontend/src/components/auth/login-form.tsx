@@ -13,6 +13,7 @@ import {
 } from "@/components/auth/auth-split-layout";
 import { AuthForm } from "@/components/auth/auth-form";
 import { PasswordField } from "@/components/auth/password-field";
+import { AlertCircle } from "lucide-react";
 
 export function LoginForm() {
   const router = useRouter();
@@ -53,8 +54,12 @@ export function LoginForm() {
   return (
     <AuthForm className="space-y-6" onSubmit={handleSubmit}>
       {error && (
-        <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg">
-          {error}
+        <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700 animate-in fade-in slide-in-from-top-2 duration-200">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          <div className="flex flex-col">
+            <span className="text-[13px] font-semibold">Sign-in failed</span>
+            <span className="text-[12px]">{error}</span>
+          </div>
         </div>
       )}
 
