@@ -27,18 +27,31 @@ async function runTests() {
     title: 'Grand Palace Hall',
     description: 'A luxurious hall for weddings and corporate events',
     category: 'wedding_hall',
-    basePrice: 150.00,
+    basePrice: 150.0,
     pricingType: PricingType.PER_SESSION,
     bufferTimeMinutes: 60,
-    imageUrls: ['http://example.com/image1.jpg', 'http://example.com/image2.jpg'],
+    imageUrls: [
+      'http://example.com/image1.jpg',
+      'http://example.com/image2.jpg',
+    ],
     amenities: validAmenityIds.slice(0, 2), // Pick first two valid amenities
     capacities: [
       { type: 'SEATING', maxPeople: 500 },
       { type: 'DINING', maxPeople: 300 },
     ],
     sessions: [
-      { name: 'Morning', startTime: '08:00 AM', endTime: '01:00 PM', sessionPrice: 600.00 },
-      { name: 'Evening', startTime: '04:00 PM', endTime: '10:00 PM', sessionPrice: 800.00 },
+      {
+        name: 'Morning',
+        startTime: '08:00',
+        endTime: '13:00',
+        sessionPrice: 600.0,
+      },
+      {
+        name: 'Evening',
+        startTime: '16:00',
+        endTime: '22:00',
+        sessionPrice: 800.0,
+      },
     ],
   };
 
@@ -48,16 +61,21 @@ async function runTests() {
   console.log('✅ Venue created successfully!');
   console.log(`- Venue ID: ${createdVenue.id}`);
   console.log(`- Title: ${createdVenue.title}`);
-  console.log(`- Capacities created: ${createdVenue.capacities.length} profiles`);
+  console.log(
+    `- Capacities created: ${createdVenue.capacities.length} profiles`,
+  );
   console.log(`- Sessions created: ${createdVenue.sessions.length} sessions`);
   console.log(`- Amenities linked: ${createdVenue.amenities.length} links`);
 
   // Assertions
-  if (createdVenue.title !== validPayload.title) throw new Error('Assertion failed: Title mismatch');
-  if (createdVenue.capacities.length !== 2) throw new Error('Assertion failed: Capacities count mismatch');
-  if (createdVenue.sessions.length !== 2) throw new Error('Assertion failed: Sessions count mismatch');
-  if (createdVenue.amenities.length !== 2) throw new Error('Assertion failed: Amenities count mismatch');
-
+  if (createdVenue.title !== validPayload.title)
+    throw new Error('Assertion failed: Title mismatch');
+  if (createdVenue.capacities.length !== 2)
+    throw new Error('Assertion failed: Capacities count mismatch');
+  if (createdVenue.sessions.length !== 2)
+    throw new Error('Assertion failed: Sessions count mismatch');
+  if (createdVenue.amenities.length !== 2)
+    throw new Error('Assertion failed: Amenities count mismatch');
 
   // =========================================================================
   // Test 2: Foreign Key Constraint Failure & Transaction Rollback Test
@@ -68,16 +86,15 @@ async function runTests() {
 
   const invalidPayload: CreateVenueDto = {
     title: 'Should Rollback Venue',
-    description: 'This venue should not be saved in DB because of invalid amenity',
+    description:
+      'This venue should not be saved in DB because of invalid amenity',
     category: 'auditorium',
-    basePrice: 100.00,
+    basePrice: 100.0,
     pricingType: PricingType.PER_HOUR,
     bufferTimeMinutes: 30,
     imageUrls: [],
     amenities: [99999], // Invalid non-existent amenity ID!
-    capacities: [
-      { type: 'SEATING', maxPeople: 100 },
-    ],
+    capacities: [{ type: 'SEATING', maxPeople: 100 }],
   };
 
   // Record initial count of venues
@@ -85,19 +102,28 @@ async function runTests() {
 
   try {
     await venueService.createVenue(ownerId, invalidPayload);
-    console.error('❌ Error: Transaction succeeded when it should have failed!');
+    console.error(
+      '❌ Error: Transaction succeeded when it should have failed!',
+    );
     throw new Error('Assertion failed: Transaction did not fail on invalid FK');
-  } catch (error: any) {
-    console.log('✅ Received expected transaction error due to invalid foreign key.');
-    console.log(`- Error Code/Message: ${error.code || error.message}`);
+  } catch (error: unknown) {
+    console.log(
+      '✅ Received expected transaction error due to invalid foreign key.',
+    );
+    const err = error as { code?: string; message?: string };
+    console.log(`- Error Code/Message: ${err.code || err.message}`);
 
     // Verify transaction rollback
     const finalCount = await prisma.venue.count();
     if (finalCount === initialCount) {
       console.log('✅ Rollback verified: No new venue records were persisted.');
     } else {
-      console.error(`❌ Rollback failed: Venue count increased from ${initialCount} to ${finalCount}`);
-      throw new Error('Assertion failed: Transaction was not rolled back');
+      console.error(
+        `❌ Rollback failed: Venue count increased from ${initialCount} to ${finalCount}`,
+      );
+      throw new Error('Assertion failed: Transaction was not rolled back', {
+        cause: error,
+      });
     }
   }
 
