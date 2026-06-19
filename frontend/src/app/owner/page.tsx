@@ -84,8 +84,6 @@ export default function OverviewPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [bookings, setBookings] = useState(initialBookings);
   const [notificationsCount, setNotificationsCount] = useState(3);
-  const [isAddVenueModalOpen, setIsAddVenueModalOpen] = useState(false);
-  const [newVenueName, setNewVenueName] = useState("");
   const [showPromoAlert, setShowPromoAlert] = useState(false);
 
   // Filter bookings based on search query
@@ -102,15 +100,6 @@ export default function OverviewPage() {
       );
       setBookings(filtered);
     }
-  };
-
-  // Mock adding a new booking/venue
-  const handleAddVenueSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newVenueName.trim()) return;
-    setIsAddVenueModalOpen(false);
-    alert(`Venue "${newVenueName}" added successfully to your portfolio!`);
-    setNewVenueName("");
   };
 
   return (
@@ -156,13 +145,13 @@ export default function OverviewPage() {
           </button>
 
           {/* + Add Venue Button */}
-          <button
-            onClick={() => setIsAddVenueModalOpen(true)}
+          <Link
+            href="/owner/venues/new"
             className="flex items-center gap-2 rounded-full bg-[#582200] px-5 py-3 text-label-md font-bold text-white shadow-lg shadow-[#582200]/10 transition-all duration-200 hover:bg-[#3c2d26] hover:-translate-y-0.5 active:scale-95"
           >
             <Plus className="h-4.5 w-4.5" />
             <span>Add Venue</span>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -419,54 +408,7 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {/* ─── ADD VENUE MODAL (PORTAL INTERACTION) ─────────────────────────────── */}
-      {isAddVenueModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setIsAddVenueModalOpen(false)}
-          />
-          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-elevation-floating border border-border-subtle animate-scale-up">
-            <h3 className="text-2xl font-bold text-on-surface mb-2">Add New Venue</h3>
-            <p className="text-body-md text-text-muted mb-4">
-              Add a gorgeous new listing to your BookMyVenue portfolio.
-            </p>
 
-            <form onSubmit={handleAddVenueSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-label-md text-on-surface font-semibold" htmlFor="venue-name">
-                  Venue Name
-                </label>
-                <input
-                  id="venue-name"
-                  type="text"
-                  placeholder="e.g. Skyline Rooftop Terrace"
-                  required
-                  value={newVenueName}
-                  onChange={(e) => setNewVenueName(e.target.value)}
-                  className="w-full rounded-xl border border-border-subtle px-4 py-3 text-body-md bg-white focus-ring-brand"
-                />
-              </div>
-
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsAddVenueModalOpen(false)}
-                  className="flex-1 rounded-full border border-border-subtle py-3 text-label-md font-bold text-on-surface hover:bg-stone-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 rounded-full bg-primary-container py-3 text-label-md font-bold text-white shadow-lg shadow-primary-container/20 hover:bg-[#e0620f] transition-all"
-                >
-                  Submit Listing
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
