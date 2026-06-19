@@ -49,6 +49,7 @@ const createServiceProxy = (targetUrl: string, prefix: string) => {
 
 app.use('/api/auth', createServiceProxy(env.AUTH_SERVICE_URL, 'auth'));
 app.use('/api/admin/users', createServiceProxy(env.AUTH_SERVICE_URL, 'admin/users'));
+app.use('/api/admin/venues', createServiceProxy(env.VENUE_SERVICE_URL, 'admin/venues'));
 app.use('/api/venues', createServiceProxy(env.VENUE_SERVICE_URL, 'venues'));
 app.use('/api/bookings', createServiceProxy(env.BOOKING_SERVICE_URL, 'bookings'));
 

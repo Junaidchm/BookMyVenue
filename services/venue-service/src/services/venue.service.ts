@@ -61,6 +61,43 @@ export class VenueService {
     return venue;
   }
 
+  // ─── Admin Methods ──────────────────────────────────────────────────────────
+
+  /**
+   * Retrieve all venues with PENDING status for admin review.
+   */
+  async getPendingVenues() {
+    return prisma.venue.findMany({
+      where: { status: 'PENDING' },
+      include: {
+        amenities: { include: { amenity: true } },
+        capacities: true,
+        sessions: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  /**
+   * Approve a pending venue by setting its status to APPROVED.
+   */
+  async approveVenue(id: number) {
+    return prisma.venue.update({
+      where: { id },
+      data: { status: 'APPROVED' },
+    });
+  }
+
+  /**
+   * Reject a pending venue by setting its status to REJECTED.
+   */
+  async rejectVenue(id: number) {
+    return prisma.venue.update({
+      where: { id },
+      data: { status: 'REJECTED' },
+    });
+  }
+
   /**
    * Creates a new venue and its related records (capacities, sessions, amenities)
    * in a single atomic transaction.

@@ -1,13 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 
+function extractRoles(req: Request): string[] {
+  const userRolesHeader = req.headers['x-user-roles'] as string | undefined;
+  if (!userRolesHeader) return [];
+  return userRolesHeader.split(',').map((r) => r.trim().toUpperCase());
+}
+
 export const requireOwner = (
   req: Request,
   res: Response,
   next: NextFunction,
 ): any => {
-  const userRolesHeader = req.headers['x-user-roles'] as string;
+  const roles = extractRoles(req);
 
-  if (!userRolesHeader) {
+  if (roles.length === 0) {
     return res.status(403).json({
       success: false,
       message:
@@ -16,12 +22,34 @@ export const requireOwner = (
   }
 
   // Gateway injects roles as a comma-separated string (e.g., "OWNER,USER")
-  const roles = userRolesHeader.split(',').map((r) => r.trim().toUpperCase());
-
   if (!roles.includes('OWNER')) {
     return res.status(403).json({
       success: false,
       message: 'Forbidden: Access restricted to venue owners.',
+    });
+  }
+
+  next();
+};
+
+export const requireAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): any => {
+  const roles = extractRoles(req);
+
+  if (roles.length === 0) {
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden: Access restricted to admins (missing role context).',
+    });
+  }
+
+  if (!roles.includes('ADMIN')) {
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden: Access restricted to admins.',
     });
   }
 
