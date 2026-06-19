@@ -11,7 +11,7 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
     req.path === '/api/auth/login' || 
     req.path === '/api/auth/register' ||
     req.path === '/api/auth/verify' ||
-    (req.path === '/api/venues' && req.method === 'GET');
+    (req.path.startsWith('/api/venues') && req.method === 'GET');
 
   if (isPublicRoute) {
     return next();
