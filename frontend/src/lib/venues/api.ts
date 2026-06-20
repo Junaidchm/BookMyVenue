@@ -1,4 +1,14 @@
 import { getApiBaseUrl } from "@/lib/api/config";
+import { getSession } from "next-auth/react";
+
+async function getAuthHeaders(): Promise<HeadersInit> {
+  if (typeof window !== "undefined") {
+    const session = await getSession();
+    const token = (session as any)?.token || (session as any)?.accessToken;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+  return {};
+}
 
 import type { Venue, VenueAmenity } from "./data";
 type ApiAmenity = {
@@ -167,9 +177,10 @@ export type CreateVenuePayload = {
 };
 
 export async function createVenue(payload: CreateVenuePayload): Promise<ApiVenue> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${getApiBaseUrl()}/venues`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { ...headers, "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify(payload),
   });
@@ -199,8 +210,10 @@ type UploadSignatureResponse = {
 };
 
 export async function getUploadSignature(): Promise<UploadSignatureResponse["data"]> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${getApiBaseUrl()}/venues/uploads/signature`, {
     method: "POST",
+    headers,
     credentials: "include",
   });
 
