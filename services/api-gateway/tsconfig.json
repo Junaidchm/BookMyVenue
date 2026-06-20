@@ -9,7 +9,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "skipLibCheck": true,
-    "strict": true,
+    "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true
   }
 }

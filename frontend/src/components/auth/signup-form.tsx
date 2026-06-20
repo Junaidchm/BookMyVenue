@@ -1,62 +1,130 @@
 "use client";
 
-import { Eye, EyeOff, Loader2, AlertCircle, Shield } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Search,
+  Store,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
 
 import { AuthForm } from "@/components/auth/auth-form";
 import { GoogleIcon } from "@/components/auth/auth-split-layout";
 import { cn } from "@/lib/utils";
-import { authService } from "@/services/auth.service";
 
-/* ── Clean minimal input field ── */
-function Field({
+type Role = "booker" | "owner";
+
+const ROLES: {
+  id: Role;
+  title: string;
+  description: string;
+  icon: ReactNode;
+}[] = [
+  {
+    id: "booker",
+    title: "Venue Booker",
+    description: "Discover and book unique spaces",
+    icon: <Search className="size-5" />,
+  },
+  {
+    id: "owner",
+    title: "Venue Owner",
+    description: "List and manage your property",
+    icon: <Store className="size-5" />,
+  },
+];
+
+function RoleSelector({
+  value,
+  onChange,
+}: {
+  value: Role;
+  onChange: (role: Role) => void;
+}) {
+  return (
+    <div className="mb-8 space-y-4">
+      <label className="ml-1 block text-label-md text-on-surface-variant">
+        What&apos;s your primary role?
+      </label>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {ROLES.map((role) => {
+          const selected = value === role.id;
+          return (
+            <button
+              key={role.id}
+              type="button"
+              onClick={() => onChange(role.id)}
+              className={cn(
+                "role-card group flex flex-col gap-2 p-4 focus:outline-none focus:ring-2 focus:ring-primary/20",
+                selected ? "role-card-selected" : "hover:bg-surface-bright"
+              )}
+            >
+              <div
+                className={cn(
+                  "flex size-10 items-center justify-center rounded-xl bg-surface-container transition-colors",
+                  selected && "bg-primary-container text-white"
+                )}
+              >
+                {role.icon}
+              </div>
+              <div>
+                <h3 className="font-display text-sm font-bold text-on-surface">
+                  {role.title}
+                </h3>
+                <p className="text-xs leading-tight text-on-surface-variant">
+                  {role.description}
+                </p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function IconField({
   id,
   label,
+  icon,
   type = "text",
   placeholder,
   autoComplete,
   trailing,
-  required,
-  value,
-  onChange,
 }: {
   id: string;
   label: string;
+  icon: ReactNode;
   type?: string;
   placeholder?: string;
   autoComplete?: string;
   trailing?: ReactNode;
-  required?: boolean;
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <label
+        className="ml-1 block text-label-md text-on-surface-variant"
         htmlFor={id}
-        className="block text-[13px] font-medium text-stone-700"
       >
         {label}
       </label>
-      <div className="relative">
+      <div className="group relative transition-transform duration-200 focus-within:scale-[1.01]">
+        <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-outline transition-colors group-focus-within:text-primary">
+          {icon}
+        </span>
         <input
           id={id}
           name={id}
           type={type}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          required={required}
-          value={value}
-          onChange={onChange}
           className={cn(
-            "w-full rounded-lg border border-stone-200 bg-stone-50 px-3.5 text-sm text-stone-900",
-            "placeholder:text-stone-400 outline-none",
-            "transition-all duration-150",
-            "focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/15",
-            "py-2.5",
-            trailing && "pr-10"
+            "auth-input pl-12 focus:auth-input-focus",
+            trailing ? "pr-12" : "pr-4"
           )}
         />
         {trailing}
@@ -65,174 +133,105 @@ function Field({
   );
 }
 
-/* ── Password strength ── */
-function getStrength(pwd: string) {
-  if (!pwd) return { score: 0, label: "", color: "" };
-  let s = 0;
-  if (pwd.length >= 8) s++;
-  if (/[A-Z]/.test(pwd)) s++;
-  if (/[0-9]/.test(pwd)) s++;
-  if (/[^A-Za-z0-9]/.test(pwd)) s++;
-  if (s <= 1) return { score: s, label: "Weak", color: "bg-red-500" };
-  if (s === 2) return { score: s, label: "Fair", color: "bg-amber-400" };
-  if (s === 3) return { score: s, label: "Good", color: "bg-brand" };
-  return { score: s, label: "Strong", color: "bg-emerald-500" };
-}
-
-/* ── Divider ── */
-function Divider() {
-  return (
-    <div className="relative my-1 flex items-center">
-      <div className="flex-1 border-t border-stone-200" />
-      <span className="mx-3 text-[11px] font-semibold uppercase tracking-widest text-stone-400">
-        or
-      </span>
-      <div className="flex-1 border-t border-stone-200" />
-    </div>
-  );
-}
-
-/* ── Main Component ── */
 export function SignupForm() {
-  const router = useRouter();
-  const [password, setPassword] = useState("");
-  const [showPwd, setShowPwd] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const strength = getStrength(password);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
-
-    const fd = new FormData(e.currentTarget);
-    try {
-      await authService.register({
-        fullName: fd.get("name") as string,
-        email: fd.get("email") as string,
-        password: fd.get("password") as string,
-        roles: ["USER"],
-      });
-      router.push("/login?registered=true");
-    } catch (err: any) {
-      let errorMessage = "Failed to register";
-      if (err.response?.data?.message) {
-        const backendMsg = err.response.data.message;
-        errorMessage = Array.isArray(backendMsg) ? backendMsg.join(", ") : backendMsg;
-      } else if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const [role, setRole] = useState<Role>("booker");
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   return (
-    <AuthForm className="flex flex-col gap-4" onSubmit={handleSubmit}>
-      {/* Error */}
-      {error && (
-        <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700 animate-in fade-in slide-in-from-top-2 duration-200">
-          <AlertCircle className="mt-0.5 size-4 shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-[13px] font-semibold">Registration failed</span>
-            <span className="text-[12px]">{error}</span>
-          </div>
-        </div>
-      )}
+    <AuthForm className="space-y-5">
+      <RoleSelector value={role} onChange={setRole} />
+      <input type="hidden" name="role" value={role} />
 
-      {/* Fields */}
-      <Field id="name" label="Full name" placeholder="Jane Doe" autoComplete="name" required />
-      <Field id="email" label="Email address" placeholder="name@example.com" type="email" autoComplete="email" required />
+      <IconField
+        id="name"
+        label="Full Name"
+        icon={<User className="size-5" />}
+        placeholder="Jane Doe"
+        autoComplete="name"
+      />
 
-      <Field
+      <IconField
+        id="email"
+        label="Email Address"
+        icon={<Mail className="size-5" />}
+        type="email"
+        placeholder="name@example.com"
+        autoComplete="email"
+      />
+
+      <IconField
         id="password"
         label="Password"
-        type={showPwd ? "text" : "password"}
-        placeholder="At least 8 characters"
+        icon={<Lock className="size-5" />}
+        type={passwordVisible ? "text" : "password"}
+        placeholder="••••••••"
         autoComplete="new-password"
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
         trailing={
           <button
             type="button"
-            tabIndex={-1}
-            onClick={() => setShowPwd((v) => !v)}
-            className="absolute inset-y-0 right-3 flex items-center text-stone-400 hover:text-stone-600 transition-colors"
+            onClick={() => setPasswordVisible((v) => !v)}
+            className="absolute top-1/2 right-4 -translate-y-1/2 text-outline transition-colors hover:text-on-surface"
+            aria-label={passwordVisible ? "Hide password" : "Show password"}
           >
-            {showPwd ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            {passwordVisible ? (
+              <EyeOff className="size-5" />
+            ) : (
+              <Eye className="size-5" />
+            )}
           </button>
         }
       />
 
-      {/* Strength bar */}
-      {password && (
-        <div className="-mt-1 space-y-1 animate-in fade-in duration-200">
-          <div className="flex justify-between text-[11px]">
-            <span className="text-stone-400">Password strength</span>
-            <span className={cn("font-semibold",
-              strength.label === "Weak" && "text-red-500",
-              strength.label === "Fair" && "text-amber-500",
-              strength.label === "Good" && "text-brand",
-              strength.label === "Strong" && "text-emerald-500",
-            )}>
-              {strength.label}
-            </span>
-          </div>
-          <div className="h-1 w-full overflow-hidden rounded-full bg-stone-100">
-            <div
-              className={cn("h-full rounded-full transition-all duration-500", strength.color)}
-              style={{ width: `${(strength.score / 4) * 100}%` }}
-            />
-          </div>
+      <div className="flex items-start gap-3 pt-1">
+        <div className="flex h-5 items-center">
+          <input
+            id="terms"
+            name="terms"
+            type="checkbox"
+            className="size-4 cursor-pointer rounded border-outline-variant text-primary focus:ring-primary/20"
+          />
         </div>
-      )}
-
-      {/* Terms */}
-      <label className="flex cursor-pointer items-start gap-2.5">
-        <input
-          id="terms"
-          name="terms"
-          type="checkbox"
-          required
-          className="mt-0.5 size-3.5 cursor-pointer accent-brand rounded"
-        />
-        <span className="text-[12px] leading-snug text-stone-500">
+        <label
+          className="cursor-pointer text-label-sm text-on-surface-variant"
+          htmlFor="terms"
+        >
           I agree to the{" "}
-          <Link href="#" className="font-semibold text-brand hover:underline">Terms of Service</Link>
-          {" "}and{" "}
-          <Link href="#" className="font-semibold text-brand hover:underline">Privacy Policy</Link>
-        </span>
-      </label>
+          <Link href="#" className="font-bold text-primary hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="#" className="font-bold text-primary hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </label>
+      </div>
 
-      {/* CTA */}
       <button
         type="submit"
-        disabled={isLoading}
-        className="flex w-full items-center justify-center rounded-lg bg-brand py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
+        className="mt-2 w-full rounded-xl bg-primary-container py-4 text-label-md text-white shadow-lg shadow-primary-container/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary-container active:scale-[0.98]"
       >
-        {isLoading ? <Loader2 className="size-4 animate-spin" /> : "Create account"}
+        Create Account
       </button>
 
-      <Divider />
+      <div className="relative py-4">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-solid border-[var(--outline-variant)]" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-background px-4 text-label-sm text-outline">
+            OR
+          </span>
+        </div>
+      </div>
 
-      {/* Google */}
       <button
         type="button"
-        className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-stone-200 bg-white py-2.5 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 active:scale-[0.98]"
+        className="group flex w-full items-center justify-center gap-3 rounded-xl border border-solid border-[var(--outline-variant)] bg-white py-3.5 text-label-md text-on-surface transition-all duration-200 hover:bg-surface-container-low active:scale-[0.98]"
       >
         <GoogleIcon />
         Continue with Google
       </button>
-
-      {/* SSL badge */}
-      <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-400">
-        <Shield className="size-3 text-emerald-500" />
-        Enterprise-grade 256-bit SSL encryption
-      </div>
     </AuthForm>
   );
 }

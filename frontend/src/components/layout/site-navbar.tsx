@@ -4,8 +4,6 @@ import Link from "next/link";
 import { Building2, Menu, X } from "lucide-react";
 import { useState } from "react";
 
-import { useAuth } from "@/components/auth/session-provider";
-
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -16,7 +14,6 @@ const NAV_LINKS = [
 
 export function SiteNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, isLoading, isAuthenticated, signOut } = useAuth();
 
   return (
     <>
@@ -49,40 +46,18 @@ export function SiteNavbar() {
           </ul>
 
           <div className="hidden items-center gap-3 md:flex">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="text-label-md text-text-muted transition-colors hover:text-on-surface"
-                >
-                  Dashboard
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => signOut()}
-                  className="rounded-full border border-border-subtle px-5 py-2.5 text-label-md text-on-surface hover:bg-surface-container-low transition-colors"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : isLoading ? (
-              <div className="h-10 w-24 animate-pulse rounded-full bg-surface-container-low" />
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-label-md text-text-muted transition-colors hover:text-on-surface"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/signup"
-                  className="rounded-full bg-primary-container px-5 py-2.5 text-label-md text-white shadow-md shadow-primary-container/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
+            <Link
+              href="/login"
+              className="text-label-md text-text-muted transition-colors hover:text-on-surface"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/signup"
+              className="rounded-full bg-primary-container px-5 py-2.5 text-label-md text-white shadow-md shadow-primary-container/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              Get Started
+            </Link>
           </div>
 
           <button
@@ -142,46 +117,20 @@ export function SiteNavbar() {
         </ul>
 
         <div className="mt-auto flex flex-col gap-3 pt-8">
-          {isAuthenticated ? (
-            <>
-              <Link
-                href="/dashboard"
-                className="rounded-full border border-border-subtle py-3 text-center text-label-md text-on-surface transition-colors hover:bg-surface-container-low"
-                onClick={() => setMobileOpen(false)}
-              >
-                Dashboard
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false);
-                  signOut();
-                }}
-                className="rounded-full bg-primary-container py-3 text-center text-label-md text-white shadow-md shadow-primary-container/20"
-              >
-                Sign Out
-              </button>
-            </>
-          ) : isLoading ? (
-            <div className="h-10 animate-pulse rounded-full bg-surface-container-low" />
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="rounded-full border border-border-subtle py-3 text-center text-label-md text-on-surface transition-colors hover:bg-surface-container-low"
-                onClick={() => setMobileOpen(false)}
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
-                className="rounded-full bg-primary-container py-3 text-center text-label-md text-white shadow-md shadow-primary-container/20"
-                onClick={() => setMobileOpen(false)}
-              >
-                Get Started
-              </Link>
-            </>
-          )}
+          <Link
+            href="/login"
+            className="rounded-full border border-border-subtle py-3 text-center text-label-md text-on-surface transition-colors hover:bg-surface-container-low"
+            onClick={() => setMobileOpen(false)}
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/signup"
+            className="rounded-full bg-primary-container py-3 text-center text-label-md text-white shadow-md shadow-primary-container/20"
+            onClick={() => setMobileOpen(false)}
+          >
+            Get Started
+          </Link>
         </div>
       </div>
     </>

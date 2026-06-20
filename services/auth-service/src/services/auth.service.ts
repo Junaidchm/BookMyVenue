@@ -45,7 +45,7 @@ export class AuthService {
     }
 
     // Verify password
-    const isPasswordValid = await this.comparePassword(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       throw new Error('Invalid email or password.');
     }
@@ -87,9 +87,5 @@ export class AuthService {
   private async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
     return bcrypt.hash(password, saltRounds);
-  }
-
-  private async comparePassword(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash);
   }
 }
