@@ -23,6 +23,9 @@ type ApiCapacity = {
 };
 
 type ApiSession = {
+  name: string;
+  startTime: string;
+  endTime: string;
   sessionPrice: string | number;
 };
 
@@ -126,6 +129,14 @@ export function mapApiVenueToVenue(venue: ApiVenue): Venue {
     city,
     capacity: Math.max(0, ...venue.capacities.map((c) => c.maxPeople)),
     pricePerDay: toDailyPrice(venue),
+    pricingType: venue.pricingType,
+    basePrice: Number(venue.basePrice),
+    sessions: venue.sessions?.map((s) => ({
+      name: s.name,
+      startTime: s.startTime,
+      endTime: s.endTime,
+      sessionPrice: Number(s.sessionPrice),
+    })) ?? [],
     rating: 4.8,
     reviewCount: 0,
     description: venue.description ?? "",
