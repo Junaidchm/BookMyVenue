@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import { useAuth } from "@/components/auth/session-provider";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -30,6 +31,7 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { signOut } = useAuth();
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -117,7 +119,7 @@ export default function AdminLayout({
         </Link>
 
         <button
-          onClick={() => router.push("/login")}
+          onClick={() => signOut()}
           className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface-variant hover:bg-error-container/30 hover:text-error rounded-lg w-full transition-colors duration-200"
           aria-label="Logout from admin console"
         >

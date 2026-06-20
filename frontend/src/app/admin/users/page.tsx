@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getUsers } from "@/lib/admin/api";
 import {
   Search, Filter, UserPlus, Monitor, AlertTriangle,
   MoreVertical, ChevronLeft, ChevronRight, TrendingUp,
@@ -201,6 +203,38 @@ export default function UsersPage() {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Fetch users
+  const { data: fetchedUsers, isLoading, error } = useQuery({
+    queryKey: ["admin-users"],
+    queryFn: getUsers,
+  });
+
+  useEffect(() => {
+    if (fetchedUsers) {
+      const mappedUsers: UserData[] = fetchedUsers.map((u) => {
+        const isOwner = u.userRoles.some((r) => r.role.name === "OWNER");
+        return {
+          id: u.id,
+          name: u.fullName,
+          email: u.email,
+          role: isOwner ? "Venue Owner" : "Venue Booker",
+          joinDate: new Date(u.createdAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+          }),
+          joinTimestamp: new Date(u.createdAt).getTime(),
+          activityMain: "-",
+          activitySub: isOwner && u.ownerProfile?.businessName ? `Business: ${u.ownerProfile.businessName}` : "Active",
+          image: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.fullName)}&background=random`,
+          isReported: false,
+          status: "active",
+        };
+      });
+      setUsers(mappedUsers);
+    }
+  }, [fetchedUsers]);
 
   // Dialog states
   const [viewUser, setViewUser] = useState<UserData | null>(null);
@@ -520,7 +554,22 @@ export default function UsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedUsers.length === 0 ? (
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-16 text-center">
+                        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                        <p className="text-sm font-medium text-on-surface">Loading users...</p>
+                      </TableCell>
+                    </TableRow>
+                  ) : error ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-16 text-center">
+                        <AlertTriangle className="w-10 h-10 text-error/60 mx-auto mb-3" />
+                        <p className="text-sm font-medium text-on-surface mb-1">Failed to load users</p>
+                        <p className="text-xs text-text-muted">{(error as Error).message}</p>
+                      </TableCell>
+                    </TableRow>
+                  ) : paginatedUsers.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="py-16 text-center">
                         <Search className="w-10 h-10 text-text-muted/30 mx-auto mb-3" />

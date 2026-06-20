@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "@/lib/api/config";
+import { getSession } from "next-auth/react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,24 @@ type AdminVenuesResponse = {
   data: PendingVenue[];
 };
 
+export type AdminUser = {
+  id: number;
+  email: string;
+  fullName: string;
+  createdAt: string;
+  updatedAt: string;
+  userRoles: { role: { name: string } }[];
+  ownerProfile?: {
+    phoneNumber?: string;
+    businessName?: string;
+  } | null;
+};
+
+type AdminUsersResponse = {
+  success: boolean;
+  data: AdminUser[];
+};
+
 type AdminVenueActionResponse = {
   success: boolean;
   message: string;
@@ -43,13 +62,15 @@ type AdminVenueActionResponse = {
 // ─── Auth Helper ─────────────────────────────────────────────────────────────
 
 /**
- * Reads the JWT from localStorage and returns Authorization headers.
- * The key 'bmv_token' is shared across the app for token storage.
+ * Retrieves the NextAuth session and returns Authorization headers.
  */
-function getAuthHeaders(): HeadersInit {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("bmv_token") : null;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+async function getAuthHeaders(): Promise<HeadersInit> {
+  if (typeof window !== "undefined") {
+    const session = await getSession();
+    const token = session?.accessToken;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+  return {};
 }
 
 // ─── API Calls ───────────────────────────────────────────────────────────────
@@ -59,10 +80,11 @@ function getAuthHeaders(): HeadersInit {
  * Requires the caller to be authenticated as ADMIN.
  */
 export async function getPendingVenues(): Promise<PendingVenue[]> {
-  const res = await fetch(`${getApiBaseUrl()}/api/admin/venues/pending`, {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/admin/venues/pending`, {
     credentials: "include",
     cache: "no-store",
-    headers: getAuthHeaders(),
+    headers,
   });
 
   if (!res.ok) {
@@ -80,10 +102,11 @@ export async function getPendingVenues(): Promise<PendingVenue[]> {
  * Approve a venue by ID.
  */
 export async function approveVenue(id: number): Promise<void> {
-  const res = await fetch(`${getApiBaseUrl()}/api/admin/venues/${id}/approve`, {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/admin/venues/${id}/approve`, {
     method: "PATCH",
     credentials: "include",
-    headers: getAuthHeaders(),
+    headers,
   });
 
   if (!res.ok) {
@@ -98,10 +121,11 @@ export async function approveVenue(id: number): Promise<void> {
  * Reject a venue by ID.
  */
 export async function rejectVenue(id: number): Promise<void> {
-  const res = await fetch(`${getApiBaseUrl()}/api/admin/venues/${id}/reject`, {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/admin/venues/${id}/reject`, {
     method: "PATCH",
     credentials: "include",
-    headers: getAuthHeaders(),
+    headers,
   });
 
   if (!res.ok) {
@@ -111,3 +135,26 @@ export async function rejectVenue(id: number): Promise<void> {
     );
   }
 }
+
+/**
+ * Fetch all users for the admin dashboard.
+ */
+export async function getUsers(): Promise<AdminUser[]> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/admin/users`, {
+    credentials: "include",
+    cache: "no-store",
+    headers,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to fetch users"
+    );
+  }
+
+  const body = (await res.json()) as AdminUsersResponse;
+  return body.data ?? [];
+}
+
