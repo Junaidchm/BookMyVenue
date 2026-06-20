@@ -3,20 +3,25 @@ import { toast } from "sonner";
 import { getSession } from "next-auth/react";
 
 const getBaseURL = (): string => {
+  let publicUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  if (!publicUrl.endsWith('/api')) {
+    publicUrl += '/api';
+  }
+
   if (typeof window !== "undefined") {
-    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    return publicUrl;
   }
 
   try {
     const fs = require("fs");
     if (fs.existsSync("/.dockerenv")) {
-      return process.env.NEXT_PUBLIC_API_URL || "http://api-gateway:8000/api";
+      return process.env.INTERNAL_API_URL || "http://api-gateway:8000/api";
     }
   } catch {
     // fs package or checking not available
   }
 
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  return publicUrl;
 };
 
 export const API_BASE_URL = getBaseURL();
