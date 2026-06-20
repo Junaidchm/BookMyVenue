@@ -12,7 +12,7 @@ type PastBookingItemProps = {
 
 export function PastBookingItem({ booking }: PastBookingItemProps) {
   return (
-    <Card className="gap-0 rounded-xl border border-[color:var(--outline-variant)]/20 bg-surface-container-lowest py-0 transition-colors hover:bg-surface-container-low">
+    <Card className="gap-0 rounded-xl border border-border-subtle bg-surface py-0 transition-colors hover:bg-surface-container-low">
       <CardContent className="flex flex-col items-center gap-4 p-4 md:flex-row">
         <div className="relative h-24 w-full shrink-0 overflow-hidden rounded-lg md:w-32">
           <Image
@@ -26,7 +26,7 @@ export function PastBookingItem({ booking }: PastBookingItemProps) {
 
         <div className="w-full flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h4 className="text-label-md text-brand-muted">{booking.venue}</h4>
+            <h4 className="text-label-md text-on-surface font-semibold">{booking.venue}</h4>
             <Badge
               variant="outline"
               className="rounded-md border-transparent bg-surface text-label-sm text-on-surface-variant"
@@ -34,7 +34,7 @@ export function PastBookingItem({ booking }: PastBookingItemProps) {
               {STATUS_LABELS[booking.status]}
             </Badge>
           </div>
-          <p className="mt-1 text-sm text-on-surface-variant">
+          <p className="mt-1 text-sm text-text-muted">
             {booking.dateLocation}
           </p>
         </div>
@@ -43,14 +43,14 @@ export function PastBookingItem({ booking }: PastBookingItemProps) {
           <Button
             variant="outline"
             size="sm"
-            className="rounded-full border-brand-muted/20 text-brand-muted hover:bg-brand-muted/5"
+            className="rounded-full border-primary-container text-primary-container hover:bg-primary-container/10"
           >
             Leave Review
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-full border-[color:var(--outline-variant)] text-on-surface hover:bg-surface-variant"
+            className="rounded-full border-border-subtle text-on-surface hover:bg-surface-container-low"
           >
             Book Again
           </Button>

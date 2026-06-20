@@ -20,7 +20,7 @@ export function UserHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-50 mx-auto flex h-20 max-w-[var(--container-max)] items-center justify-between border-b border-[color:var(--outline-variant)]/30 bg-surface/80 px-margin-mobile shadow-sm backdrop-blur-md md:hidden">
+    <header className="fixed top-0 right-0 left-0 z-50 mx-auto flex h-20 max-w-[var(--container-max)] items-center justify-between border-b border-border-subtle bg-surface/80 px-4 shadow-sm backdrop-blur-md md:hidden">
       <div className="flex items-center gap-4">
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
@@ -40,9 +40,10 @@ export function UserHeader() {
         </Sheet>
         <Link
           href="/user"
-          className="font-display text-headline-md tracking-tight text-brand-muted"
+          className="text-xl font-bold"
         >
-          BookMyVenue
+          <span className="text-on-surface">BookMy</span>
+          <span className="text-primary-container">Venue</span>
         </Link>
       </div>
 
@@ -65,13 +66,13 @@ export function UserHeader() {
         </Button>
         <Separator
           orientation="vertical"
-          className="ml-2 hidden h-6 bg-[color:var(--outline-variant)]/30 sm:block"
+          className="ml-2 hidden h-6 bg-border-subtle sm:block"
         />
         <div className="hidden items-center gap-3 sm:flex">
           <span className="text-label-md text-on-surface">
             {USER_PROFILE.name}
           </span>
-          <Avatar className="size-8 border border-[color:var(--outline-variant)]">
+          <Avatar className="size-8 border border-border-subtle">
             <AvatarImage src={USER_PROFILE.avatar} alt={USER_PROFILE.name} />
             <AvatarFallback>J</AvatarFallback>
           </Avatar>

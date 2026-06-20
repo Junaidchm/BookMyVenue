@@ -20,7 +20,7 @@ type UpcomingBookingCardProps = {
 
 export function UpcomingBookingCard({ booking }: UpcomingBookingCardProps) {
   return (
-    <Card className="group gap-0 overflow-hidden rounded-3xl border border-[color:var(--outline-variant)]/30 bg-surface-container-lowest py-0 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <Card className="group gap-0 overflow-hidden rounded-xl border border-border-subtle bg-surface py-0 shadow-elevation-card transition-all duration-300 hover:-translate-y-1 hover:shadow-elevation-card-hover">
       <div className="relative aspect-[4/3] w-full overflow-hidden">
         <Image
           src={booking.image}
@@ -42,25 +42,25 @@ export function UpcomingBookingCard({ booking }: UpcomingBookingCardProps) {
 
       <CardContent className="flex flex-1 flex-col p-stack-md">
         <div className="mb-2 flex items-start justify-between gap-2">
-          <h3 className="line-clamp-1 font-display text-headline-sm text-brand-muted">
+          <h3 className="line-clamp-1 text-lg font-bold text-on-surface">
             {booking.venue}
           </h3>
           <Badge
             variant="outline"
-            className="shrink-0 rounded-md border-[color:var(--outline-variant)]/20 bg-surface text-label-md text-on-surface-variant"
+            className="shrink-0 rounded-md border-border-subtle bg-surface text-label-md text-text-muted"
           >
             {booking.reference}
           </Badge>
         </div>
 
-        <p className="mb-4 flex items-center gap-2 text-body-md text-on-surface-variant">
+        <p className="mb-4 flex items-center gap-2 text-body-md text-text-muted">
           <MapPin className="size-4 shrink-0" />
           {booking.location}
         </p>
 
-        <div className="mt-auto flex items-center justify-between rounded-xl bg-surface-container p-4">
+        <div className="mt-auto flex items-center justify-between rounded-xl bg-surface-container-low p-4">
           <div>
-            <p className="mb-1 text-label-sm tracking-wider text-on-surface-variant uppercase">
+            <p className="mb-1 text-label-sm tracking-wider text-text-muted uppercase">
               Date & Time
             </p>
             <p className="text-label-md text-on-surface">{booking.dateTime}</p>
@@ -68,7 +68,7 @@ export function UpcomingBookingCard({ booking }: UpcomingBookingCardProps) {
           <Button
             variant="outline"
             size="icon"
-            className="size-10 rounded-full border-[color:var(--outline-variant)] bg-surface-container-lowest text-brand-muted hover:bg-surface-variant"
+            className="size-10 rounded-full border-border-subtle bg-surface text-on-surface hover:bg-surface-container-low"
             asChild
           >
             <Link href={booking.href} aria-label={`View ${booking.venue}`}>
