@@ -255,7 +255,7 @@ export default function ApprovalsPage() {
         </div>
 
         {/* Filter */}
-        <button className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-600">
+        <Button className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-600">
           <Filter className="w-4 h-4" />
           All Categories
         </Button>
