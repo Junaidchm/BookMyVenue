@@ -1,51 +1,66 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
-import { Building2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Building2, ChevronLeft } from "lucide-react";
 
 import { SignupForm } from "@/components/auth/signup-form";
 import { SignupHeroPanel } from "@/components/auth/signup-hero-panel";
 
-export const metadata: Metadata = {
-  title: "Sign Up | BookMyVenue",
-  description: "Create your BookMyVenue account",
-};
-
 export default function SignUpPage() {
+  const router = useRouter();
+
   return (
-    <main className="flex min-h-screen flex-col overflow-hidden bg-background text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed md:flex-row">
+    <main className="flex min-h-screen bg-white text-on-surface">
+      {/* ── Left Testimonial Panel ── */}
       <SignupHeroPanel />
 
-      <section className="flex min-h-screen w-full items-center justify-center bg-background px-6 py-12 md:w-1/2 md:px-12 lg:w-2/5 lg:px-20">
-        <div className="w-full max-w-md">
-          <div className="mb-12 flex items-center gap-2 md:hidden">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-primary-container">
-              <Building2 className="size-4 text-white" />
+      {/* ── Right Form Section ── */}
+      {/* flex-1 so it takes remaining half; items-center + justify-center to vertically & horizontally center the form block */}
+      <section className="flex flex-1 items-center justify-center min-h-screen bg-white px-6 py-10">
+        <div className="w-full max-w-sm flex flex-col gap-8">
+
+          {/* Brand + Back */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex size-7 items-center justify-center rounded-md bg-brand">
+                <Building2 className="size-3.5 text-white" />
+              </div>
+              <span className="font-display text-sm font-bold text-stone-900">
+                BookMy<span className="text-brand">Venue</span>
+              </span>
             </div>
-            <span className="font-display text-headline-sm text-on-surface">
-              BookMy<span className="text-brand-muted">Venue</span>
-            </span>
+
+            <button
+              onClick={() => router.back()}
+              className="flex size-8 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 hover:bg-stone-50 transition-colors"
+              aria-label="Go back"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
           </div>
 
-          <div className="mb-10">
-            <h1 className="mb-3 font-display text-4xl text-on-surface">
+          {/* Heading */}
+          <div className="space-y-1">
+            <h1 className="font-display text-[1.65rem] font-bold tracking-tight text-stone-900">
               Create your account
             </h1>
-            <p className="text-body-md text-on-surface-variant">
+            <p className="text-sm text-stone-500">
               Start your journey with the world&apos;s most unique venues.
             </p>
           </div>
 
+          {/* Form */}
           <SignupForm />
 
-          <p className="mt-10 text-center text-body-md text-on-surface-variant">
+          {/* Footer */}
+          <p className="text-center text-[13px] text-stone-500">
             Already have an account?{" "}
-            <Link
-              href="/login"
-              className="font-bold text-primary transition-all hover:underline"
-            >
+            <Link href="/login" className="font-semibold text-brand hover:underline">
               Sign in
             </Link>
           </p>
+
         </div>
       </section>
     </main>
