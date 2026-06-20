@@ -133,7 +133,7 @@ export function mapApiVenueToVenue(venue: ApiVenue): Venue {
 }
 
 export async function getVenues(): Promise<Venue[]> {
-  const res = await fetch(`${getApiBaseUrl()}/api/venues`);
+  const res = await fetch(`${getApiBaseUrl()}/venues`);
   if (!res.ok) {
     throw new Error("Failed to fetch venues");
   }
@@ -167,7 +167,7 @@ export type CreateVenuePayload = {
 };
 
 export async function createVenue(payload: CreateVenuePayload): Promise<ApiVenue> {
-  const res = await fetch(`${getApiBaseUrl()}/api/venues`, {
+  const res = await fetch(`${getApiBaseUrl()}/venues`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -199,7 +199,7 @@ type UploadSignatureResponse = {
 };
 
 export async function getUploadSignature(): Promise<UploadSignatureResponse["data"]> {
-  const res = await fetch(`${getApiBaseUrl()}/api/venues/uploads/signature`, {
+  const res = await fetch(`${getApiBaseUrl()}/venues/uploads/signature`, {
     method: "POST",
     credentials: "include",
   });
