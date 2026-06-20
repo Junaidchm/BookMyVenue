@@ -9,17 +9,17 @@ import {
   MapPin,
   HelpCircle,
   LogOut,
-  Menu,
-  X,
+  FileText,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useAuth } from "@/components/auth/session-provider";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Approvals", href: "/admin/approvals", icon: CheckSquare },
-  { label: "Reports", href: "/admin/reports", icon: BarChart2, comingSoon: true },
+  { label: "Reports", href: "/admin/reports", icon: BarChart2 },
   { label: "Users", href: "/admin/users", icon: Users },
-  { label: "Venues", href: "/admin/venues", icon: MapPin, comingSoon: true },
+  { label: "Venues", href: "/admin/venues", icon: MapPin },
 ];
 
 export default function AdminLayout({
@@ -29,150 +29,90 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Close sidebar on route change (mobile)
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname]);
-
-  // Close sidebar on Escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSidebarOpen(false);
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, []);
-
-  const sidebarContent = (
-    <>
-      <div>
-        {/* Logo */}
-        <div className="mb-6 px-2">
-          <h1 className="text-xl font-bold">
-            <span className="text-on-surface">BookMy</span>
-            <span className="text-primary-container">Venue</span>
-          </h1>
-        </div>
-
-        {/* Admin Profile */}
-        <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="w-10 h-10 rounded-full bg-surface-container overflow-hidden ring-2 ring-outline-variant/30">
-            <img
-              src="https://i.pravatar.cc/40?img=3"
-              alt="Admin avatar"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div>
-            <p className="font-semibold text-sm text-on-surface">Admin Console</p>
-            <p className="text-xs text-text-muted">Marketplace Control</p>
-          </div>
-        </div>
-
-        {/* Nav Items */}
-        <nav className="flex flex-col gap-1" aria-label="Admin navigation">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.comingSoon ? "#" : item.href}
-                aria-current={isActive ? "page" : undefined}
-                aria-disabled={item.comingSoon ? "true" : undefined}
-                onClick={item.comingSoon ? (e) => e.preventDefault() : undefined}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
-                  item.comingSoon
-                    ? "text-text-muted/50 cursor-not-allowed"
-                    : isActive
-                    ? "bg-primary-container/15 text-primary-container shadow-sm"
-                    : "text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface"
-                }`}
-              >
-                <Icon className={`w-4 h-4 transition-transform duration-200 ${
-                  isActive ? "scale-110" : "group-hover:scale-105"
-                }`} />
-                <span className="flex-1">{item.label}</span>
-                {item.comingSoon && (
-                  <span className="text-[10px] font-semibold uppercase tracking-wider bg-surface-container text-text-muted px-1.5 py-0.5 rounded-full">
-                    Soon
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Bottom */}
-      <div className="flex flex-col gap-1 border-t border-border-subtle pt-4">
-        <Link
-          href="mailto:support@bookmyvenue.com"
-          className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors duration-200"
-        >
-          <HelpCircle className="w-4 h-4" />
-          Help Center
-        </Link>
-
-        <button
-          onClick={() => router.push("/login")}
-          className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface-variant hover:bg-error-container/30 hover:text-error rounded-lg w-full transition-colors duration-200"
-          aria-label="Logout from admin console"
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </button>
-      </div>
-    </>
-  );
+  const { signOut } = useAuth();
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Mobile Hamburger */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-surface rounded-lg shadow-card border border-border-subtle text-on-surface hover:bg-surface-container-low transition-colors"
-        aria-label="Open navigation menu"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
+    <div className="flex min-h-screen bg-[#FDF8F4]">
+      <aside className="w-64 bg-white border-r border-gray-100 flex flex-col justify-between py-6 px-4 fixed h-full">
+        <div>
+          {/* Logo */}
+          <div className="mb-6 px-2">
+            <h1 className="text-xl font-bold">
+              <span className="text-gray-900">BookMy</span>
+              <span className="text-orange-500">Venue</span>
+              </h1>
+          </div>
 
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-40 animate-in fade-in duration-200"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+          {/* Admin Profile */}
+          <div className="flex items-center gap-3 mb-8 px-2">
+            <div className="w-10 h-10 rounded-full bg-orange-200 overflow-hidden">
+              <img
+                src="https://i.pravatar.cc/40?img=3"
+                alt="Admin"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-gray-900">Admin Console</p>
+              <p className="text-xs text-gray-500">Marketplace Control</p>
+            </div>
+          </div>
 
-      {/* Sidebar */}
-      <aside
-        className={`
-          fixed h-full z-50 w-64 bg-surface border-r border-border-subtle flex flex-col justify-between py-6 px-4
-          transition-transform duration-300 ease-out
-          lg:translate-x-0 lg:z-auto
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
-      >
-        {/* Mobile close button */}
-        <button
-          onClick={() => setSidebarOpen(false)}
-          className="lg:hidden absolute top-4 right-4 p-1.5 rounded-md text-text-muted hover:bg-surface-container-low hover:text-on-surface transition-colors"
-          aria-label="Close navigation menu"
-        >
-          <X className="w-4 h-4" />
-        </button>
+          {/* Nav Items */}
+          <nav className="flex flex-col gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-orange-100 text-orange-600"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
-        {sidebarContent}
+        {/* Bottom */}
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => alert("Report generation coming soon!")}
+            className="w-full bg-orange-700 hover:bg-orange-800 text-white text-sm font-medium py-2.5 px-4 rounded-lg flex items-center gap-2"
+          >
+            <FileText className="w-4 h-4" />
+            Generate Report
+          </button>
+
+          <hr className="border-black-200 my-1" />
+
+          <Link
+            href="mailto:support@bookmyvenue.com"
+            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg"
+          >
+            <HelpCircle className="w-4 h-4" />
+            Help Center
+          </Link>
+
+          <button
+            onClick={() => signOut()}
+            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg w-full"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 min-w-0">
-        {children}
-      </main>
+      <main className="ml-64 flex-1 p-8">{children}</main>
     </div>
   );
 }

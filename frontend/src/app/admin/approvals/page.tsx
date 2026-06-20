@@ -241,25 +241,21 @@ export default function ApprovalsPage() {
       </div>
 
       {/* Search + Filter + Stats */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex gap-4 mb-6">
         {/* Search */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-          <Input
-            id="approval-search"
+        <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5">
+          <Search className="w-4 h-4 text-gray-400" />
+          <input
             type="text"
             placeholder="Search by venue name or category..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-11 border-border-subtle focus-visible:ring-ring rounded-lg bg-surface"
+            className="flex-1 outline-none text-sm text-gray-700"
           />
         </div>
 
         {/* Filter */}
-        <Button
-          variant="outline"
-          className="flex items-center gap-2 bg-surface border-border-subtle text-on-surface-variant h-11 hover:bg-surface-container-low"
-        >
+        <button className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-600">
           <Filter className="w-4 h-4" />
           All Categories
         </Button>
@@ -415,6 +411,7 @@ export default function ApprovalsPage() {
                       </Badge>
                     </div>
                   </div>
+                </div>
 
                   {/* Price */}
                   <p className="text-sm font-semibold text-primary-container mb-4">

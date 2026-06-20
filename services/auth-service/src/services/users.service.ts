@@ -91,25 +91,4 @@ export class UsersService {
       },
     });
   }
-
-  async findAllUsers() {
-    const users = await prisma.user.findMany({
-      include: {
-        userRoles: {
-          include: {
-            role: true,
-          },
-        },
-      },
-    });
-
-    return users.map((user) => ({
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      roles: user.userRoles.map((ur) => ur.role.name),
-    }));
-  }
 }

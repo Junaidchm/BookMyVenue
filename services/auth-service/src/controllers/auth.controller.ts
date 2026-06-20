@@ -77,4 +77,12 @@ export class AuthController {
       next(err);
     }
   };
+
+  logout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      res.status(200).json({ success: true, message: 'Logged out successfully' });
+    } catch (err: any) {
+      next(err);
+    }
+  };
 }

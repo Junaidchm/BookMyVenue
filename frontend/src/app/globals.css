@@ -441,11 +441,9 @@
 }
 
 @utility hero-gradient {
-  background: linear-gradient(
-    to bottom,
-    rgb(0 0 0 / 0) 60%,
-    rgb(0 0 0 / 0.4) 100%
-  );
+  background: linear-gradient(to bottom,
+      rgb(0 0 0 / 0) 60%,
+      rgb(0 0 0 / 0.4) 100%);
 }
 
 @utility auth-input {

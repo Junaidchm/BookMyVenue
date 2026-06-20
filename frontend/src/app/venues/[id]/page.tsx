@@ -10,17 +10,21 @@ import { VenueAmenities } from "@/components/venues/venue-amenities";
 import { VenueBookingCard } from "@/components/venues/venue-booking-card";
 import { VenueGallery } from "@/components/venues/venue-gallery";
 import { VenueReviews } from "@/components/venues/venue-reviews";
-import { getVenueById } from "@/lib/venues/api";
+import { getAllVenueIds, getVenue } from "@/lib/venues/data";
 
 type VenuePageProps = {
   params: Promise<{ id: string }>;
 };
 
+export async function generateStaticParams() {
+  return getAllVenueIds().map((id) => ({ id }));
+}
+
 export async function generateMetadata({
   params,
 }: VenuePageProps): Promise<Metadata> {
   const { id } = await params;
-  const venue = await getVenueById(id);
+  const venue = getVenue(id);
   if (!venue) return { title: "Venue Not Found | BookMyVenue" };
   return {
     title: `${venue.name} | BookMyVenue`,
@@ -30,7 +34,7 @@ export async function generateMetadata({
 
 export default async function VenueDetailPage({ params }: VenuePageProps) {
   const { id } = await params;
-  const venue = await getVenueById(id);
+  const venue = getVenue(id);
 
   if (!venue) {
     notFound();

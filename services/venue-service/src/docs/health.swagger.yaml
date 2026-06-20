@@ -2,25 +2,7 @@ paths:
   /health:
     get:
       summary: Health check endpoint
-      description: Returns the health status of the venue-service. Used by orchestrators and load balancers to verify service availability.
       tags: [Health]
       responses:
         200:
           description: Service is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: object
-                    properties:
-                      status:
-                        type: string
-                        example: UP
-                      service:
-                        type: string
-                        example: venue-service

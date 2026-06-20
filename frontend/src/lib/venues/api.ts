@@ -34,11 +34,6 @@ type VenuesApiResponse = {
   data: ApiVenue[];
 };
 
-type VenueApiResponse = {
-  success: boolean;
-  data: ApiVenue;
-};
-
 const CATEGORY_EVENT_TYPES: Record<string, string[]> = {
   wedding_hall: ["Wedding Reception"],
   corporate: ["Corporate Gala"],
@@ -147,25 +142,7 @@ export async function getVenues(): Promise<Venue[]> {
   return (body.data ?? []).map(mapApiVenueToVenue);
 }
 
-export async function getVenueById(id: string): Promise<Venue | null> {
-  const res = await fetch(`${getApiBaseUrl()}/api/venues/${id}`, {
-    cache: "no-store",
-  });
-
-  if (res.status === 404) {
-    return null;
-  }
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch venue ${id}`);
-  }
-
-  const body = (await res.json()) as VenueApiResponse;
-  return mapApiVenueToVenue(body.data);
-}
-
 // ─── Venue Creation ────────────────────────────────────────────────────────
-
 
 export type CreateVenuePayload = {
   title: string;
@@ -257,4 +234,3 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   const body = await res.json();
   return body.secure_url as string;
 }
-

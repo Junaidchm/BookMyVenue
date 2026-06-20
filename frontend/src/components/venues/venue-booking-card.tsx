@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -89,14 +88,12 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
         </div>
 
         {/* CTA */}
-        <Link href={`/venues/${venue.id}/reserve`} className="w-full">
-          <Button
-            size="lg"
-            className="w-full rounded-full bg-primary-container py-6 text-label-md text-white shadow-lg shadow-primary-container/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary-container active:scale-[0.98]"
-          >
-            Reserve Now
-          </Button>
-        </Link>
+        <Button
+          size="lg"
+          className="w-full rounded-full bg-primary-container py-6 text-label-md text-white shadow-lg shadow-primary-container/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary-container active:scale-[0.98]"
+        >
+          Reserve Now
+        </Button>
 
         <p className="text-center text-label-sm text-text-muted">
           You won&apos;t be charged yet

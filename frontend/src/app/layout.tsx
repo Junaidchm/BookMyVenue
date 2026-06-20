@@ -1,7 +1,8 @@
 import { Plus_Jakarta_Sans, Syne } from "next/font/google";
 import "./globals.css";
-
+import { AuthProvider } from "@/components/auth/session-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { Toaster } from "sonner";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -10,7 +11,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 const syne = Syne({
   subsets: ["latin"],
-  variable: "--font-syne",
+  variable: "--font-syne"
 });
 
 export default function RootLayout({
@@ -24,7 +25,10 @@ export default function RootLayout({
       className={`${plusJakarta.variable} ${syne.variable}`}
     >
       <body>
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryProvider>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );
