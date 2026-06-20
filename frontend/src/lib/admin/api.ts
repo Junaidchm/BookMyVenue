@@ -34,6 +34,24 @@ type AdminVenuesResponse = {
   data: PendingVenue[];
 };
 
+export type AdminUser = {
+  id: number;
+  email: string;
+  fullName: string;
+  createdAt: string;
+  updatedAt: string;
+  userRoles: { role: { name: string } }[];
+  ownerProfile?: {
+    phoneNumber?: string;
+    businessName?: string;
+  } | null;
+};
+
+type AdminUsersResponse = {
+  success: boolean;
+  data: AdminUser[];
+};
+
 type AdminVenueActionResponse = {
   success: boolean;
   message: string;
@@ -111,3 +129,25 @@ export async function rejectVenue(id: number): Promise<void> {
     );
   }
 }
+
+/**
+ * Fetch all users for the admin dashboard.
+ */
+export async function getUsers(): Promise<AdminUser[]> {
+  const res = await fetch(`${getApiBaseUrl()}/api/admin/users`, {
+    credentials: "include",
+    cache: "no-store",
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to fetch users"
+    );
+  }
+
+  const body = (await res.json()) as AdminUsersResponse;
+  return body.data ?? [];
+}
+

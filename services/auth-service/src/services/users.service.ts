@@ -91,4 +91,18 @@ export class UsersService {
       },
     });
   }
+
+  async findAllUsers() {
+    return await prisma.user.findMany({
+      include: {
+        userRoles: {
+          include: {
+            role: true,
+          },
+        },
+        ownerProfile: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }
