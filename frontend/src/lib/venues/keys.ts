@@ -4,4 +4,6 @@ export const venueKeys = {
   list: () => [...venueKeys.lists()] as const,
   details: () => [...venueKeys.all, "detail"] as const,
   detail: (id: string) => [...venueKeys.details(), id] as const,
+  mutations: () => [...venueKeys.all, "mutation"] as const,
+  create: () => [...venueKeys.mutations(), "create"] as const,
 };

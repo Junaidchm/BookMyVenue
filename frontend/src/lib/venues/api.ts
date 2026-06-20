@@ -34,11 +34,6 @@ type VenuesApiResponse = {
   data: ApiVenue[];
 };
 
-type VenueApiResponse = {
-  success: boolean;
-  data: ApiVenue;
-};
-
 const CATEGORY_EVENT_TYPES: Record<string, string[]> = {
   wedding_hall: ["Wedding Reception"],
   corporate: ["Corporate Gala"],
@@ -147,19 +142,95 @@ export async function getVenues(): Promise<Venue[]> {
   return (body.data ?? []).map(mapApiVenueToVenue);
 }
 
-export async function getVenueById(id: string): Promise<Venue | null> {
-  const res = await fetch(`${getApiBaseUrl()}/api/venues/${id}`, {
-    cache: "no-store",
+// ─── Venue Creation ────────────────────────────────────────────────────────
+
+export type CreateVenuePayload = {
+  title: string;
+  description?: string;
+  category: string;
+  basePrice: number;
+  pricingType: "PER_HOUR" | "PER_SESSION";
+  bufferTimeMinutes: number;
+  imageUrls: string[];
+  amenities: number[];
+  capacities: {
+    type: string;
+    maxPeople: number;
+    isSeparate: boolean;
+  }[];
+  sessions?: {
+    name: string;
+    startTime: string;
+    endTime: string;
+    sessionPrice: number;
+  }[];
+};
+
+export async function createVenue(payload: CreateVenuePayload): Promise<ApiVenue> {
+  const res = await fetch(`${getApiBaseUrl()}/api/venues`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
   });
 
-  if (res.status === 404) {
-    return null;
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to create venue"
+    );
   }
+
+  const body = await res.json();
+  return body.data as ApiVenue;
+}
+
+// ─── Cloudinary Upload ─────────────────────────────────────────────────────
+
+type UploadSignatureResponse = {
+  success: boolean;
+  data: {
+    signature: string;
+    timestamp: number;
+    apiKey: string;
+    cloudName: string;
+    uploadPreset: string;
+  };
+};
+
+export async function getUploadSignature(): Promise<UploadSignatureResponse["data"]> {
+  const res = await fetch(`${getApiBaseUrl()}/api/venues/uploads/signature`, {
+    method: "POST",
+    credentials: "include",
+  });
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch venue ${id}`);
+    throw new Error("Failed to get upload signature");
   }
 
-  const body = (await res.json()) as VenueApiResponse;
-  return mapApiVenueToVenue(body.data);
+  const body = (await res.json()) as UploadSignatureResponse;
+  return body.data;
+}
+
+export async function uploadToCloudinary(file: File): Promise<string> {
+  const sig = await getUploadSignature();
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("api_key", sig.apiKey);
+  formData.append("timestamp", String(sig.timestamp));
+  formData.append("signature", sig.signature);
+  formData.append("upload_preset", sig.uploadPreset);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
+    { method: "POST", body: formData }
+  );
+
+  if (!res.ok) {
+    throw new Error("Image upload failed");
+  }
+
+  const body = await res.json();
+  return body.secure_url as string;
 }
