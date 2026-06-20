@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/auth/session-provider";
 
 // Active menu items list matching the dashboard/owner sidebar
 const navigationItems = [
@@ -32,6 +33,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { signOut } = useAuth();
 
   return (
     <div className="flex min-h-screen bg-background font-sans text-text-primary antialiased">
@@ -100,13 +102,13 @@ export default function DashboardLayout({
               <Settings className="h-5 w-5 shrink-0" />
               <span>Settings</span>
             </Link>
-            <Link
-              href="/login"
-              className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-label-md transition-all duration-200 text-text-muted hover:bg-red-50 hover:text-red-600"
+            <button
+              onClick={() => signOut()}
+              className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-label-md transition-all duration-200 text-text-muted hover:bg-red-50 hover:text-red-600 w-full text-left"
             >
               <LogOut className="h-5 w-5 shrink-0" />
               <span>Logout</span>
-            </Link>
+            </button>
           </div>
         </div>
       </aside>
@@ -203,14 +205,16 @@ export default function DashboardLayout({
               <Settings className="h-5 w-5 shrink-0" />
               <span>Settings</span>
             </Link>
-            <Link
-              href="/login"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-label-md text-text-muted hover:bg-red-50 hover:text-red-600"
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                signOut();
+              }}
+              className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-label-md text-text-muted hover:bg-red-50 hover:text-red-600 w-full text-left"
             >
               <LogOut className="h-5 w-5 shrink-0" />
               <span>Logout</span>
-            </Link>
+            </button>
           </div>
         </div>
 
