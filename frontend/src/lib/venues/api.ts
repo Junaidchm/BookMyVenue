@@ -152,6 +152,17 @@ export async function getVenues(): Promise<Venue[]> {
   return (body.data ?? []).map(mapApiVenueToVenue);
 }
 
+export async function getVenueById(id: string | number): Promise<Venue | undefined> {
+  const res = await fetch(`${getApiBaseUrl()}/venues/${id}`);
+  if (!res.ok) {
+    if (res.status === 404) return undefined;
+    throw new Error("Failed to fetch venue");
+  }
+
+  const body = (await res.json()) as { success: boolean; data: ApiVenue };
+  return mapApiVenueToVenue(body.data);
+}
+
 // ─── Venue Creation ────────────────────────────────────────────────────────
 
 export type CreateVenuePayload = {
