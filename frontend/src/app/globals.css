@@ -152,10 +152,10 @@
   --text-label-sm-size: 0.75rem;
   --text-label-sm-lh: 1;
 
-  /* Shadows (soft elevation per DESIGN.md §2.2) */
-  --shadow-card: 0 1px 2px 0 color-mix(in oklab, var(--on-surface) 6%, transparent);
-  --shadow-card-hover: 0 4px 6px -1px color-mix(in oklab, var(--on-surface) 8%, transparent);
-  --shadow-floating: 0 20px 25px -5px color-mix(in oklab, #e7e5e4 50%, transparent);
+  /* Shadows (smooth modern shadow design system) */
+  --shadow-card: 0 10px 30px -10px color-mix(in oklab, var(--on-surface) 8%, transparent), 0 1px 3px 0 color-mix(in oklab, var(--on-surface) 4%, transparent);
+  --shadow-card-hover: 0 20px 40px -15px color-mix(in oklab, var(--on-surface) 14%, transparent), 0 1px 4px 0 color-mix(in oklab, var(--on-surface) 6%, transparent);
+  --shadow-floating: 0 30px 60px -15px color-mix(in oklab, var(--on-surface) 18%, transparent);
 }
 
 /* shadcn semantic aliases — CTAs use sunset orange */

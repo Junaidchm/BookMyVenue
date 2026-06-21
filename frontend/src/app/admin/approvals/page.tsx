@@ -108,11 +108,10 @@ function ToastContainer({ toasts }: { toasts: Toast[] }) {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-elevation-card-hover text-sm font-medium animate-in slide-in-from-right duration-300 pointer-events-auto ${
-            toast.type === "success"
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-elevation-card-hover text-sm font-medium animate-in slide-in-from-right duration-300 pointer-events-auto ${toast.type === "success"
               ? "bg-status-success-bg text-status-success-text border border-status-success-text/20"
               : "bg-error-container text-on-error-container border border-on-error-container/20"
-          }`}
+            }`}
         >
           {toast.type === "success" ? (
             <CheckCircle className="w-4 h-4 shrink-0" />
@@ -264,10 +263,7 @@ export default function ApprovalsPage() {
         </div>
 
         {/* Filter */}
-        <Button
-          variant="outline"
-          className="flex items-center gap-2 bg-surface border-border-subtle text-on-surface-variant h-11 hover:bg-surface-container-low"
-        >
+        <Button variant="outline" className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-600">
           <Filter className="w-4 h-4" />
           All Categories
         </Button>
@@ -357,11 +353,10 @@ export default function ApprovalsPage() {
             return (
               <Card
                 key={venue.id}
-                className={`border-border-subtle shadow-elevation-card bg-surface overflow-hidden group hover:shadow-elevation-card-hover transition-all duration-300 ${
-                  isExiting
+                className={`border-border-subtle shadow-elevation-card bg-surface overflow-hidden group hover:shadow-elevation-card-hover transition-all duration-300 ${isExiting
                     ? "opacity-0 scale-95 translate-y-2"
                     : "opacity-100 scale-100 translate-y-0"
-                }`}
+                  }`}
               >
                 {/* Image */}
                 <div className="relative overflow-hidden">
@@ -424,149 +419,150 @@ export default function ApprovalsPage() {
                     </div>
                   </div>
 
-                  {/* Price */}
-                  <p className="text-sm font-semibold text-primary-container mb-4">
-                    ₹{Number(venue.basePrice).toLocaleString()}
-                    {venue.pricingType === "PER_HOUR" ? "/hr" : "/session"}
-                  </p>
+                {/* Price */}
+                <p className="text-sm font-semibold text-primary-container mb-4">
+                  ₹{Number(venue.basePrice).toLocaleString()}
+                  {venue.pricingType === "PER_HOUR" ? "/hr" : "/session"}
+                </p>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="flex-1 border-border-subtle text-on-surface-variant text-sm font-medium h-10 hover:bg-surface-container-low gap-1"
-                        >
-                          <Building2 className="w-3.5 h-3.5" />
-                          Details
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle className="text-xl font-bold">{venue.title}</DialogTitle>
-                          <DialogDescription>
-                            Owner ID #{venue.ownerId} • Submitted {formatTimeAgo(venue.createdAt)}
-                          </DialogDescription>
-                        </DialogHeader>
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-border-subtle text-on-surface-variant text-sm font-medium h-10 hover:bg-surface-container-low gap-1"
+                      >
+                        <Building2 className="w-3.5 h-3.5" />
+                        Details
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="text-xl font-bold">{venue.title}</DialogTitle>
+                        <DialogDescription>
+                          Owner ID #{venue.ownerId} • Submitted {formatTimeAgo(venue.createdAt)}
+                        </DialogDescription>
+                      </DialogHeader>
 
-                        <div className="space-y-6 mt-2">
-                          {/* Images */}
-                          {venue.imageUrls && venue.imageUrls.length > 0 ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                              {venue.imageUrls.map((url, idx) => (
-                                <img
-                                  key={idx}
-                                  src={url}
-                                  alt={`Venue image ${idx + 1}`}
-                                  className="w-full h-32 object-cover rounded-lg border border-border-subtle"
-                                />
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="w-full h-40 bg-surface-container-low rounded-lg border border-border-subtle flex items-center justify-center text-text-muted">
-                              No images provided
-                            </div>
-                          )}
-
-                          {/* Basic Info */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <h4 className="font-semibold text-sm text-text-muted mb-1">Category</h4>
-                              <Badge variant="outline" className="text-xs bg-surface-container-low">
-                                {formatCategory(venue.category)}
-                              </Badge>
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-sm text-text-muted mb-1">Pricing</h4>
-                              <p className="text-sm font-medium text-primary-container">
-                                ₹{Number(venue.basePrice).toLocaleString()}{" "}
-                                {venue.pricingType === "PER_HOUR" ? "/ hr" : "/ session"}
-                              </p>
-                            </div>
+                      <div className="space-y-6 mt-2">
+                        {/* Images */}
+                        {venue.imageUrls && venue.imageUrls.length > 0 ? (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {venue.imageUrls.map((url, idx) => (
+                              <img
+                                key={idx}
+                                src={url}
+                                alt={`Venue image ${idx + 1}`}
+                                className="w-full h-32 object-cover rounded-lg border border-border-subtle"
+                              />
+                            ))}
                           </div>
+                        ) : (
+                          <div className="w-full h-40 bg-surface-container-low rounded-lg border border-border-subtle flex items-center justify-center text-text-muted">
+                            No images provided
+                          </div>
+                        )}
 
-                          {/* Description */}
+                        {/* Basic Info */}
+                        <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <h4 className="font-semibold text-sm text-text-muted mb-1">Description</h4>
-                            <p className="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">
-                              {venue.description || <span className="text-text-muted italic">No description provided.</span>}
+                            <h4 className="font-semibold text-sm text-text-muted mb-1">Category</h4>
+                            <Badge variant="outline" className="text-xs bg-surface-container-low">
+                              {formatCategory(venue.category)}
+                            </Badge>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm text-text-muted mb-1">Pricing</h4>
+                            <p className="text-sm font-medium text-primary-container">
+                              ₹{Number(venue.basePrice).toLocaleString()}{" "}
+                              {venue.pricingType === "PER_HOUR" ? "/ hr" : "/ session"}
                             </p>
                           </div>
+                        </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {/* Capacities */}
-                            <div>
-                              <h4 className="font-semibold text-sm text-text-muted mb-2">Capacities</h4>
-                              {venue.capacities && venue.capacities.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
-                                  {venue.capacities.map((cap, idx) => (
-                                    <Badge key={idx} variant="secondary" className="bg-surface-container text-on-surface border-0 text-xs">
-                                      {cap.type}: <strong className="ml-1">{cap.maxPeople}</strong>
-                                    </Badge>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-text-muted italic">Not specified</p>
-                              )}
-                            </div>
+                        {/* Description */}
+                        <div>
+                          <h4 className="font-semibold text-sm text-text-muted mb-1">Description</h4>
+                          <p className="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">
+                            {venue.description || <span className="text-text-muted italic">No description provided.</span>}
+                          </p>
+                        </div>
 
-                            {/* Amenities */}
-                            <div>
-                              <h4 className="font-semibold text-sm text-text-muted mb-2">Amenities</h4>
-                              {venue.amenities && venue.amenities.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
-                                  {venue.amenities.map((am, idx) => (
-                                    <Badge key={idx} variant="outline" className="text-xs bg-surface">
-                                      {am.amenity.name}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-text-muted italic">Not specified</p>
-                              )}
-                            </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          {/* Capacities */}
+                          <div>
+                            <h4 className="font-semibold text-sm text-text-muted mb-2">Capacities</h4>
+                            {venue.capacities && venue.capacities.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {venue.capacities.map((cap, idx) => (
+                                  <Badge key={idx} variant="secondary" className="bg-surface-container text-on-surface border-0 text-xs">
+                                    {cap.type}: <strong className="ml-1">{cap.maxPeople}</strong>
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-text-muted italic">Not specified</p>
+                            )}
+                          </div>
+
+                          {/* Amenities */}
+                          <div>
+                            <h4 className="font-semibold text-sm text-text-muted mb-2">Amenities</h4>
+                            {venue.amenities && venue.amenities.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {venue.amenities.map((am, idx) => (
+                                  <Badge key={idx} variant="outline" className="text-xs bg-surface">
+                                    {am.amenity.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-text-muted italic">Not specified</p>
+                            )}
                           </div>
                         </div>
-                      </DialogContent>
-                    </Dialog>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
 
-                    <Button
-                      id={`approve-btn-${venue.id}`}
-                      onClick={() => handleApprove(venue)}
-                      disabled={isActing}
-                      className="flex-1 bg-status-success-bg text-status-success-text hover:bg-status-success-bg/80 text-sm font-medium h-10 border-0 shadow-none gap-1 disabled:opacity-60"
-                      aria-label={`Approve ${venue.title}`}
-                    >
-                      {isActing ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <CheckCircle className="w-3.5 h-3.5" />
-                      )}
-                      Approve
-                    </Button>
+                  <Button
+                    id={`approve-btn-${venue.id}`}
+                    onClick={() => handleApprove(venue)}
+                    disabled={isActing}
+                    className="flex-1 bg-status-success-bg text-status-success-text hover:bg-status-success-bg/80 text-sm font-medium h-10 border-0 shadow-none gap-1 disabled:opacity-60"
+                    aria-label={`Approve ${venue.title}`}
+                  >
+                    {isActing ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle className="w-3.5 h-3.5" />
+                    )}
+                    Approve
+                  </Button>
 
-                    <Button
-                      id={`reject-btn-${venue.id}`}
-                      onClick={() => handleReject(venue)}
-                      disabled={isActing}
-                      className="flex-1 bg-error-container text-on-error-container hover:bg-error-container/80 text-sm font-medium h-10 border-0 shadow-none gap-1 disabled:opacity-60"
-                      aria-label={`Reject ${venue.title}`}
-                    >
-                      {isActing ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <XCircle className="w-3.5 h-3.5" />
-                      )}
-                      Reject
-                    </Button>
-                  </div>
-                </CardContent>
+                  <Button
+                    id={`reject-btn-${venue.id}`}
+                    onClick={() => handleReject(venue)}
+                    disabled={isActing}
+                    className="flex-1 bg-error-container text-on-error-container hover:bg-error-container/80 text-sm font-medium h-10 border-0 shadow-none gap-1 disabled:opacity-60"
+                    aria-label={`Reject ${venue.title}`}
+                  >
+                    {isActing ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <XCircle className="w-3.5 h-3.5" />
+                    )}
+                    Reject
+                  </Button>
+                </div>
+              </CardContent>
               </Card>
-            );
+      );
           })}
-        </div>
-      )}
     </div>
+  )
+}
+    </div >
   );
 }
