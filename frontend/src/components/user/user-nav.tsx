@@ -48,13 +48,13 @@ export function UserNav({ onNavigate, className }: UserNavProps) {
 
   return (
     <div className={cn("flex h-full flex-col", className)}>
-      <div className="mb-8 flex items-center gap-3 rounded-2xl bg-[#FDF7F3] p-4">
-        <Avatar className="size-10 border border-[color:var(--outline-variant)]">
+      <div className="mb-8 flex items-center gap-3 rounded-2xl bg-surface-container p-4">
+        <Avatar className="size-10 border border-border-subtle">
           <AvatarImage src={USER_PROFILE.avatar} alt={USER_PROFILE.name} />
           <AvatarFallback>{USER_PROFILE.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
-          <span className="text-label-sm text-on-surface-variant">
+          <span className="text-label-sm text-text-muted">
             Welcome back,
           </span>
           <span className="font-display text-label-lg font-bold text-on-surface">
@@ -76,8 +76,8 @@ export function UserNav({ onNavigate, className }: UserNavProps) {
               className={cn(
                 "flex items-center gap-3 rounded-xl px-4 py-3 text-label-md transition-all",
                 active
-                  ? "bg-primary font-bold text-on-primary"
-                  : "text-on-surface-variant hover:bg-surface-variant"
+                  ? "bg-primary-container/15 font-bold text-primary-container"
+                  : "text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface"
               )}
             >
               <Icon className="size-5 shrink-0" />
@@ -87,7 +87,7 @@ export function UserNav({ onNavigate, className }: UserNavProps) {
         })}
       </nav>
 
-      <div className="mt-auto flex flex-col gap-2 border-t border-[color:var(--outline-variant)]/30 pt-4 pb-2">
+      <div className="mt-auto flex flex-col gap-2 border-t border-border-subtle pt-4 pb-2">
         {USER_NAV_BOTTOM.map((item) => {
           const Icon = ICONS[item.icon];
           if (item.label === "Log Out") {
@@ -98,7 +98,7 @@ export function UserNav({ onNavigate, className }: UserNavProps) {
                   if (onNavigate) onNavigate();
                   signOut();
                 }}
-                className="flex w-full items-center gap-3 rounded-xl px-4 py-2 text-left text-label-md text-on-surface-variant transition-all hover:bg-surface-variant"
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-2 text-left text-label-md text-on-surface-variant transition-all hover:bg-surface-container-low hover:text-on-surface"
               >
                 <Icon className="size-5 shrink-0" />
                 {item.label}
@@ -110,7 +110,7 @@ export function UserNav({ onNavigate, className }: UserNavProps) {
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className="flex items-center gap-3 rounded-xl px-4 py-2 text-label-md text-on-surface-variant transition-all hover:bg-surface-variant"
+              className="flex items-center gap-3 rounded-xl px-4 py-2 text-label-md text-on-surface-variant transition-all hover:bg-surface-container-low hover:text-on-surface"
             >
               <Icon className="size-5 shrink-0" />
               {item.label}

@@ -14,13 +14,13 @@ export default function UserLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-surface text-on-background antialiased">
+    <div className="flex min-h-screen flex-col bg-background text-foreground antialiased">
       <UserHeader />
-      <div className="flex flex-1 pt-20 md:pt-0">
+      <div className="flex flex-1">
         <UserSidebar />
-        <div className="flex-1 md:ml-64">
+        <main className="flex-1 md:ml-64 p-4 sm:p-6 lg:p-8 pt-24 md:pt-8 min-w-0">
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );

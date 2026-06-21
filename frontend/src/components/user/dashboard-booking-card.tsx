@@ -17,7 +17,7 @@ export function DashboardBookingCard({ booking }: DashboardBookingCardProps) {
   const isConfirmed = booking.status === "confirmed";
 
   return (
-    <Card className="flex flex-col gap-0 overflow-hidden rounded-2xl border border-[color:var(--outline-variant)]/30 bg-surface-container-lowest p-0 shadow-sm sm:flex-row">
+    <Card className="flex flex-col gap-0 overflow-hidden rounded-xl border border-border-subtle bg-surface p-0 shadow-elevation-card hover:shadow-elevation-card-hover transition-all duration-300 sm:flex-row">
       <div className="relative h-48 w-full shrink-0 overflow-hidden sm:h-auto sm:w-[240px]">
         <Image
           src={booking.image}
@@ -30,7 +30,7 @@ export function DashboardBookingCard({ booking }: DashboardBookingCardProps) {
 
       <CardContent className="flex flex-1 flex-col p-6">
         <div className="mb-1 flex items-start justify-between gap-4">
-          <h3 className="font-display text-headline-sm text-brand-muted">
+          <h3 className="text-lg font-bold text-on-surface">
             {booking.venue}
           </h3>
           <Badge
@@ -46,16 +46,16 @@ export function DashboardBookingCard({ booking }: DashboardBookingCardProps) {
           </Badge>
         </div>
 
-        <p className="mb-4 text-body-md text-on-surface-variant">
+        <p className="mb-4 text-body-md text-text-muted">
           {booking.location}
         </p>
 
         <div className="mb-6 flex flex-wrap gap-x-6 gap-y-2">
-          <div className="flex items-center gap-2 text-label-md text-on-surface-variant">
+          <div className="flex items-center gap-2 text-label-md text-text-muted">
             <Calendar className="size-4 shrink-0" />
             {booking.dateTime.split("•")[0].trim()}
           </div>
-          <div className="flex items-center gap-2 text-label-md text-on-surface-variant">
+          <div className="flex items-center gap-2 text-label-md text-text-muted">
             <Users className="size-4 shrink-0" />
             {booking.guests} Guests
           </div>
