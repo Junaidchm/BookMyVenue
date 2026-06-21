@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getVenue } from "@/lib/venues/data";
+import { getVenueById } from "@/lib/venues/api";
 
 type ReservePageProps = {
   params: Promise<{ id: string }>;
@@ -17,7 +17,7 @@ export async function generateMetadata({
   params,
 }: ReservePageProps): Promise<Metadata> {
   const { id } = await params;
-  const venue = getVenue(id);
+  const venue = await getVenueById(id);
   if (!venue) return { title: "Not Found" };
   return {
     title: `Confirm and pay | ${venue.name}`,
@@ -26,7 +26,7 @@ export async function generateMetadata({
 
 export default async function ReservePage({ params }: ReservePageProps) {
   const { id } = await params;
-  const venue = getVenue(id);
+  const venue = await getVenueById(id);
 
   if (!venue) {
     notFound();

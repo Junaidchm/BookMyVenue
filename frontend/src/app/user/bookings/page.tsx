@@ -19,14 +19,14 @@ export const metadata: Metadata = {
 
 export default function MyBookingsPage() {
   return (
-    <main className="min-h-full p-margin-mobile md:p-margin-desktop">
-      <div className="mx-auto max-w-[1000px]">
-        <header className="mb-stack-lg flex flex-col justify-between gap-4 border-b border-[color:var(--outline-variant)]/30 pb-6 md:flex-row md:items-end">
+    <div className="flex flex-col gap-6 pb-8">
+      <div className="mx-auto w-full max-w-[1000px]">
+        <header className="mb-8 flex flex-col justify-between gap-4 border-b border-border-subtle pb-6 md:flex-row md:items-end">
           <div>
-            <h1 className="mb-2 font-display text-display-lg-mobile text-brand-muted md:text-display-lg">
+            <h1 className="mb-2 text-headline-md text-on-surface">
               My Bookings
             </h1>
-            <p className="text-body-lg text-on-surface-variant">
+            <p className="text-body-md text-text-muted">
               Review and manage your upcoming and past premium event
               reservations.
             </p>
@@ -42,9 +42,9 @@ export default function MyBookingsPage() {
           </Button>
         </header>
 
-        <section className="mb-stack-lg">
-          <h2 className="mb-stack-md flex items-center gap-2 text-headline-sm text-on-surface">
-            <Calendar className="size-6 text-tertiary" />
+        <section className="mb-8">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-on-surface">
+            <Calendar className="size-6 text-primary-container" />
             Upcoming Events
           </h2>
           <div className="grid grid-cols-1 gap-gutter md:grid-cols-2">
@@ -54,11 +54,11 @@ export default function MyBookingsPage() {
           </div>
         </section>
 
-        <Separator className="mb-stack-lg bg-[color:var(--outline-variant)]/30" />
+        <Separator className="mb-8 bg-border-subtle" />
 
         <section>
-          <h2 className="mb-stack-md flex items-center gap-2 text-headline-sm text-on-surface">
-            <History className="size-6 text-on-surface-variant" />
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-on-surface">
+            <History className="size-6 text-text-muted" />
             Past Reservations
           </h2>
           <div className="flex flex-col gap-4">
@@ -68,6 +68,6 @@ export default function MyBookingsPage() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

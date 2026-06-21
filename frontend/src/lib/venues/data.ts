@@ -20,6 +20,14 @@ export type Venue = {
   city: string;
   capacity: number;
   pricePerDay: number;
+  pricingType?: "PER_HOUR" | "PER_SESSION";
+  basePrice?: number;
+  sessions?: {
+    name: string;
+    startTime: string;
+    endTime: string;
+    sessionPrice: number;
+  }[];
   rating: number;
   reviewCount: number;
   description: string;
