@@ -100,11 +100,10 @@ function ToastContainer({ toasts }: { toasts: Toast[] }) {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-elevation-card-hover text-sm font-medium animate-in slide-in-from-right duration-300 pointer-events-auto ${
-            toast.type === "success"
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-elevation-card-hover text-sm font-medium animate-in slide-in-from-right duration-300 pointer-events-auto ${toast.type === "success"
               ? "bg-status-success-bg text-status-success-text border border-status-success-text/20"
               : "bg-error-container text-on-error-container border border-on-error-container/20"
-          }`}
+            }`}
         >
           {toast.type === "success" ? (
             <CheckCircle className="w-4 h-4 shrink-0" />
@@ -255,7 +254,7 @@ export default function ApprovalsPage() {
         </div>
 
         {/* Filter */}
-        <button className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-600">
+        <Button variant="outline" className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-600">
           <Filter className="w-4 h-4" />
           All Categories
         </Button>
@@ -345,11 +344,10 @@ export default function ApprovalsPage() {
             return (
               <Card
                 key={venue.id}
-                className={`border-border-subtle shadow-elevation-card bg-surface overflow-hidden group hover:shadow-elevation-card-hover transition-all duration-300 ${
-                  isExiting
+                className={`border-border-subtle shadow-elevation-card bg-surface overflow-hidden group hover:shadow-elevation-card-hover transition-all duration-300 ${isExiting
                     ? "opacity-0 scale-95 translate-y-2"
                     : "opacity-100 scale-100 translate-y-0"
-                }`}
+                  }`}
               >
                 {/* Image */}
                 <div className="relative overflow-hidden">
@@ -411,63 +409,63 @@ export default function ApprovalsPage() {
                       </Badge>
                     </div>
                   </div>
+
+                {/* Price */}
+                <p className="text-sm font-semibold text-primary-container mb-4">
+                  ₹{Number(venue.basePrice).toLocaleString()}
+                  {venue.pricingType === "PER_HOUR" ? "/hr" : "/session"}
+                </p>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-border-subtle text-on-surface-variant text-sm font-medium h-10 hover:bg-surface-container-low gap-1"
+                    onClick={() =>
+                      window.open(`/venues/${venue.id}`, "_blank")
+                    }
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    Details
+                  </Button>
+
+                  <Button
+                    id={`approve-btn-${venue.id}`}
+                    onClick={() => handleApprove(venue)}
+                    disabled={isActing}
+                    className="flex-1 bg-status-success-bg text-status-success-text hover:bg-status-success-bg/80 text-sm font-medium h-10 border-0 shadow-none gap-1 disabled:opacity-60"
+                    aria-label={`Approve ${venue.title}`}
+                  >
+                    {isActing ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle className="w-3.5 h-3.5" />
+                    )}
+                    Approve
+                  </Button>
+
+                  <Button
+                    id={`reject-btn-${venue.id}`}
+                    onClick={() => handleReject(venue)}
+                    disabled={isActing}
+                    className="flex-1 bg-error-container text-on-error-container hover:bg-error-container/80 text-sm font-medium h-10 border-0 shadow-none gap-1 disabled:opacity-60"
+                    aria-label={`Reject ${venue.title}`}
+                  >
+                    {isActing ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <XCircle className="w-3.5 h-3.5" />
+                    )}
+                    Reject
+                  </Button>
                 </div>
-
-                  {/* Price */}
-                  <p className="text-sm font-semibold text-primary-container mb-4">
-                    ₹{Number(venue.basePrice).toLocaleString()}
-                    {venue.pricingType === "PER_HOUR" ? "/hr" : "/session"}
-                  </p>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      className="flex-1 border-border-subtle text-on-surface-variant text-sm font-medium h-10 hover:bg-surface-container-low gap-1"
-                      onClick={() =>
-                        window.open(`/venues/${venue.id}`, "_blank")
-                      }
-                    >
-                      <Building2 className="w-3.5 h-3.5" />
-                      Details
-                    </Button>
-
-                    <Button
-                      id={`approve-btn-${venue.id}`}
-                      onClick={() => handleApprove(venue)}
-                      disabled={isActing}
-                      className="flex-1 bg-status-success-bg text-status-success-text hover:bg-status-success-bg/80 text-sm font-medium h-10 border-0 shadow-none gap-1 disabled:opacity-60"
-                      aria-label={`Approve ${venue.title}`}
-                    >
-                      {isActing ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <CheckCircle className="w-3.5 h-3.5" />
-                      )}
-                      Approve
-                    </Button>
-
-                    <Button
-                      id={`reject-btn-${venue.id}`}
-                      onClick={() => handleReject(venue)}
-                      disabled={isActing}
-                      className="flex-1 bg-error-container text-on-error-container hover:bg-error-container/80 text-sm font-medium h-10 border-0 shadow-none gap-1 disabled:opacity-60"
-                      aria-label={`Reject ${venue.title}`}
-                    >
-                      {isActing ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <XCircle className="w-3.5 h-3.5" />
-                      )}
-                      Reject
-                    </Button>
-                  </div>
-                </CardContent>
+              </CardContent>
               </Card>
-            );
+      );
           })}
-        </div>
-      )}
     </div>
+  )
+}
+    </div >
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { SiteNavbar } from "@/components/layout/site-navbar";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -20,7 +21,13 @@ export default function VenuesPage() {
       <div className="pointer-events-none fixed bottom-0 left-1/3 -z-10 size-96 rounded-full bg-secondary-container/5 blur-[150px]" />
 
       <main className="mx-auto w-full max-w-[var(--container-max)] flex-1 px-gutter pt-28 pb-16">
-        <VenuesListing />
+        <Suspense fallback={
+          <div className="flex h-64 items-center justify-center text-text-muted">
+            Loading venues...
+          </div>
+        }>
+          <VenuesListing />
+        </Suspense>
       </main>
 
       <SiteFooter />

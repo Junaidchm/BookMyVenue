@@ -131,9 +131,9 @@ The application operates in a **Crisp Light Theme** to feel open and inviting.
 *   **Text (Muted):** Medium Stone Gray (`text-stone-500`).
 *   **Borders:** Subtle, clean lines (`border-stone-200`).
 ### 2.2 Shadows & Depth
-Instead of dark glassmorphism, use clean surfaces with soft, diffused shadows to create a sense of elevation.
-*   Tailwind Classes for Floating Elements: `bg-white/90 backdrop-blur-md shadow-xl shadow-stone-200/50 border border-stone-100`
-*   Tailwind Classes for Cards: `bg-white border border-stone-100 shadow-sm hover:shadow-md transition-shadow`
+Instead of glassmorphism or backdrop blur, use clean solid surfaces with soft, diffused shadows (`shadow-card`) to create a modern floating appearance.
+*   Tailwind Classes for Floating Elements: `bg-white border border-stone-100 shadow-card`
+*   Tailwind Classes for Cards: `bg-card border border-border/50 shadow-card hover:shadow-card-hover transition-shadow rounded-2xl`
 ### 2.3 Typography (Modern & Unique)
 Avoid standard system fonts. Use this modern pairing via Google Fonts or local font files:
 *   **Headings:** `Clash Display` (or `Syne` / `Playfair Display` as fallbacks). This gives a bold, premium, slightly architectural feel to venue titles and section headers. Use `tracking-tight` and bold weights.
@@ -141,9 +141,9 @@ Avoid standard system fonts. Use this modern pairing via Google Fonts or local f
 ---
 ## 3. Global Components
 ### 3.1 Floating Pill Navbar
-*   **Position:** Fixed at the top, centered, with `mt-4` spacing from the top edge.
-*   **Shape:** Fully rounded (`rounded-full`).
-*   **Style:** Translucent white (`bg-white/80 backdrop-blur-md`) with a soft drop shadow.
+*   Position: Fixed at the top, centered, with `mt-4` spacing from the top edge.
+*   Shape: Rounded-2xl (`rounded-2xl`).
+*   Style: Solid white (`bg-white` / `bg-card`) with a soft drop shadow (`shadow-card`) and subtle borders. No glassmorphism or translucency.
 *   **Contents:** 
     *   Left: Logo (Text: "BookMyVenue" with "Venue" in Sunset Orange, using the Heading font).
     *   Center: Desktop navigation links (Home, Venues, About) in `text-stone-600 hover:text-stone-900`.
@@ -155,11 +155,11 @@ Avoid standard system fonts. Use this modern pairing via Google Fonts or local f
 ---
 ## 4. Core Page Layouts
 ### 4.1 Landing Page (`/`)
-*   **Hero Section:** 
+*   Hero Section: 
     *   Large, immersive background image of a bright, sunlit luxury venue.
-    *   Overlay: A very subtle gradient or slight darkening just enough to make text readable, or place text in a floating white frosted-glass card.
-    *   Headline: "Find the Perfect Space for Your Next Event" (Large, bold, `text-stone-900` or `text-white` depending on overlay, using Clash Display).
-    *   **Search Bar Widget:** A thick, rounded white pill placed over the hero image. It contains three inputs separated by thin vertical dividers (`border-r border-stone-200`): *Location*, *Date*, *Guests*, and an Orange circular search button with a magnifying glass icon.
+    *   Overlay: No dark overlays or glassmorphic panels. Place elements on clean solid white panels or high contrast containers.
+    *   Headline: "Find the Perfect Space for Your Next Event" (Large, bold, using Clash Display).
+    *   **Search Bar Widget:** A solid white container with rounded-2xl corners (`rounded-2xl` or `rounded-full` on desktop). Contains inputs separated by thin vertical borders (`border-stone-200`), dark text inputs (`text-stone-900`), and a Sunset Orange primary action search button. No glassmorphism.
 *   **Featured Venues Section:**
     *   Section Title: "Trending Venues" (Deep Charcoal, Heading font).
     *   Grid Layout: 3 or 4 columns (`grid-cols-1 md:grid-cols-2 lg:grid-cols-4`).

@@ -1,7 +1,8 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Search, Sparkles, Loader2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -123,6 +124,7 @@ function Pagination({
 
 export function VenuesListing() {
   const { data: venues = [], isLoading, isError } = useVenues();
+  const searchParams = useSearchParams();
 
   const [draftFilters, setDraftFilters] =
     useState<VenueFilters>(DEFAULT_FILTERS);
@@ -131,6 +133,28 @@ export function VenuesListing() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("popular");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Synchronize state with URL search params on mount/change
+  useEffect(() => {
+    if (!searchParams) return;
+    const urlQuery = searchParams.get("query") || "";
+    const urlLocation = searchParams.get("location") || "";
+    const urlGuests = searchParams.get("guests") || "";
+    const urlType = searchParams.get("type") || "";
+
+    setSearchQuery(urlQuery);
+
+    const newFilters: VenueFilters = {
+      ...DEFAULT_FILTERS,
+      location: urlLocation,
+      capacity: urlGuests ? Number(urlGuests) : DEFAULT_FILTERS.capacity,
+      eventTypes: urlType ? [urlType] : [],
+    };
+
+    setDraftFilters(newFilters);
+    setAppliedFilters(newFilters);
+    setCurrentPage(1);
+  }, [searchParams]);
 
   const filteredVenues = useMemo(
     () => sortVenues(filterVenues(venues, appliedFilters, searchQuery), sort),
@@ -168,7 +192,7 @@ export function VenuesListing() {
             <Loader2 className="size-8 animate-spin text-primary-container" />
           </div>
         )}
-        
+
         {isError && (
           <div className="flex h-64 items-center justify-center text-error">
             <p>Failed to load venues. Please try again later.</p>
@@ -178,101 +202,101 @@ export function VenuesListing() {
         {!isLoading && !isError && (
           <>
             <div className="mb-8 flex flex-col gap-5">
-          {/* Header */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h1 className="font-display text-headline-md text-on-surface">
-                {totalItems} venues in{" "}
-                <span className="text-primary-container">{cityLabel}</span>
-              </h1>
-              <p className="mt-1 text-sm text-text-muted">
-                Showing unique spaces for your upcoming events
-              </p>
+              {/* Header */}
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h1 className="font-display text-headline-md text-on-surface">
+                    {totalItems} venues in{" "}
+                    <span className="text-primary-container">{cityLabel}</span>
+                  </h1>
+                  <p className="mt-1 text-sm text-text-muted">
+                    Showing unique spaces for your upcoming events
+                  </p>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="text-sm text-text-muted">Sort by:</span>
+                  <Select
+                    value={sort}
+                    onValueChange={(value) => {
+                      setSort(value as SortOption);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-10 min-w-[150px] rounded-full border-border-subtle bg-surface text-sm font-medium">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="popular">Most Popular</SelectItem>
+                      <SelectItem value="rating">Highest Rated</SelectItem>
+                      <SelectItem value="price-asc">
+                        Price: Low to High
+                      </SelectItem>
+                      <SelectItem value="price-desc">
+                        Price: High to Low
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Search bar */}
+              <div className="relative">
+                <Search className="absolute top-1/2 left-5 size-4 -translate-y-1/2 text-text-muted" />
+                <Input
+                  type="search"
+                  placeholder="Search venues by name or location..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="h-12 rounded-full border-border-subtle bg-surface pr-5 pl-12 text-sm shadow-sm transition-all focus:border-primary-container focus:ring-2 focus:ring-primary-container/15"
+                />
+              </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <span className="text-sm text-text-muted">Sort by:</span>
-              <Select
-                value={sort}
-                onValueChange={(value) => {
-                  setSort(value as SortOption);
-                  setCurrentPage(1);
-                }}
-              >
-                <SelectTrigger className="h-10 min-w-[150px] rounded-full border-border-subtle bg-surface text-sm font-medium">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="popular">Most Popular</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                  <SelectItem value="price-asc">
-                    Price: Low to High
-                  </SelectItem>
-                  <SelectItem value="price-desc">
-                    Price: High to Low
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Search bar */}
-          <div className="relative">
-            <Search className="absolute top-1/2 left-5 size-4 -translate-y-1/2 text-text-muted" />
-            <Input
-              type="search"
-              placeholder="Search venues by name or location..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="h-12 rounded-full border-border-subtle bg-surface pr-5 pl-12 text-sm shadow-sm transition-all focus:border-primary-container focus:ring-2 focus:ring-primary-container/15"
-            />
-          </div>
-        </div>
-
-        {items.length > 0 ? (
-          <>
-            <div className="grid gap-6 sm:grid-cols-2">
-              {items.map((venue) => (
-                <VenueCard key={venue.id} venue={venue} />
-              ))}
-            </div>
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+            {items.length > 0 ? (
+              <>
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {items.map((venue) => (
+                    <VenueCard key={venue.id} venue={venue} />
+                  ))}
+                </div>
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant bg-surface px-6 py-20 text-center">
+                <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary-container/10">
+                  <Sparkles className="size-7 text-primary-container" />
+                </div>
+                <p className="font-display text-lg font-bold text-on-surface">
+                  No venues found
+                </p>
+                <p className="mt-2 max-w-sm text-sm text-text-muted">
+                  Try adjusting your filters or search query to discover more
+                  spaces.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-6 rounded-full border-border-subtle px-6 transition-all duration-200 hover:-translate-y-0.5"
+                  onClick={() => {
+                    setDraftFilters(DEFAULT_FILTERS);
+                    setAppliedFilters(DEFAULT_FILTERS);
+                    setSearchQuery("");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Reset all filters
+                </Button>
+              </div>
+            )}
           </>
-        ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant bg-surface px-6 py-20 text-center">
-            <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary-container/10">
-              <Sparkles className="size-7 text-primary-container" />
-            </div>
-            <p className="font-display text-lg font-bold text-on-surface">
-              No venues found
-            </p>
-            <p className="mt-2 max-w-sm text-sm text-text-muted">
-              Try adjusting your filters or search query to discover more
-              spaces.
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-6 rounded-full border-border-subtle px-6 transition-all duration-200 hover:-translate-y-0.5"
-              onClick={() => {
-                setDraftFilters(DEFAULT_FILTERS);
-                setAppliedFilters(DEFAULT_FILTERS);
-                setSearchQuery("");
-                setCurrentPage(1);
-              }}
-            >
-              Reset all filters
-            </Button>
-          </div>
-        )}
-        </>
         )}
       </section>
     </div>
