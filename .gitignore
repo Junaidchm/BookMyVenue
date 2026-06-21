@@ -63,3 +63,4 @@ Desktop.ini
 # Prisma Generated Clients
 # ==========================================
 services/*/generated/
+start-all.ps1

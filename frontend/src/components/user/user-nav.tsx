@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/components/auth/session-provider";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,7 @@ type UserNavProps = {
 
 export function UserNav({ onNavigate, className }: UserNavProps) {
   const pathname = usePathname();
+  const { signOut } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/user") return pathname === "/user";
@@ -88,6 +90,21 @@ export function UserNav({ onNavigate, className }: UserNavProps) {
       <div className="mt-auto flex flex-col gap-2 border-t border-[color:var(--outline-variant)]/30 pt-4 pb-2">
         {USER_NAV_BOTTOM.map((item) => {
           const Icon = ICONS[item.icon];
+          if (item.label === "Log Out") {
+            return (
+              <button
+                key={item.href}
+                onClick={() => {
+                  if (onNavigate) onNavigate();
+                  signOut();
+                }}
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-2 text-left text-label-md text-on-surface-variant transition-all hover:bg-surface-variant"
+              >
+                <Icon className="size-5 shrink-0" />
+                {item.label}
+              </button>
+            );
+          }
           return (
             <Link
               key={item.href}

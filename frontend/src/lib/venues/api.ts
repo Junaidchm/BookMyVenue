@@ -1,4 +1,14 @@
 import { getApiBaseUrl } from "@/lib/api/config";
+import { getSession } from "next-auth/react";
+
+async function getAuthHeaders(): Promise<HeadersInit> {
+  if (typeof window !== "undefined") {
+    const session = await getSession();
+    const token = (session as any)?.token || (session as any)?.accessToken;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+  return {};
+}
 
 import type { Venue, VenueAmenity } from "./data";
 type ApiAmenity = {
@@ -133,7 +143,7 @@ export function mapApiVenueToVenue(venue: ApiVenue): Venue {
 }
 
 export async function getVenues(): Promise<Venue[]> {
-  const res = await fetch(`${getApiBaseUrl()}/api/venues`);
+  const res = await fetch(`${getApiBaseUrl()}/venues`);
   if (!res.ok) {
     throw new Error("Failed to fetch venues");
   }
@@ -167,9 +177,10 @@ export type CreateVenuePayload = {
 };
 
 export async function createVenue(payload: CreateVenuePayload): Promise<ApiVenue> {
-  const res = await fetch(`${getApiBaseUrl()}/api/venues`, {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/venues`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { ...headers, "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify(payload),
   });
@@ -199,8 +210,10 @@ type UploadSignatureResponse = {
 };
 
 export async function getUploadSignature(): Promise<UploadSignatureResponse["data"]> {
-  const res = await fetch(`${getApiBaseUrl()}/api/venues/uploads/signature`, {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/venues/uploads/signature`, {
     method: "POST",
+    headers,
     credentials: "include",
   });
 

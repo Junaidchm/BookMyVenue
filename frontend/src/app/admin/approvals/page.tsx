@@ -17,6 +17,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   getPendingVenues,
   approveVenue,
   rejectVenue,
@@ -240,16 +248,17 @@ export default function ApprovalsPage() {
       </div>
 
       {/* Search + Filter + Stats */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-4">
         {/* Search */}
-        <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5">
-          <Search className="w-4 h-4 text-gray-400" />
-          <input
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+          <Input
+            id="approval-search"
             type="text"
             placeholder="Search by venue name or category..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 outline-none text-sm text-gray-700"
+            className="pl-9 h-11 border-border-subtle focus-visible:ring-ring rounded-lg bg-surface"
           />
         </div>
 
@@ -418,16 +427,104 @@ export default function ApprovalsPage() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1 border-border-subtle text-on-surface-variant text-sm font-medium h-10 hover:bg-surface-container-low gap-1"
-                    onClick={() =>
-                      window.open(`/venues/${venue.id}`, "_blank")
-                    }
-                  >
-                    <Building2 className="w-3.5 h-3.5" />
-                    Details
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-border-subtle text-on-surface-variant text-sm font-medium h-10 hover:bg-surface-container-low gap-1"
+                      >
+                        <Building2 className="w-3.5 h-3.5" />
+                        Details
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="text-xl font-bold">{venue.title}</DialogTitle>
+                        <DialogDescription>
+                          Owner ID #{venue.ownerId} • Submitted {formatTimeAgo(venue.createdAt)}
+                        </DialogDescription>
+                      </DialogHeader>
+
+                      <div className="space-y-6 mt-2">
+                        {/* Images */}
+                        {venue.imageUrls && venue.imageUrls.length > 0 ? (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {venue.imageUrls.map((url, idx) => (
+                              <img
+                                key={idx}
+                                src={url}
+                                alt={`Venue image ${idx + 1}`}
+                                className="w-full h-32 object-cover rounded-lg border border-border-subtle"
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="w-full h-40 bg-surface-container-low rounded-lg border border-border-subtle flex items-center justify-center text-text-muted">
+                            No images provided
+                          </div>
+                        )}
+
+                        {/* Basic Info */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="font-semibold text-sm text-text-muted mb-1">Category</h4>
+                            <Badge variant="outline" className="text-xs bg-surface-container-low">
+                              {formatCategory(venue.category)}
+                            </Badge>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm text-text-muted mb-1">Pricing</h4>
+                            <p className="text-sm font-medium text-primary-container">
+                              ₹{Number(venue.basePrice).toLocaleString()}{" "}
+                              {venue.pricingType === "PER_HOUR" ? "/ hr" : "/ session"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                          <h4 className="font-semibold text-sm text-text-muted mb-1">Description</h4>
+                          <p className="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">
+                            {venue.description || <span className="text-text-muted italic">No description provided.</span>}
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          {/* Capacities */}
+                          <div>
+                            <h4 className="font-semibold text-sm text-text-muted mb-2">Capacities</h4>
+                            {venue.capacities && venue.capacities.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {venue.capacities.map((cap, idx) => (
+                                  <Badge key={idx} variant="secondary" className="bg-surface-container text-on-surface border-0 text-xs">
+                                    {cap.type}: <strong className="ml-1">{cap.maxPeople}</strong>
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-text-muted italic">Not specified</p>
+                            )}
+                          </div>
+
+                          {/* Amenities */}
+                          <div>
+                            <h4 className="font-semibold text-sm text-text-muted mb-2">Amenities</h4>
+                            {venue.amenities && venue.amenities.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {venue.amenities.map((am, idx) => (
+                                  <Badge key={idx} variant="outline" className="text-xs bg-surface">
+                                    {am.amenity.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-text-muted italic">Not specified</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
 
                   <Button
                     id={`approve-btn-${venue.id}`}

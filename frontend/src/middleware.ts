@@ -16,9 +16,9 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/admin/approvals", req.url));
     }
     if (roles.includes("OWNER")) {
-      return NextResponse.redirect(new URL("/dashboard/owner/overview", req.url));
+      return NextResponse.redirect(new URL("/owner", req.url));
     }
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/user", req.url));
   }
 
   // 2. Redirect /dashboard to the role-specific dashboard
@@ -31,9 +31,9 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/admin/approvals", req.url));
     }
     if (roles.includes("OWNER")) {
-      return NextResponse.redirect(new URL("/dashboard/owner/overview", req.url));
+      return NextResponse.redirect(new URL("/owner", req.url));
     }
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/user", req.url));
   }
 
   // 3. Protect /bookings route
@@ -54,14 +54,21 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // 5. Protect /dashboard/owner routes
-  if (pathname.startsWith("/dashboard/owner")) {
+  // 5. Protect /owner routes
+  if (pathname.startsWith("/owner")) {
     if (!token) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
     const roles = token.roles || [];
     if (!roles.includes("OWNER")) {
       return NextResponse.redirect(new URL("/", req.url));
+    }
+  }
+
+  // 6. Protect /user routes
+  if (pathname.startsWith("/user")) {
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", req.url));
     }
   }
 
@@ -72,6 +79,10 @@ export const config = {
   matcher: [
     "/dashboard",
     "/dashboard/:path*",
+    "/owner",
+    "/owner/:path*",
+    "/user",
+    "/user/:path*",
     "/bookings",
     "/bookings/:path*",
     "/admin",
