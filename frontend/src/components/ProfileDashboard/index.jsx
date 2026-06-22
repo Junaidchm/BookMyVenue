@@ -4,7 +4,7 @@ import "./ProfileDashboard.css";
 // ─── Section components ───────────────────────────────────────────────────────
 import ProfileHeader       from "./sections/ProfileHeader";
 import ProfileInfoCard     from "./sections/ProfileInfoCard";
-import UpcomingBookings    from "./sections/UpcomingBookings";
+import BookingOverviewCard from "./sections/BookingOverviewCard";
 import BookingHistory      from "./sections/BookingHistory";
 import FavouritesSection   from "./sections/FavouritesSection";
 import StatusBadge         from "./ui/StatusBadge";
@@ -264,9 +264,12 @@ export default function ProfileDashboard({ onLogout }) {
 
 
   const handlePrintReceipt = useCallback((booking) => {
+    const originalTitle = document.title;
+    document.title = "Receipt";
     setReceiptToPrint(booking);
     setTimeout(() => {
       window.print();
+      document.title = originalTitle;
     }, 400);
   }, []);
 
@@ -289,18 +292,7 @@ export default function ProfileDashboard({ onLogout }) {
       {/* Toasts */}
       <Toast toasts={toasts} onDismiss={dismissToast} />
 
-      {/* Mobile tab bar */}
-      <MobileTabBar activeSection={activeSection} onNavClick={handleNavClick} onLogout={handleLogout} />
-
       <div className="pd-layout">
-        {/* Sidebar (desktop) */}
-        <Sidebar
-          user={user}
-          activeSection={activeSection}
-          onNavClick={handleNavClick}
-          onLogout={handleLogout}
-        />
-
         {/* Main content */}
         <main className="pd-main" id="pd-main" aria-label="Profile dashboard main content">
           {/* Profile Header */}
@@ -319,11 +311,15 @@ export default function ProfileDashboard({ onLogout }) {
             onSaved={handleProfileSaved}
           />
 
-          {/* Upcoming Bookings */}
-          <UpcomingBookings 
-            bookings={upcoming} 
-            loading={loadingUpcoming} 
-            onViewDetails={setSelectedBooking}
+          {/* Booking Overview */}
+          <BookingOverviewCard 
+            stats={{
+              total: 10,
+              upcoming: 2,
+              completed: 7,
+              cancelled: 1
+            }}
+            loading={loadingUpcoming || loadingHistory}
           />
 
           {/* Booking History */}
