@@ -1,4 +1,4 @@
-import { UserNav } from "@/components/user/user-nav";
+import { UserNav } from "@/components/user/user-profile-nav";
 import Link from "next/link";
 
 export function UserSidebar() {

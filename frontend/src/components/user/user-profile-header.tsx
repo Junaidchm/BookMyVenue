@@ -4,7 +4,7 @@ import { Bell, Heart, Menu } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-import { UserNav } from "@/components/user/user-nav";
+import { UserNav } from "@/components/user/user-profile-nav";
 import { USER_PROFILE } from "@/lib/user/data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

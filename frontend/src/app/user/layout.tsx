@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { UserHeader } from "@/components/user/user-header";
-import { UserSidebar } from "@/components/user/user-sidebar";
+import { UserHeader } from "@/components/user/user-profile-header";
+import { UserSidebar } from "@/components/user/user-profile-sidebar";
 
 export const metadata: Metadata = {
   title: "My Account | BookMyVenue",

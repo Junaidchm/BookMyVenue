@@ -1,14 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SkeletonCard, ErrorMessage } from "../ui/Skeletons";
 import { updateProfile } from "../services/profileService";
+
+const SUGGESTED_LOCATIONS = [
+  "Madhya Pradesh, India",
+  "Uttar Pradesh, India",
+  "Maharashtra, India",
+  "Kerala, India",
+  "Karnataka, India",
+  "Delhi, India",
+  "Tamil Nadu, India",
+  "Gujarat, India",
+  "Rajasthan, India",
+  "Punjab, India",
+  "Lahore, Pakistan",
+  "Karachi, Pakistan",
+  "Islamabad, Pakistan",
+  "San Francisco, CA",
+  "New York, NY",
+  "Austin, TX",
+  "Napa Valley, CA",
+  "Seattle, WA",
+  "London, United Kingdom",
+  "Kensington, London",
+  "Chelsea, London",
+  "Shoreditch, London",
+];
 
 // ─── Field validation ─────────────────────────────────────────────────────────
 function validate(data) {
   const errors = {};
-  if (!data.name?.trim() || data.name.trim().length < 2)
-    errors.name = "Full name must be at least 2 characters.";
-  if (data.phone && !/^\+?[\d\s\-(). ]{7,20}$/.test(data.phone))
-    errors.phone = "Enter a valid phone number.";
+
+  // 1. Name validation
+  if (!data.name || data.name.trim() === "") {
+    errors.name = "Name cannot be empty.";
+  }
+
+  // 2. Phone validation (expects 10-12 digits to accommodate optional country codes)
+  const cleanPhone = data.phone ? data.phone.trim() : "";
+  const digitsOnly = cleanPhone.replace(/\D/g, "");
+  if (!cleanPhone) {
+    errors.phone = "Phone number cannot be empty.";
+  } else if (digitsOnly.length < 10 || digitsOnly.length > 12 || /[a-zA-Z]/.test(cleanPhone)) {
+    errors.phone = "Phone number must be a valid 10 to 12 digit mobile number.";
+  }
+
+  // 3. Address/Location validation
+  if (!data.address || data.address.trim() === "") {
+    errors.address = "Address cannot be empty.";
+  }
+
   return errors;
 }
 
@@ -66,6 +107,46 @@ export default function ProfileInfoCard({ user, loading, error, onSaved }) {
   const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+
+  // Address Autocomplete state
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const [apiAddressSuggestions, setApiAddressSuggestions] = useState([]);
+
+  useEffect(() => {
+    if (!draft.address || draft.address.trim().length < 3 || !showAddressSuggestions) {
+      setApiAddressSuggestions([]);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(draft.address)}&format=json&limit=5`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const suggestions = data.map((item) => item.display_name);
+          setApiAddressSuggestions(suggestions);
+        } else {
+          throw new Error("Nominatim API response not OK");
+        }
+      } catch (error) {
+        console.warn("Failed to fetch from Nominatim, using local fallback:", error);
+        const fallback = SUGGESTED_LOCATIONS.filter((loc) =>
+          loc.toLowerCase().includes(draft.address.toLowerCase())
+        );
+        setApiAddressSuggestions(fallback);
+      }
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [draft.address, showAddressSuggestions]);
+
+  const addressSuggestionsToDisplay = apiAddressSuggestions.length > 0
+    ? apiAddressSuggestions
+    : SUGGESTED_LOCATIONS.filter((loc) =>
+        loc.toLowerCase().includes(draft.address ? draft.address.toLowerCase() : "")
+      );
 
   if (loading) return <SkeletonCard rows={5} style={{ padding: "2rem" }} />;
   if (error) return <ErrorMessage message={error} />;
@@ -214,14 +295,76 @@ export default function ProfileInfoCard({ user, loading, error, onSaved }) {
 
           {/* Address */}
           {isEditing ? (
-            <FieldEdit
-              id="field-address"
-              label="Address"
-              name="address"
-              value={display.address}
-              onChange={handleChange}
-              placeholder="City, Country"
-            />
+            <div className="field-group" style={{ position: "relative" }}>
+              <label htmlFor="field-address" className="field-label">
+                Address
+              </label>
+              <input
+                id="field-address"
+                type="text"
+                name="address"
+                value={display.address || ""}
+                onChange={(e) => {
+                  handleChange(e);
+                  setShowAddressSuggestions(true);
+                }}
+                onFocus={() => setShowAddressSuggestions(true)}
+                onBlur={() => setShowAddressSuggestions(false)}
+                placeholder="City, Country"
+                className={`field-input${fieldErrors.address ? " field-input--error" : ""}`}
+              />
+              {showAddressSuggestions && addressSuggestionsToDisplay.length > 0 && (
+                <ul 
+                  style={{
+                    position: "absolute",
+                    zIndex: 100,
+                    left: 0,
+                    right: 0,
+                    top: "100%",
+                    marginTop: "4px",
+                    maxHeight: "150px",
+                    overflowY: "auto",
+                    borderRadius: "8px",
+                    border: "1px solid var(--clr-border, #e5e7eb)",
+                    backgroundColor: "#ffffff",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    listStyle: "none",
+                    padding: "4px 0",
+                    margin: 0
+                  }}
+                >
+                  {addressSuggestionsToDisplay.map((suggestion) => (
+                    <li
+                      key={suggestion}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setDraft((prev) => ({ ...prev, address: suggestion }));
+                        if (fieldErrors.address) {
+                          setFieldErrors((prev) => ({ ...prev, address: undefined }));
+                        }
+                        setShowAddressSuggestions(false);
+                      }}
+                      style={{
+                        padding: "8px 16px",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                        color: "#1f2937",
+                        transition: "background-color 0.2s"
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = "#f3f4f6"}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {fieldErrors.address && (
+                <span id="field-address-err" className="field-error" role="alert">
+                  {fieldErrors.address}
+                </span>
+              )}
+            </div>
           ) : (
             <FieldView label="Address" value={display.address} />
           )}
