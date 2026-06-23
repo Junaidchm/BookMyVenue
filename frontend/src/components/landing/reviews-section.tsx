@@ -75,11 +75,10 @@ function StarRating({ rating }: { rating: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
-          className={`size-3.5 ${
-            i < rating
+          className={`size-3.5 ${i < rating
               ? "fill-amber-400 text-amber-400"
               : "fill-stone-200 text-stone-200"
-          }`}
+            }`}
         />
       ))}
     </div>
@@ -109,29 +108,27 @@ export function ReviewsSection() {
           {REVIEWS.map((review, index) => (
             <div
               key={review.id}
-              className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-surface transition-all duration-300 hover:-translate-y-1 hover:shadow-elevation-card-hover ${
-                review.featured
-                  ? "border-primary-container/25 shadow-md shadow-primary-container/10"
-                  : "border-border-subtle shadow-elevation-card"
-              } ${
+              className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-surface transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover ${review.featured
+                  ? "border-primary/25 shadow-md shadow-primary/5"
+                  : "border-border/50 shadow-card"
+                } ${
                 /* Stagger the middle column cards down on lg for visual variety */
                 index % 3 === 1 ? "lg:translate-y-4" : ""
-              }`}
+                }`}
             >
               {/* Top colored accent stripe */}
               <div
-                className={`h-1 w-full ${
-                  review.featured
-                    ? "bg-gradient-to-r from-primary-container to-secondary-container"
-                    : "bg-gradient-to-r from-primary-container/20 to-secondary-container/20"
-                }`}
+                className={`h-1 w-full ${review.featured
+                    ? "bg-primary"
+                    : "bg-primary/20"
+                  }`}
               />
 
               <div className="flex flex-1 flex-col p-6 md:p-7">
                 {/* Rating + Quote icon row */}
                 <div className="mb-4 flex items-center justify-between">
                   <StarRating rating={review.rating} />
-                  <Quote className="size-6 text-primary-container/15" />
+                  <Quote className="size-6 text-primary/10" />
                 </div>
 
                 {/* Review text */}
@@ -140,18 +137,18 @@ export function ReviewsSection() {
                 </p>
 
                 {/* Venue tag */}
-                <span className="mb-5 inline-flex w-fit items-center gap-1.5 rounded-full border border-border-subtle bg-surface-container-lowest px-3 py-1 text-label-sm text-text-muted">
-                  <span className="size-1.5 rounded-full bg-primary-container/50" />
+                <span className="mb-5 inline-flex w-fit items-center gap-1.5 rounded-full border border-border/50 bg-surface-container-lowest px-3 py-1 text-label-sm text-text-muted">
+                  <span className="size-1.5 rounded-full bg-primary/50" />
                   {review.venue}
                 </span>
 
                 {/* Divider */}
-                <div className="mb-4 h-px w-full bg-border-subtle" />
+                <div className="mb-4 h-px w-full bg-border/50" />
 
                 {/* Author row */}
                 <div className="flex items-center gap-3">
                   {/* Avatar */}
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-container to-secondary-container text-label-md font-bold text-white shadow-sm">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-label-md font-bold text-white shadow-sm">
                     {review.initials}
                   </div>
                   <div className="min-w-0">
@@ -169,7 +166,7 @@ export function ReviewsSection() {
         </div>
 
         {/* Bottom stats bar */}
-        <div className="mt-14 flex flex-wrap items-center justify-center gap-8 rounded-2xl border border-border-subtle bg-surface px-8 py-7 shadow-elevation-card md:gap-16">
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-8 rounded-2xl border border-border/50 bg-surface px-8 py-7 shadow-card md:gap-16">
           {[
             { value: "10,000+", label: "Events Hosted" },
             { value: "4.9 ★", label: "Average Rating" },
@@ -178,7 +175,7 @@ export function ReviewsSection() {
           ].map((stat, i, arr) => (
             <div key={stat.label} className="flex items-center gap-8 md:gap-16">
               <div className="text-center">
-                <p className="text-headline-sm text-primary-container">
+                <p className="text-headline-sm text-primary">
                   {stat.value}
                 </p>
                 <p className="mt-1 text-label-sm text-text-muted">
@@ -186,7 +183,7 @@ export function ReviewsSection() {
                 </p>
               </div>
               {i < arr.length - 1 && (
-                <div className="hidden h-8 w-px bg-border-subtle md:block" />
+                <div className="hidden h-8 w-px bg-border/50 md:block" />
               )}
             </div>
           ))}

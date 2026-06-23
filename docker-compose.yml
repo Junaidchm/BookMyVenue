@@ -4,12 +4,12 @@ services:
   # Relational Database Engine with Spatial Extensions
   bmv_db:
     image: postgis/postgis:15-3.3
-    environment:
-      POSTGRES_USER: bmv_dev_user
-      POSTGRES_PASSWORD: bmv_ssh
-      POSTGRES_DB: bmv_db
+    env_file:
+      - ./services/auth-service/.env
     ports:
       - "5432:5432"
+    volumes:
+      - ./infra/postgres/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql
     networks:
       - bmv-mesh-network
 
@@ -18,18 +18,32 @@ services:
     build: ./frontend
     ports:
       - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
     depends_on:
+      - api-gateway
+    networks:
+      - bmv-mesh-network
+
+  # API Gateway: Single entry point and routing proxy
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./services/api-gateway/.env
+    depends_on:
+      - auth-service
       - venue-service
+      - booking-service
     networks:
       - bmv-mesh-network
 
   # Microservice 1: Proximity Feeds & Location Indexes
   venue-service:
     build: ./services/venue-service
-    ports:
-      - "5001:5001"
-    environment:
-      DATABASE_URL: postgres://bmv_dev_user:bmv_ssh@bmv_db:5432/bmv_db
+    env_file:
+      - ./services/venue-service/.env
     depends_on:
       - bmv_db
     networks:
@@ -38,16 +52,20 @@ services:
   # Microservice 2: Availability Grids & Reservation States
   booking-service:
     build: ./services/booking-service
-    ports:
-      - "5002:5002"
+    env_file:
+      - ./services/booking-service/.env
+    depends_on:
+      - bmv_db
     networks:
       - bmv-mesh-network
 
   # Microservice 3: Decoupled Authentication & Identity Tokens
   auth-service:
     build: ./services/auth-service
-    ports:
-      - "5003:5003"
+    env_file:
+      - ./services/auth-service/.env
+    depends_on:
+      - bmv_db
     networks:
       - bmv-mesh-network
 
