@@ -26,7 +26,17 @@ export class AuthController {
       const result = await this.authService.login(email, password);
       res.status(200).json({ success: true, data: result });
     } catch (err: any) {
-      res.status(401).json({ success: false, message: err.message });
+      if (
+        err.message.includes('Invalid email or password') ||
+        err.message.includes('must be provided')
+      ) {
+        res.status(401).json({ success: false, message: err.message });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: 'Database connection failed. Please ensure the database is running.',
+        });
+      }
     }
   };
 

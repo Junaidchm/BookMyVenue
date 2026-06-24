@@ -5,19 +5,7 @@ import { env } from '../config/env';
 export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   
-  // Define public route checks (matches /api/auth/login, /api/auth/register, etc.)
-  const isPublicRoute = 
-    req.path === '/health' ||
-    req.path === '/api/auth/login' || 
-    req.path === '/api/auth/register' ||
-    req.path === '/api/auth/verify' ||
-    req.path === '/api/auth/logout' ||
-    (req.path.startsWith('/api/venues') && req.method === 'GET');
-
-  if (isPublicRoute) {
-    return next();
-  }
-
+  let tokenError: any = null;
   if (authHeader) {
     const token = authHeader.split(' ')[1];
     try {
@@ -26,11 +14,32 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
         id: decoded.sub,
         roles: decoded.roles || [],
       };
-      next();
     } catch (err) {
-      return res.status(403).json({ success: false, message: 'Forbidden: Invalid or expired token.' });
+      tokenError = err;
     }
-  } else {
+  }
+
+  // Define public route checks precisely
+  const isPublicRoute = 
+    req.path === '/health' ||
+    req.path === '/api/auth/login' || 
+    req.path === '/api/auth/register' ||
+    req.path === '/api/auth/verify' ||
+    req.path === '/api/auth/logout' ||
+    (req.path === '/api/venues' && req.method === 'GET') ||
+    (/^\/api\/venues\/\d+$/.test(req.path) && req.method === 'GET');
+
+  if (isPublicRoute) {
+    return next();
+  }
+
+  if (tokenError) {
+    return res.status(403).json({ success: false, message: 'Forbidden: Invalid or expired token.' });
+  }
+
+  if (!(req as any).user) {
     return res.status(401).json({ success: false, message: 'Unauthorized: Authentication token required.' });
   }
+
+  next();
 };
