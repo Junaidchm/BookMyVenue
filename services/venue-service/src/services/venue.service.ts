@@ -64,6 +64,20 @@ export class VenueService {
   // ─── Admin Methods ──────────────────────────────────────────────────────────
 
   /**
+   * Retrieve all venues for admin review (any status).
+   */
+  async getAllVenuesForAdmin() {
+    return prisma.venue.findMany({
+      include: {
+        amenities: { include: { amenity: true } },
+        capacities: true,
+        sessions: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
    * Retrieve all venues with PENDING status for admin review.
    */
   async getPendingVenues() {

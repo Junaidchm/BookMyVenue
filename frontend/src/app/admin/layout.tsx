@@ -20,7 +20,7 @@ const navItems = [
   { label: "Approvals", href: "/admin/approvals", icon: CheckSquare },
   { label: "Reports", href: "/admin/reports", icon: BarChart2, comingSoon: true },
   { label: "Users", href: "/admin/users", icon: Users },
-  { label: "Venues", href: "/admin/venues", icon: MapPin, comingSoon: true },
+  { label: "Venues", href: "/admin/venues", icon: MapPin },
 ];
 
 export default function AdminLayout({
