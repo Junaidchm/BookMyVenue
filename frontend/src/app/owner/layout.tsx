@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -35,6 +35,30 @@ export default function DashboardLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { signOut } = useAuth();
 
+  const [ownerInfo, setOwnerInfo] = useState({
+    name: "Sarah Jenkins",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"
+  });
+
+  useEffect(() => {
+    const localData = localStorage.getItem("owner_profile_data");
+    if (localData) {
+      try {
+        const parsed = JSON.parse(localData);
+        if (parsed.name && parsed.avatar) {
+          setOwnerInfo({
+            name: parsed.name,
+            avatar: parsed.avatar
+          });
+        }
+      } catch (e) {
+        console.error("Failed to parse owner profile data:", e);
+      }
+    }
+  }, [pathname]);
+
+  const displayName = ownerInfo.name.split(" ")[0] || "Sarah";
+
   return (
     <div className="flex min-h-screen bg-background font-sans text-text-primary antialiased">
       {/* ─── DESKTOP SIDEBAR ────────────────────────────────────────────────── */}
@@ -48,22 +72,22 @@ export default function DashboardLayout({
           </Link>
 
           {/* Profile Card */}
-          <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50">
-            <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20">
+          <Link href="/owner-profile" className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50 hover:bg-surface-container-high transition-all cursor-pointer">
+            <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20 shrink-0">
               <img
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"
-                alt="Sarah - Profile"
+                src={ownerInfo.avatar}
+                alt={`${displayName} - Profile`}
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-label-md text-on-surface">Sarah</span>
+              <span className="text-label-md text-on-surface font-semibold">{displayName}</span>
               <span className="text-label-sm text-text-muted mt-0.5">Owner Portal</span>
               <span className="mt-1 w-max rounded-full bg-primary-fixed px-2 py-0.5 text-[10px] font-semibold text-on-primary-fixed">
                 Premium Partner
               </span>
             </div>
-          </div>
+          </Link>
 
           {/* Main Navigation */}
           <nav className="flex flex-col gap-1.5">
@@ -160,17 +184,21 @@ export default function DashboardLayout({
             </div>
 
             {/* Profile */}
-            <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50">
+            <Link
+              href="/owner-profile"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50 hover:bg-surface-container-high transition-all cursor-pointer"
+            >
               <img
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"
-                alt="Sarah - Profile"
-                className="h-9 w-9 rounded-full border border-primary-container/20 object-cover"
+                src={ownerInfo.avatar}
+                alt={`${displayName} - Profile`}
+                className="h-9 w-9 rounded-full border border-primary-container/20 object-cover shrink-0"
               />
               <div className="flex flex-col">
-                <span className="text-label-md text-on-surface font-semibold">Sarah</span>
+                <span className="text-label-md text-on-surface font-semibold">{displayName}</span>
                 <span className="text-label-sm text-text-muted">Owner Portal</span>
               </div>
-            </div>
+            </Link>
 
             {/* Navigation */}
             <nav className="flex flex-col gap-1">
