@@ -306,7 +306,7 @@ paths:
                   data:
                     $ref: '#/components/schemas/VenueClosure'
         400:
-          description: Invalid dates, overlap validation failed, or schema mismatched
+          description: Invalid dates, start time must be before end time, or schema mismatched
           content:
             application/json:
               schema:

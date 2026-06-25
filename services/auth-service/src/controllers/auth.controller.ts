@@ -26,11 +26,14 @@ export class AuthController {
       const result = await this.authService.login(email, password);
       res.status(200).json({ success: true, data: result });
     } catch (err: any) {
+      // Normalize error to ensure it has a string message
+      const errorMessage = err instanceof Error ? err.message : String(err);
+
       if (
-        err.message.includes('Invalid email or password') ||
-        err.message.includes('must be provided')
+        errorMessage.includes('Invalid email or password') ||
+        errorMessage.includes('must be provided')
       ) {
-        res.status(401).json({ success: false, message: err.message });
+        res.status(401).json({ success: false, message: errorMessage });
       } else {
         res.status(500).json({
           success: false,

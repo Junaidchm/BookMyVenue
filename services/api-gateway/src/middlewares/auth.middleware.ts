@@ -10,10 +10,18 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
     const token = authHeader.split(' ')[1];
     try {
       const decoded = jwt.verify(token, env.JWT_SECRET) as any;
-      (req as any).user = {
-        id: decoded.sub,
-        roles: decoded.roles || [],
-      };
+
+      // Validate decoded payload shape
+      if (!decoded.sub || typeof decoded.sub !== 'number') {
+        tokenError = new Error('Invalid token: missing or invalid subject');
+      } else if (!Array.isArray(decoded.roles)) {
+        tokenError = new Error('Invalid token: roles must be an array');
+      } else {
+        (req as any).user = {
+          id: decoded.sub,
+          roles: decoded.roles,
+        };
+      }
     } catch (err) {
       tokenError = err;
     }

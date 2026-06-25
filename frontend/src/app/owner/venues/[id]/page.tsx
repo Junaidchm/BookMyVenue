@@ -85,6 +85,9 @@ export default function VenueDetailsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: venueKeys.closures(id) });
     },
+    onError: (err: Error) => {
+      setClosureError(err.message || "Failed to delete closure. Please try again.");
+    },
   });
 
   // ─── Handlers ───
