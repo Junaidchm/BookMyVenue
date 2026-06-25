@@ -4,13 +4,19 @@ import fs from 'fs';
 
 const isDocker = fs.existsSync('/.dockerenv');
 
-if (isDocker && process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = process.env.DATABASE_URL.replace('@localhost:', '@bmv_db:');
+if (isDocker) {
+  if (process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = process.env.DATABASE_URL.replace('@localhost:', '@bmv_db:');
+  }
+  if (process.env.AUTH_SERVICE_URL) {
+    process.env.AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL.replace('//localhost:', '//auth-service:');
+  }
 }
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(5002),
   DATABASE_URL: z.string().url(),
+  AUTH_SERVICE_URL: z.string().url().default('http://localhost:5003'),
 });
 
 const parsed = envSchema.safeParse(process.env);
