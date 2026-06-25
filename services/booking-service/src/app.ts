@@ -16,8 +16,11 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+import { bookingRoutes } from './routes/booking.routes';
+
 // Register routes
-app.use('/bookings', healthRoutes);
+app.use('/', healthRoutes);
+app.use('/bookings', bookingRoutes);
 
 // Generic 404 handler
 app.use((req, res) => {
