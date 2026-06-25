@@ -59,19 +59,19 @@ export default function AdminLayout({
         </div>
 
         {/* Admin Profile */}
-        <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="w-10 h-10 rounded-full bg-surface-container overflow-hidden ring-2 ring-outline-variant/30">
+        <Link href="/admin-profile" className="flex items-center gap-3 mb-8 px-2 hover:bg-surface-container-low p-1.5 rounded-xl transition-all duration-200 cursor-pointer">
+          <div className="w-10 h-10 rounded-full bg-surface-container overflow-hidden ring-2 ring-outline-variant/30 shrink-0">
             <img
               src="https://i.pravatar.cc/40?img=3"
               alt="Admin avatar"
               className="w-full h-full object-cover"
             />
           </div>
-          <div>
-            <p className="font-semibold text-sm text-on-surface">Admin Console</p>
+          <div className="min-w-0">
+            <p className="font-semibold text-sm text-on-surface truncate">Admin Console</p>
             <p className="text-xs text-text-muted">Marketplace Control</p>
           </div>
-        </div>
+        </Link>
 
         {/* Nav Items */}
         <nav className="flex flex-col gap-1" aria-label="Admin navigation">

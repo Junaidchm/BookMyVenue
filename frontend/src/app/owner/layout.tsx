@@ -72,7 +72,7 @@ export default function DashboardLayout({
           </Link>
 
           {/* Profile Card */}
-          <Link href="/owner-profile" className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50 hover:bg-surface-container-high transition-all cursor-pointer">
+          <Link href="/owner/profile" className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50 hover:bg-surface-container-high transition-all cursor-pointer">
             <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20 shrink-0">
               <img
                 src={ownerInfo.avatar}
@@ -185,7 +185,7 @@ export default function DashboardLayout({
 
             {/* Profile */}
             <Link
-              href="/owner-profile"
+              href="/owner/profile"
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50 hover:bg-surface-container-high transition-all cursor-pointer"
             >
