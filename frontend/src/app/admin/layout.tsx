@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   X,
+  Calendar,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/session-provider";
@@ -18,7 +19,7 @@ import { useAuth } from "@/components/auth/session-provider";
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Approvals", href: "/admin/approvals", icon: CheckSquare },
-  { label: "Reports", href: "/admin/reports", icon: BarChart2, comingSoon: true },
+  { label: "Bookings", href: "/admin/bookings", icon: Calendar, comingSoon: true },
   { label: "Users", href: "/admin/users", icon: Users },
   { label: "Venues", href: "/admin/venues", icon: MapPin },
 ];
