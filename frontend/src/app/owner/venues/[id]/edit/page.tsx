@@ -154,7 +154,7 @@ export default function EditVenuePage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const id = params.id as string;
+  const id = params?.id as string;
 
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
@@ -164,9 +164,10 @@ export default function EditVenuePage() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   // ── Fetch Details Query ──
-  const { data: venue, isLoading: isLoadingVenue, isError: isErrorVenue } = useQuery(
-    venueDetailsQueryOptions(id)
-  );
+  const { data: venue, isLoading: isLoadingVenue, isError: isErrorVenue } = useQuery({
+    ...venueDetailsQueryOptions(id),
+    enabled: !!id,
+  });
 
   // ── Populating Form State ──
   useEffect(() => {
