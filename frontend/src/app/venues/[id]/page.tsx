@@ -17,8 +17,13 @@ type VenuePageProps = {
 };
 
 export async function generateStaticParams() {
-  const venues = await getVenues();
-  return venues.map((v) => ({ id: v.id }));
+  try {
+    const venues = await getVenues();
+    return venues.map((v) => ({ id: String(v.id) }));
+  } catch (error) {
+    console.error("Failed to generate static params for venues:", error);
+    return [];
+  }
 }
 
 export async function generateMetadata({
