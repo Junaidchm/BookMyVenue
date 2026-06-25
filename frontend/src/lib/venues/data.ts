@@ -22,6 +22,8 @@ export type Venue = {
   pricePerDay: number;
   pricingType?: "PER_HOUR" | "PER_SESSION";
   basePrice?: number;
+  category?: string;
+  bufferTimeMinutes?: number;
   sessions?: {
     name: string;
     startTime: string;

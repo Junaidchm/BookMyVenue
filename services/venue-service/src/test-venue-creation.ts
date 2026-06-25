@@ -1,4 +1,5 @@
-import { VenueService, CreateVenueDto } from './services/venue.service';
+import { VenueService } from './services/venue.service';
+import { CreateVenueDto } from './dtos/venue.dto';
 import { prisma, connectDb, disconnectDb } from './prisma/prisma';
 import { PricingType } from '@prisma/client';
 
