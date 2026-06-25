@@ -3,11 +3,12 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllAdminVenues, approveVenue, rejectVenue, PendingVenue } from "@/lib/admin/api";
+import Image from "next/image";
 import {
   Search, Filter, MapPin, AlertTriangle,
   MoreVertical, ChevronLeft, ChevronRight, TrendingUp,
   ArrowUpDown, ArrowUp, ArrowDown, Eye, CheckCircle, XCircle,
-  Trash2, X
+  X
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ export default function VenuesPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
   // Fetch venues
   const { data: fetchedVenues, isLoading, error } = useQuery({
@@ -57,12 +59,12 @@ export default function VenuesPage() {
     queryFn: getAllAdminVenues,
   });
 
-  const venues = fetchedVenues || [];
+  const venues = useMemo(() => fetchedVenues || [], [fetchedVenues]);
 
   // Mutations
   const approveMutation = useMutation({
     mutationFn: (id: number) => approveVenue(id),
-    onSuccess: (_, id) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-venues"] });
       showToast(`Venue approved successfully`);
     },
@@ -73,9 +75,9 @@ export default function VenuesPage() {
 
   const rejectMutation = useMutation({
     mutationFn: (id: number) => rejectVenue(id),
-    onSuccess: (_, id) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-venues"] });
-      showToast(`Venue rejected successfully`, "error");
+      showToast(`Venue rejected successfully`, "success");
     },
     onError: (error) => {
       showToast(error.message || "Failed to reject venue", "error");
@@ -89,6 +91,11 @@ export default function VenuesPage() {
   const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  // Handle image errors
+  const handleImageError = useCallback((venueId: number) => {
+    setImageErrors((prev) => ({ ...prev, [venueId]: true }));
   }, []);
 
   // ─── Sorting ────────────────────────────────────────────────────────────────
@@ -156,9 +163,13 @@ export default function VenuesPage() {
   }, [venues, activeTab, searchQuery, sortField, sortDirection]);
 
   const totalPages = Math.max(1, Math.ceil(processedVenues.length / ITEMS_PER_PAGE));
+
+  // Ensure currentPage doesn't exceed totalPages
+  const validCurrentPage = Math.min(currentPage, totalPages);
+
   const paginatedVenues = processedVenues.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (validCurrentPage - 1) * ITEMS_PER_PAGE,
+    validCurrentPage * ITEMS_PER_PAGE
   );
 
   // Counts for tabs
@@ -416,9 +427,15 @@ export default function VenuesPage() {
                       >
                         <TableCell className="pl-6 py-4">
                           <div className="flex items-center gap-4">
-                            {venue.imageUrls && venue.imageUrls.length > 0 ? (
-                               <div className="h-10 w-10 border border-border-subtle rounded-md overflow-hidden shrink-0">
-                                <img src={venue.imageUrls[0]} alt={venue.title} className="object-cover w-full h-full" />
+                            {venue.imageUrls && venue.imageUrls.length > 0 && !imageErrors[venue.id] ? (
+                               <div className="h-10 w-10 border border-border-subtle rounded-md overflow-hidden shrink-0 relative">
+                                <Image
+                                  src={venue.imageUrls[0]}
+                                  alt={venue.title}
+                                  fill
+                                  className="object-cover"
+                                  onError={() => handleImageError(venue.id)}
+                                />
                                </div>
                             ) : (
                                 <div className="h-10 w-10 border border-border-subtle rounded-md bg-surface-container-low flex items-center justify-center shrink-0">
@@ -578,9 +595,15 @@ export default function VenuesPage() {
             <div className="flex flex-col gap-5 py-2">
               {/* Venue header */}
               <div className="flex items-start gap-4">
-                {viewVenue.imageUrls && viewVenue.imageUrls.length > 0 ? (
-                  <div className="h-24 w-32 border border-border-subtle rounded-md overflow-hidden shrink-0">
-                    <img src={viewVenue.imageUrls[0]} alt={viewVenue.title} className="object-cover w-full h-full" />
+                {viewVenue.imageUrls && viewVenue.imageUrls.length > 0 && !imageErrors[viewVenue.id] ? (
+                  <div className="h-24 w-32 border border-border-subtle rounded-md overflow-hidden shrink-0 relative">
+                    <Image
+                      src={viewVenue.imageUrls[0]}
+                      alt={viewVenue.title}
+                      fill
+                      className="object-cover"
+                      onError={() => handleImageError(viewVenue.id)}
+                    />
                   </div>
                 ) : (
                   <div className="h-24 w-32 border border-border-subtle rounded-md bg-surface-container-low flex items-center justify-center shrink-0">
