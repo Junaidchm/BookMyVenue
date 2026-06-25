@@ -24,13 +24,13 @@ export class RiskScoringService {
     let isKycVerified = false;
 
     try {
-      // Assuming Auth Service exposes an endpoint to get user details
-      const response = await axios.get(`${env.AUTH_SERVICE_URL}/admin/users`, {
-        headers: { 'x-user-roles': 'ADMIN' } // Internal call using admin privilege
+      // Fetch specific user details from Auth Service
+      const response = await axios.get(`${env.AUTH_SERVICE_URL}/admin/users/${userId}`, {
+        headers: { 'x-user-roles': 'ADMIN' }, // Internal call using admin privilege
+        timeout: 5000 // 5 seconds timeout
       });
       
-      const users = response.data?.data || [];
-      const user = users.find((u: any) => u.id === userId);
+      const user = response.data?.data;
       
       if (user) {
         isKycVerified = !!user.isKycVerified;
@@ -41,9 +41,17 @@ export class RiskScoringService {
         accountAgeHours = 0;
         isKycVerified = false;
       }
-    } catch (error) {
-      console.error('Failed to fetch user data from Auth Service:', error);
-      // Fallback
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        console.warn(`User with ID ${userId} not found in Auth Service. Defaulting to high risk.`);
+        accountAgeHours = 0;
+        isKycVerified = false;
+      } else {
+        console.error(`Auth Service connection failed when checking user ${userId}:`, error.message);
+        // Safe fallback: Treat as a standard unverified user with 7 days account age (moderate risk)
+        accountAgeHours = 168; // 7 days
+        isKycVerified = false;
+      }
     }
 
     // 2. Fetch User Booking History from DB

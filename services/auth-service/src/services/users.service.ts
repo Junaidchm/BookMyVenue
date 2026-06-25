@@ -105,4 +105,18 @@ export class UsersService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async findById(id: number) {
+    return await prisma.user.findUnique({
+      where: { id },
+      include: {
+        userRoles: {
+          include: {
+            role: true,
+          },
+        },
+        ownerProfile: true,
+      },
+    });
+  }
 }
