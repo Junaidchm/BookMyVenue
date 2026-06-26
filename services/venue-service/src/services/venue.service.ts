@@ -112,6 +112,16 @@ export class VenueService {
       amenities,
       capacities,
       sessions,
+      // Location
+      address,
+      city,
+      state,
+      country,
+      zipCode,
+      latitude,
+      longitude,
+      // Operating Schedule
+      operatingDays,
     } = data;
 
     // Use Prisma nested write to insert everything atomically
@@ -125,6 +135,16 @@ export class VenueService {
         pricingType,
         bufferTimeMinutes,
         imageUrls,
+        // Location
+        address,
+        city,
+        state,
+        country,
+        zipCode,
+        latitude,
+        longitude,
+        // Operating Schedule
+        operatingDays: operatingDays ?? [],
         // Nested relation inserts
         capacities: {
           create: capacities.map((cap) => ({
@@ -201,6 +221,16 @@ export class VenueService {
       amenities,
       capacities,
       sessions,
+      // Location
+      address,
+      city,
+      state,
+      country,
+      zipCode,
+      latitude,
+      longitude,
+      // Operating Schedule
+      operatingDays,
     } = data;
 
     const updatedVenue = await prisma.$transaction(async (tx) => {
@@ -268,6 +298,16 @@ export class VenueService {
           bufferTimeMinutes:
             bufferTimeMinutes !== undefined ? bufferTimeMinutes : undefined,
           imageUrls: imageUrls !== undefined ? imageUrls : undefined,
+          // Location
+          address: address !== undefined ? address : undefined,
+          city: city !== undefined ? city : undefined,
+          state: state !== undefined ? state : undefined,
+          country: country !== undefined ? country : undefined,
+          zipCode: zipCode !== undefined ? zipCode : undefined,
+          latitude: latitude !== undefined ? latitude : undefined,
+          longitude: longitude !== undefined ? longitude : undefined,
+          // Operating Schedule
+          operatingDays: operatingDays !== undefined ? operatingDays : undefined,
           status: 'PENDING',
         },
         include: {

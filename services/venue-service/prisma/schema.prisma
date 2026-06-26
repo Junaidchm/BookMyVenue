@@ -39,8 +39,21 @@ model Venue {
   bufferTimeMinutes Int         @default(60) // Crucial for turnaround gaps
   status            VenueStatus @default(PENDING)
   imageUrls         String[]
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+
+  // Location
+  address   String?
+  city      String?
+  state     String?
+  country   String?
+  zipCode   String?
+  latitude  Float?
+  longitude Float?
+
+  // Operating Schedule
+  operatingDays String[] // e.g. ["MON", "TUE", "WED"]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relational Matrix
   amenities  VenueAmenity[]

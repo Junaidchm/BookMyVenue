@@ -42,6 +42,16 @@ export type ApiVenue = {
   amenities: ApiAmenity[];
   capacities: ApiCapacity[];
   sessions: ApiSession[];
+  // Location
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  zipCode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  // Operating Schedule
+  operatingDays: string[];
 };
 
 type VenuesApiResponse = {
@@ -112,7 +122,18 @@ function mapAmenities(amenities: ApiAmenity[]): VenueAmenity[] {
 }
 
 export function mapApiVenueToVenue(venue: ApiVenue): Venue {
-  const { location, city, neighborhood } = parseLocation(venue.description);
+  // Use real location fields; fall back to description parsing for legacy data
+  const city = venue.city ?? parseLocation(venue.description).city;
+  const location = [
+    venue.address,
+    venue.city,
+    venue.state,
+    venue.country,
+  ]
+    .filter(Boolean)
+    .join(", ") || parseLocation(venue.description).location;
+  const neighborhood = venue.city ?? parseLocation(venue.description).neighborhood;
+
   const amenityNames = venue.amenities.map((a) => a.amenity.name);
   const mainImage =
     venue.imageUrls[0] ??
@@ -154,6 +175,15 @@ export function mapApiVenueToVenue(venue: ApiVenue): Venue {
     },
     amenities: mapAmenities(venue.amenities),
     reviews: [],
+    // Location fields
+    address: venue.address ?? undefined,
+    state: venue.state ?? undefined,
+    country: venue.country ?? undefined,
+    zipCode: venue.zipCode ?? undefined,
+    latitude: venue.latitude ?? undefined,
+    longitude: venue.longitude ?? undefined,
+    // Operating schedule
+    operatingDays: venue.operatingDays ?? [],
   };
 }
 
@@ -200,6 +230,16 @@ export type CreateVenuePayload = {
     endTime: string;
     sessionPrice: number;
   }[];
+  // Location
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode?: string;
+  latitude?: number;
+  longitude?: number;
+  // Operating Schedule
+  operatingDays?: string[];
 };
 
 export async function createVenue(payload: CreateVenuePayload): Promise<ApiVenue> {
