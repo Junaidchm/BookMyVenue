@@ -302,7 +302,7 @@
 
   /* Fonts (loaded in layout.tsx) */
   --font-sans: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 
   /* Radius → rounded-* utilities */
   --radius-sm: 0.25rem;

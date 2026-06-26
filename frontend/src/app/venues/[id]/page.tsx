@@ -11,6 +11,7 @@ import { VenueBookingCard } from "@/components/venues/venue-booking-card";
 import { VenueGallery } from "@/components/venues/venue-gallery";
 import { VenueReviews } from "@/components/venues/venue-reviews";
 import { getVenues, getVenueById } from "@/lib/venues/api";
+import { VenueDetailError } from "@/components/venues/venue-detail-error";
 
 type VenuePageProps = {
   params: Promise<{ id: string }>;
@@ -30,17 +31,43 @@ export async function generateMetadata({
   params,
 }: VenuePageProps): Promise<Metadata> {
   const { id } = await params;
-  const venue = await getVenueById(id);
-  if (!venue) return { title: "Venue Not Found | BookMyVenue" };
-  return {
-    title: `${venue.name} | BookMyVenue`,
-    description: venue.description.slice(0, 160),
-  };
+  try {
+    const venue = await getVenueById(id);
+    if (!venue) return { title: "Venue Not Found | BookMyVenue" };
+    return {
+      title: `${venue.name} | BookMyVenue`,
+      description: venue.description.slice(0, 160),
+    };
+  } catch (error) {
+    console.error("Failed to fetch venue details for metadata:", error);
+    return { title: "Venue Details | BookMyVenue" };
+  }
 }
 
 export default async function VenueDetailPage({ params }: VenuePageProps) {
   const { id } = await params;
-  const venue = await getVenueById(id);
+  
+  let venue;
+  let fetchError = null;
+  
+  try {
+    venue = await getVenueById(id);
+  } catch (error: any) {
+    console.error("Failed to fetch venue detail page:", error);
+    fetchError = error?.message || "Failed to retrieve venue details.";
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background antialiased">
+        <SiteNavbar />
+        <main className="mx-auto w-full max-w-[var(--container-max)] flex-1 px-gutter pt-28 pb-16 flex items-center justify-center">
+          <VenueDetailError message={fetchError} />
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
 
   if (!venue) {
     notFound();
