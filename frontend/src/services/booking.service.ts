@@ -18,6 +18,16 @@ export const bookingService = {
   },
 
   /**
+   * Check availability for a specific venue and time slot
+   */
+  checkAvailability: async (venueId: string | number, startTime: string, endTime: string) => {
+    const response = await apiClient.get("/bookings/availability", {
+      params: { venueId, startTime, endTime }
+    });
+    return response.data;
+  },
+
+  /**
    * Create a new booking
    */
   createBooking: async (payload: Record<string, any>) => {
@@ -30,6 +40,20 @@ export const bookingService = {
    */
   cancelBooking: async (id: string) => {
     const response = await apiClient.delete(`/bookings/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Simulate confirming a booking via webhook trigger
+   */
+  confirmBooking: async (bookingId: number, paymentId: string) => {
+    const response = await apiClient.post("/bookings/webhook", {
+      event: "payment.succeeded",
+      data: {
+        bookingId,
+        paymentId
+      }
+    });
     return response.data;
   },
 };

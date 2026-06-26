@@ -219,3 +219,97 @@ export const handleWebhook = async (req: Request, res: Response): Promise<any> =
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
+
+export const checkAvailability = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { venueId, startTime, endTime } = req.query;
+
+    if (!venueId || !startTime || !endTime) {
+      return res.status(400).json({ success: false, message: 'Missing required query parameters: venueId, startTime, endTime' });
+    }
+
+    const parsedVenueId = parseInt(venueId as string, 10);
+    const start = new Date(startTime as string);
+    const end = new Date(endTime as string);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
+      return res.status(400).json({ success: false, message: 'Invalid start or end time' });
+    }
+
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+    const overlappingBookings = await prisma.booking.findMany({
+      where: {
+        venueId: parsedVenueId,
+        startTime: { lt: end },
+        endTime: { gt: start },
+        OR: [
+          { status: 'CONFIRMED' },
+          {
+            status: 'PENDING_PAYMENT',
+            createdAt: { gte: tenMinutesAgo },
+          },
+        ],
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      available: overlappingBookings.length === 0
+    });
+  } catch (error) {
+    console.error('Error checking availability:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+export const getBookingById = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const parsedId = parseInt(id as string, 10);
+
+    if (isNaN(parsedId)) {
+      return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: parsedId }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: booking
+    });
+  } catch (error) {
+    console.error('Error fetching booking by id:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+export const getBookings = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const userIdStr = req.headers['x-user-id'] as string;
+    if (!userIdStr) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
+    }
+    const userId = parseInt(userIdStr, 10);
+
+    const bookings = await prisma.booking.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: bookings
+    });
+  } catch (error) {
+    console.error('Error fetching bookings:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
