@@ -50,6 +50,18 @@ export const createVenueSchema = z
         .default([]),
       capacities: z.array(capacitySchema).default([]),
       sessions: z.array(sessionSchema).default([]),
+      // Location
+      address: z.string().min(1, 'Address is required'),
+      city: z.string().min(1, 'City is required'),
+      state: z.string().min(1, 'State is required'),
+      country: z.string().min(1, 'Country is required'),
+      zipCode: z.string().optional(),
+      latitude: z.number().min(-90).max(90).optional(),
+      longitude: z.number().min(-180).max(180).optional(),
+      // Operating Schedule
+      operatingDays: z
+        .array(z.enum(['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']))
+        .optional(),
     }),
   })
   .superRefine((data, ctx) => {
@@ -94,6 +106,18 @@ export const updateVenueSchema = z
         .optional(),
       capacities: z.array(capacitySchema).optional(),
       sessions: z.array(sessionSchema).optional(),
+      // Location
+      address: z.string().min(1).optional(),
+      city: z.string().min(1).optional(),
+      state: z.string().min(1).optional(),
+      country: z.string().min(1).optional(),
+      zipCode: z.string().optional(),
+      latitude: z.number().min(-90).max(90).optional(),
+      longitude: z.number().min(-180).max(180).optional(),
+      // Operating Schedule
+      operatingDays: z
+        .array(z.enum(['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']))
+        .optional(),
     }),
     params: z.object({
       id: z.string().regex(/^\d+$/, 'Venue ID must be a positive integer'),
