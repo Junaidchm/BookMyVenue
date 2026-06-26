@@ -8,9 +8,8 @@ if (isDocker) {
   if (process.env.DATABASE_URL) {
     process.env.DATABASE_URL = process.env.DATABASE_URL.replace('@localhost:', '@bmv_db:');
   }
-  if (process.env.AUTH_SERVICE_URL) {
-    process.env.AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL.replace('//localhost:', '//auth-service:');
-  }
+  const authUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:5003';
+  process.env.AUTH_SERVICE_URL = authUrl.replace('//localhost:', '//auth-service:');
 }
 
 const envSchema = z.object({

@@ -23,7 +23,7 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {
   console.error(
-    '❌ Invalid Environment Variables for venue-service:',
+    'Invalid Environment Variables for venue-service:',
     parsed.error.format(),
   );
   process.exit(1);
