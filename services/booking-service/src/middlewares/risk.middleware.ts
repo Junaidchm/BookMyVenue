@@ -22,31 +22,14 @@ export const checkBookingRisk = async (req: Request, res: Response, next: NextFu
     (req as any).riskScore = riskResult.score;
     (req as any).riskFactors = riskResult.factors;
 
-    if (riskResult.score > 75) {
-      console.warn(`[RISK ENGINE] High Risk Booking Blocked! User ID: ${userId}, Score: ${riskResult.score}`);
-      return res.status(403).json({
-        success: false,
-        status: 'manual_review_required',
-        message: 'Your booking request requires manual review. Please contact support.',
-        riskScore: riskResult.score
-      });
+    if (riskResult.score >= 85) {
+      console.warn(`[RISK ENGINE] High Risk Booking Allowed with Non-Refundable Policy. User ID: ${userId}, Score: ${riskResult.score}`);
+    } else if (riskResult.score >= 40) {
+      console.info(`[RISK ENGINE] Medium Risk Booking Allowed with Reduced Refund Policy. User ID: ${userId}, Score: ${riskResult.score}`);
+    } else {
+      console.info(`[RISK ENGINE] Low Risk Booking Approved. User ID: ${userId}, Score: ${riskResult.score}`);
     }
 
-    if (riskResult.score >= 40) {
-      console.info(`[RISK ENGINE] Medium Risk Booking Challenged. User ID: ${userId}, Score: ${riskResult.score}`);
-      return res.status(403).json({
-        success: false,
-        message: 'Additional verification required for this booking.',
-        challenge: {
-          kyc_required: true,
-          increased_deposit_required: true
-        },
-        riskScore: riskResult.score
-      });
-    }
-
-    // Low Risk: Pass to next()
-    console.info(`[RISK ENGINE] Low Risk Booking Approved. User ID: ${userId}, Score: ${riskResult.score}`);
     next();
   } catch (error) {
     console.error('[RISK ENGINE] Error calculating risk score:', error);
