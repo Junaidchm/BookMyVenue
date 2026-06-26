@@ -47,6 +47,7 @@ model Venue {
   capacities VenueCapacity[]
   sessions   VenueSession[]
   closures   VenueClosure[]
+  savedBy    SavedVenue[]
 
   @@map("venues")
 }
@@ -109,4 +110,17 @@ model VenueClosure {
 
   @@index([venueId, startTime, endTime])
   @@map("venue_closures")
+}
+
+// User's Saved Venues
+model SavedVenue {
+  id        Int      @id @default(autoincrement())
+  userId    Int // Logical FK to Auth User ID
+  venueId   Int
+  createdAt DateTime @default(now())
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, venueId])
+  @@map("saved_venues")
 }

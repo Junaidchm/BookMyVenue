@@ -413,3 +413,55 @@ export async function deleteVenueClosure(
   }
 }
 
+// ─── Saved Venues ─────────────────────────────────────────────────────────
+
+export async function getSavedVenues(): Promise<Venue[]> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/venues/saved`, {
+    headers,
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to fetch saved venues"
+    );
+  }
+
+  const body = (await res.json()) as { success: boolean; data: ApiVenue[] };
+  return (body.data ?? []).map(mapApiVenueToVenue);
+}
+
+export async function saveVenue(venueId: string | number): Promise<void> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/venues/${venueId}/save`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to save venue"
+    );
+  }
+}
+
+export async function unsaveVenue(venueId: string | number): Promise<void> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/venues/${venueId}/save`, {
+    method: "DELETE",
+    headers,
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to unsave venue"
+    );
+  }
+}
+

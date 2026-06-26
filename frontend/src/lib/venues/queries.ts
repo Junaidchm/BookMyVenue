@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getVenues, getMyVenues, getVenueById, getVenueClosures } from "@/lib/venues/api";
+import { getVenues, getMyVenues, getVenueById, getVenueClosures, getSavedVenues } from "@/lib/venues/api";
 import { venueKeys } from "@/lib/venues/keys";
 
 export function venuesQueryOptions() {
@@ -14,6 +14,13 @@ export function myVenuesQueryOptions() {
   return queryOptions({
     queryKey: venueKeys.myList(),
     queryFn: getMyVenues,
+  });
+}
+
+export function savedVenuesQueryOptions() {
+  return queryOptions({
+    queryKey: venueKeys.savedList(),
+    queryFn: getSavedVenues,
   });
 }
 
