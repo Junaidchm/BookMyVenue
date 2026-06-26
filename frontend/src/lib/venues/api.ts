@@ -4,7 +4,8 @@ import { getSession } from "next-auth/react";
 async function getAuthHeaders(): Promise<HeadersInit> {
   if (typeof window !== "undefined") {
     const session = await getSession();
-    const token = (session as any)?.token || (session as any)?.accessToken;
+    const token = (session as { token?: string; accessToken?: string } | null)?.token || 
+                  (session as { token?: string; accessToken?: string } | null)?.accessToken;
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
   return {};
@@ -36,6 +37,7 @@ export type ApiVenue = {
   category: string;
   basePrice: string | number;
   pricingType: "PER_HOUR" | "PER_SESSION";
+  bufferTimeMinutes?: number;
   imageUrls: string[];
   amenities: ApiAmenity[];
   capacities: ApiCapacity[];
@@ -131,6 +133,8 @@ export function mapApiVenueToVenue(venue: ApiVenue): Venue {
     pricePerDay: toDailyPrice(venue),
     pricingType: venue.pricingType,
     basePrice: Number(venue.basePrice),
+    category: venue.category,
+    bufferTimeMinutes: venue.bufferTimeMinutes,
     sessions: venue.sessions?.map((s) => ({
       name: s.name,
       startTime: s.startTime,
@@ -283,3 +287,143 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   const body = await res.json();
   return body.secure_url as string;
 }
+
+export async function getMyVenues(): Promise<Venue[]> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/venues/my-venues`, {
+    headers: { ...headers },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to fetch my venues"
+    );
+  }
+
+  const body = (await res.json()) as { success: boolean; data: ApiVenue[] };
+  return (body.data ?? []).map(mapApiVenueToVenue);
+}
+
+// ─── Venue Update & Delete ────────────────────────────────────────────────
+export type UpdateVenuePayload = Partial<CreateVenuePayload>;
+
+export async function updateVenue(id: string | number, payload: UpdateVenuePayload): Promise<ApiVenue> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/venues/${id}`, {
+    method: "PUT",
+    headers: { ...headers, "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to update venue"
+    );
+  }
+
+  const body = await res.json();
+  return body.data as ApiVenue;
+}
+
+export async function deleteVenue(id: string | number): Promise<void> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/venues/${id}`, {
+    method: "DELETE",
+    headers,
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to delete venue"
+    );
+  }
+}
+
+// ─── Venue Closures ───────────────────────────────────────────────────────
+export type ClosureType = "MAINTENANCE" | "HOLIDAY" | "PRIVATE_EVENT";
+
+export type CreateClosurePayload = {
+  type: ClosureType;
+  startTime: string;
+  endTime: string;
+  description?: string;
+};
+
+export type ApiClosure = {
+  id: number;
+  venueId: number;
+  type: ClosureType;
+  startTime: string;
+  endTime: string;
+  description: string | null;
+};
+
+export async function getVenueClosures(venueId: string | number): Promise<ApiClosure[]> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/venues/${venueId}/closures`, {
+    headers,
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to fetch venue closures"
+    );
+  }
+
+  const body = await res.json();
+  return body.data as ApiClosure[];
+}
+
+export async function createVenueClosure(
+  venueId: string | number,
+  payload: CreateClosurePayload
+): Promise<ApiClosure> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/venues/${venueId}/closures`, {
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to create venue closure"
+    );
+  }
+
+  const body = await res.json();
+  return body.data as ApiClosure;
+}
+
+export async function deleteVenueClosure(
+  venueId: string | number,
+  closureId: string | number
+): Promise<void> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(
+    `${getApiBaseUrl()}/venues/${venueId}/closures/${closureId}`,
+    {
+      method: "DELETE",
+      headers,
+      credentials: "include",
+    }
+  );
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to delete venue closure"
+    );
+  }
+}
+
