@@ -151,8 +151,16 @@ function validateStep(step: number, form: FormData): StepErrors {
     if (!form.city.trim()) errors.city = "City is required";
     if (!form.state.trim()) errors.state = "State is required";
     if (!form.country.trim()) errors.country = "Country is required";
-    if (form.latitude && isNaN(Number(form.latitude))) errors.latitude = "Enter a valid latitude";
-    if (form.longitude && isNaN(Number(form.longitude))) errors.longitude = "Enter a valid longitude";
+    if (form.latitude) {
+      const lat = Number(form.latitude);
+      if (isNaN(lat)) errors.latitude = "Enter a valid latitude";
+      else if (lat < -90 || lat > 90) errors.latitude = "Latitude must be between -90 and 90";
+    }
+    if (form.longitude) {
+      const lng = Number(form.longitude);
+      if (isNaN(lng)) errors.longitude = "Enter a valid longitude";
+      else if (lng < -180 || lng > 180) errors.longitude = "Longitude must be between -180 and 180";
+    }
   }
 
   if (step === 3) {
@@ -343,10 +351,10 @@ export default function NewVenuePage() {
             }))
           : undefined,
       // Location
-      address: form.address.trim() || undefined,
-      city: form.city.trim() || undefined,
-      state: form.state.trim() || undefined,
-      country: form.country.trim() || undefined,
+      address: form.address.trim(),
+      city: form.city.trim(),
+      state: form.state.trim(),
+      country: form.country.trim(),
       zipCode: form.zipCode.trim() || undefined,
       latitude: form.latitude ? Number(form.latitude) : undefined,
       longitude: form.longitude ? Number(form.longitude) : undefined,
@@ -1035,6 +1043,7 @@ function StepPricingSchedule({
                       : [...form.operatingDays, day.value];
                     updateField("operatingDays", next);
                   }}
+                  aria-pressed={selected}
                   className={cn(
                     "rounded-full border-2 px-4 py-2 text-label-sm font-bold transition-all duration-200",
                     selected

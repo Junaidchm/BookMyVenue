@@ -231,10 +231,10 @@ export type CreateVenuePayload = {
     sessionPrice: number;
   }[];
   // Location
-  address?: string;
-  city?: string;
-  state?: string;
-  country?: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
   zipCode?: string;
   latitude?: number;
   longitude?: number;
