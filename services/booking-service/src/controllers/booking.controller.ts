@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../prisma/prisma';
+import { RiskScoringService } from '../services/risk-scoring.service';
 
 // Helper to run serializable transaction with retries
 const runSerializableTransaction = async <T>(
@@ -100,6 +101,11 @@ export const createBooking = async (req: Request, res: Response): Promise<any> =
       });
     });
 
+    // Update risk cache asynchronously in the background
+    RiskScoringService.updateCache(userId).catch(err => 
+      console.error(`[RISK CACHE] Failed to update cache for user ${userId} after booking creation:`, err)
+    );
+
     return res.status(201).json({
       success: true,
       message: 'Booking request created successfully. Please complete your payment within 10 minutes.',
@@ -166,12 +172,30 @@ export const handleWebhook = async (req: Request, res: Response): Promise<any> =
 
     const parsedBookingId = typeof bookingId === 'string' ? parseInt(bookingId, 10) : bookingId;
 
+    // Find the booking to get its userId for cache updating
+    const bookingToConfirm = await prisma.booking.findUnique({
+      where: { id: parsedBookingId }
+    });
+
+    if (!bookingToConfirm) {
+      return res.status(404).json({ success: false, message: `Booking with ID ${parsedBookingId} not found` });
+    }
+
+    if (bookingToConfirm.status !== 'PENDING_PAYMENT') {
+      if (bookingToConfirm.status === 'CONFIRMED') {
+        console.log(`[PAYMENT WEBHOOK] Booking ${parsedBookingId} was already confirmed`);
+        return res.status(200).json({ success: true, message: 'Booking already confirmed' });
+      }
+      console.warn(`[PAYMENT WEBHOOK] Booking ${parsedBookingId} status is ${bookingToConfirm.status}, cannot confirm.`);
+      return res.status(400).json({ 
+        success: false, 
+        message: `Booking status is ${bookingToConfirm.status}, cannot be confirmed.` 
+      });
+    }
+
     // Hard Lock: Update status from PENDING_PAYMENT to CONFIRMED
-    const updatedBooking = await prisma.booking.updateMany({
-      where: {
-        id: parsedBookingId,
-        status: 'PENDING_PAYMENT'
-      },
+    await prisma.booking.update({
+      where: { id: parsedBookingId },
       data: {
         status: 'CONFIRMED',
         paymentId: paymentId ? String(paymentId) : `pay_mock_${Date.now()}`,
@@ -179,27 +203,10 @@ export const handleWebhook = async (req: Request, res: Response): Promise<any> =
       }
     });
 
-    if (updatedBooking.count === 0) {
-      // Check if booking was already confirmed or cancelled/expired
-      const existingBooking = await prisma.booking.findUnique({
-        where: { id: parsedBookingId }
-      });
-
-      if (!existingBooking) {
-        return res.status(404).json({ success: false, message: `Booking with ID ${parsedBookingId} not found` });
-      }
-
-      if (existingBooking.status === 'CONFIRMED') {
-        console.log(`[PAYMENT WEBHOOK] Booking ${parsedBookingId} was already confirmed`);
-        return res.status(200).json({ success: true, message: 'Booking already confirmed' });
-      }
-
-      console.warn(`[PAYMENT WEBHOOK] Booking ${parsedBookingId} status is ${existingBooking.status}, cannot confirm.`);
-      return res.status(400).json({ 
-        success: false, 
-        message: `Booking status is ${existingBooking.status}, cannot be confirmed.` 
-      });
-    }
+    // Update risk cache asynchronously in the background
+    RiskScoringService.updateCache(bookingToConfirm.userId).catch(err => 
+      console.error(`[RISK CACHE] Failed to update cache for user ${bookingToConfirm.userId} after webhook confirmation:`, err)
+    );
 
     console.log(`[PAYMENT WEBHOOK] Booking ${parsedBookingId} hard-locked (status updated to CONFIRMED).`);
     return res.status(200).json({

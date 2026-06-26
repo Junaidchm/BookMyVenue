@@ -6,7 +6,7 @@ const isDocker = fs.existsSync('/.dockerenv');
 
 if (isDocker) {
   if (process.env.DATABASE_URL) {
-    process.env.DATABASE_URL = process.env.DATABASE_URL.replace('@localhost:', '@bmv_db:');
+    process.env.DATABASE_URL = process.env.DATABASE_URL.replace(/@localhost(:\d+)?/, '@bmv_db:5432');
   }
   if (process.env.AUTH_SERVICE_URL) {
     process.env.AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL.replace('//localhost:', '//auth-service:');

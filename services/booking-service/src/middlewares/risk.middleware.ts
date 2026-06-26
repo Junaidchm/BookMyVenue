@@ -12,11 +12,19 @@ export const checkBookingRisk = async (req: Request, res: Response, next: NextFu
 
     const userId = parseInt(userIdStr, 10);
     
-    // Fallback target date to now if not provided, assuming booking is for today or upcoming
     const targetDateStr = req.body.bookingDate || req.body.startTime;
     const targetDate = targetDateStr ? new Date(targetDateStr) : new Date();
 
-    const riskResult = await riskScoringService.calculateRiskScore(userId, targetDate);
+    const isKycVerified = req.headers['x-user-is-kyc-verified'] === 'true';
+    const accountCreatedAtStr = req.headers['x-user-created-at'] as string;
+    const accountCreatedAt = accountCreatedAtStr ? new Date(accountCreatedAtStr) : new Date();
+
+    const riskResult = await riskScoringService.calculateRiskScore(
+      userId,
+      targetDate,
+      isKycVerified,
+      accountCreatedAt
+    );
 
     // Attach risk score to the request for logging or later use
     (req as any).riskScore = riskResult.score;
