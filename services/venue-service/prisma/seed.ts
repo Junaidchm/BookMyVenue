@@ -2,8 +2,15 @@ import { PrismaClient, PricingType, VenueStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import 'dotenv/config';
+import fs from 'fs';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const isDocker = fs.existsSync('/.dockerenv');
+let connectionString = process.env.DATABASE_URL;
+if (isDocker && connectionString) {
+  connectionString = connectionString.replace('@localhost:', '@bmv_db:');
+}
+
+const pool = new Pool({ connectionString });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 const AMENITIES = [
