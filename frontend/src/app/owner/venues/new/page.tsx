@@ -24,6 +24,7 @@ import {
   Clock,
   Sparkles,
   AlertCircle,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -37,9 +38,10 @@ import { venueKeys } from "@/lib/venues/keys";
 
 const STEPS = [
   { id: 1, label: "Basic Details", icon: Building2 },
-  { id: 2, label: "Pricing & Schedule", icon: DollarSign },
-  { id: 3, label: "Capacity & Amenities", icon: Users },
-  { id: 4, label: "Images & Review", icon: ImageIcon },
+  { id: 2, label: "Location", icon: MapPin },
+  { id: 3, label: "Pricing & Schedule", icon: DollarSign },
+  { id: 4, label: "Capacity & Amenities", icon: Users },
+  { id: 5, label: "Images & Review", icon: ImageIcon },
 ] as const;
 
 const CATEGORIES = [
@@ -59,6 +61,16 @@ const AMENITIES = [
 ] as const;
 
 const CAPACITY_TYPES = ["Seating", "Dining", "Floating", "Standing", "Theatre"] as const;
+
+const DAYS_OF_WEEK = [
+  { value: "MON", label: "Mon" },
+  { value: "TUE", label: "Tue" },
+  { value: "WED", label: "Wed" },
+  { value: "THU", label: "Thu" },
+  { value: "FRI", label: "Fri" },
+  { value: "SAT", label: "Sat" },
+  { value: "SUN", label: "Sun" },
+] as const;
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -86,6 +98,16 @@ type FormData = {
   capacities: CapacityEntry[];
   sessions: SessionEntry[];
   imageUrls: string[];
+  // Location
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  latitude: string;
+  longitude: string;
+  // Operating Schedule
+  operatingDays: string[];
 };
 
 const INITIAL_FORM: FormData = {
@@ -99,6 +121,16 @@ const INITIAL_FORM: FormData = {
   capacities: [{ type: "Seating", maxPeople: "", isSeparate: false }],
   sessions: [],
   imageUrls: [],
+  // Location
+  address: "",
+  city: "",
+  state: "",
+  country: "",
+  zipCode: "",
+  latitude: "",
+  longitude: "",
+  // Operating Schedule
+  operatingDays: [],
 };
 
 // ─── Validation ────────────────────────────────────────────────────────────
@@ -115,6 +147,15 @@ function validateStep(step: number, form: FormData): StepErrors {
   }
 
   if (step === 2) {
+    if (!form.address.trim()) errors.address = "Street address is required";
+    if (!form.city.trim()) errors.city = "City is required";
+    if (!form.state.trim()) errors.state = "State is required";
+    if (!form.country.trim()) errors.country = "Country is required";
+    if (form.latitude && isNaN(Number(form.latitude))) errors.latitude = "Enter a valid latitude";
+    if (form.longitude && isNaN(Number(form.longitude))) errors.longitude = "Enter a valid longitude";
+  }
+
+  if (step === 3) {
     const price = Number(form.basePrice);
     if (!form.basePrice || isNaN(price) || price <= 0) errors.basePrice = "Enter a valid positive price";
     const buffer = Number(form.bufferTimeMinutes);
@@ -134,7 +175,7 @@ function validateStep(step: number, form: FormData): StepErrors {
     }
   }
 
-  if (step === 3) {
+  if (step === 4) {
     if (form.capacities.length === 0) errors.capacities = "Add at least one capacity entry";
     form.capacities.forEach((c, i) => {
       if (!c.type.trim()) errors[`cap_${i}_type`] = "Select a capacity type";
@@ -186,7 +227,7 @@ export default function NewVenuePage() {
       return;
     }
     setErrors({});
-    setCurrentStep((s) => Math.min(s + 1, 4));
+    setCurrentStep((s) => Math.min(s + 1, 5));
   };
 
   const goPrev = () => {
@@ -301,6 +342,16 @@ export default function NewVenuePage() {
               sessionPrice: Number(s.sessionPrice),
             }))
           : undefined,
+      // Location
+      address: form.address.trim() || undefined,
+      city: form.city.trim() || undefined,
+      state: form.state.trim() || undefined,
+      country: form.country.trim() || undefined,
+      zipCode: form.zipCode.trim() || undefined,
+      latitude: form.latitude ? Number(form.latitude) : undefined,
+      longitude: form.longitude ? Number(form.longitude) : undefined,
+      // Operating Schedule
+      operatingDays: form.operatingDays.length > 0 ? form.operatingDays : undefined,
     };
 
     createMutation.mutate(payload);
@@ -408,6 +459,9 @@ export default function NewVenuePage() {
           <StepBasicDetails form={form} errors={errors} updateField={updateField} />
         )}
         {currentStep === 2 && (
+          <StepLocation form={form} errors={errors} updateField={updateField} />
+        )}
+        {currentStep === 3 && (
           <StepPricingSchedule
             form={form}
             errors={errors}
@@ -418,7 +472,7 @@ export default function NewVenuePage() {
             updateSession={updateSession}
           />
         )}
-        {currentStep === 3 && (
+        {currentStep === 4 && (
           <StepCapacityAmenities
             form={form}
             errors={errors}
@@ -428,7 +482,7 @@ export default function NewVenuePage() {
             toggleAmenity={toggleAmenity}
           />
         )}
-        {currentStep === 4 && (
+        {currentStep === 5 && (
           <StepImagesReview
             form={form}
             errors={errors}
@@ -456,7 +510,7 @@ export default function NewVenuePage() {
           Previous
         </button>
 
-        {currentStep < 4 ? (
+        {currentStep < 5 ? (
           <button
             type="button"
             onClick={goNext}
@@ -588,7 +642,176 @@ function StepBasicDetails({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// STEP 2 — Pricing & Schedule
+// STEP 2 — Location
+// ═══════════════════════════════════════════════════════════════════════════
+
+function StepLocation({
+  form,
+  errors,
+  updateField,
+}: {
+  form: FormData;
+  errors: StepErrors;
+  updateField: <K extends keyof FormData>(key: K, value: FormData[K]) => void;
+}) {
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div>
+        <h2 className="text-2xl font-bold text-on-surface">Location</h2>
+        <p className="mt-1 text-body-md text-text-muted">
+          Help guests find your venue by providing accurate location details.
+        </p>
+      </div>
+
+      {/* Address */}
+      <div className="space-y-2">
+        <label htmlFor="venue-address" className="text-label-md font-semibold text-on-surface">
+          Street Address <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="venue-address"
+          type="text"
+          placeholder="e.g. 42 Park Avenue, Suite 100"
+          value={form.address}
+          onChange={(e) => updateField("address", e.target.value)}
+          className={cn(
+            "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
+            errors.address ? "border-red-400" : "border-border-subtle"
+          )}
+        />
+        {errors.address && <p className="text-label-sm text-red-500">{errors.address}</p>}
+      </div>
+
+      {/* City & State */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label htmlFor="venue-city" className="text-label-md font-semibold text-on-surface">
+            City <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="venue-city"
+            type="text"
+            placeholder="e.g. Mumbai"
+            value={form.city}
+            onChange={(e) => updateField("city", e.target.value)}
+            className={cn(
+              "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
+              errors.city ? "border-red-400" : "border-border-subtle"
+            )}
+          />
+          {errors.city && <p className="text-label-sm text-red-500">{errors.city}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="venue-state" className="text-label-md font-semibold text-on-surface">
+            State / Province <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="venue-state"
+            type="text"
+            placeholder="e.g. Maharashtra"
+            value={form.state}
+            onChange={(e) => updateField("state", e.target.value)}
+            className={cn(
+              "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
+              errors.state ? "border-red-400" : "border-border-subtle"
+            )}
+          />
+          {errors.state && <p className="text-label-sm text-red-500">{errors.state}</p>}
+        </div>
+      </div>
+
+      {/* Country & ZIP */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label htmlFor="venue-country" className="text-label-md font-semibold text-on-surface">
+            Country <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="venue-country"
+            type="text"
+            placeholder="e.g. India"
+            value={form.country}
+            onChange={(e) => updateField("country", e.target.value)}
+            className={cn(
+              "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
+              errors.country ? "border-red-400" : "border-border-subtle"
+            )}
+          />
+          {errors.country && <p className="text-label-sm text-red-500">{errors.country}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="venue-zip" className="text-label-md font-semibold text-on-surface">
+            ZIP / Postal Code
+          </label>
+          <input
+            id="venue-zip"
+            type="text"
+            placeholder="e.g. 400001"
+            value={form.zipCode}
+            onChange={(e) => updateField("zipCode", e.target.value)}
+            className="w-full rounded-xl border border-border-subtle px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand"
+          />
+        </div>
+      </div>
+
+      {/* Coordinates */}
+      <div className="space-y-4 rounded-2xl border border-border-subtle bg-surface-container-lowest p-6">
+        <div>
+          <h3 className="text-label-md font-bold text-on-surface flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-primary-container" />
+            Coordinates
+          </h3>
+          <p className="text-label-sm text-text-muted mt-0.5">
+            Optional — used to pin your venue on a map for guests.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label htmlFor="venue-lat" className="text-label-md font-semibold text-on-surface">
+              Latitude
+            </label>
+            <input
+              id="venue-lat"
+              type="number"
+              step="any"
+              placeholder="e.g. 19.0760"
+              value={form.latitude}
+              onChange={(e) => updateField("latitude", e.target.value)}
+              className={cn(
+                "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
+                errors.latitude ? "border-red-400" : "border-border-subtle"
+              )}
+            />
+            {errors.latitude && <p className="text-label-sm text-red-500">{errors.latitude}</p>}
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="venue-lng" className="text-label-md font-semibold text-on-surface">
+              Longitude
+            </label>
+            <input
+              id="venue-lng"
+              type="number"
+              step="any"
+              placeholder="e.g. 72.8777"
+              value={form.longitude}
+              onChange={(e) => updateField("longitude", e.target.value)}
+              className={cn(
+                "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
+                errors.longitude ? "border-red-400" : "border-border-subtle"
+              )}
+            />
+            {errors.longitude && <p className="text-label-sm text-red-500">{errors.longitude}</p>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STEP 3 — Pricing & Schedule
 // ═══════════════════════════════════════════════════════════════════════════
 
 function StepPricingSchedule({
@@ -788,6 +1011,44 @@ function StepPricingSchedule({
           ))}
         </div>
       )}
+
+      {/* Operating Schedule */}
+      <div className="space-y-5">
+        <div>
+          <h3 className="text-label-md font-bold text-on-surface">Operating Schedule</h3>
+          <p className="text-label-sm text-text-muted mt-0.5">Set which days and hours your venue is open for bookings.</p>
+        </div>
+
+        {/* Days of the Week */}
+        <div className="space-y-2">
+          <label className="text-label-md font-semibold text-on-surface">Operating Days</label>
+          <div className="flex flex-wrap gap-2">
+            {DAYS_OF_WEEK.map((day) => {
+              const selected = form.operatingDays.includes(day.value);
+              return (
+                <button
+                  key={day.value}
+                  type="button"
+                  onClick={() => {
+                    const next = selected
+                      ? form.operatingDays.filter((d) => d !== day.value)
+                      : [...form.operatingDays, day.value];
+                    updateField("operatingDays", next);
+                  }}
+                  className={cn(
+                    "rounded-full border-2 px-4 py-2 text-label-sm font-bold transition-all duration-200",
+                    selected
+                      ? "border-primary-container bg-[#fcf2ed] text-primary-container shadow-sm"
+                      : "border-border-subtle text-text-muted hover:border-on-surface-variant hover:text-on-surface"
+                  )}
+                >
+                  {day.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1076,8 +1337,7 @@ function StepImagesReview({
             }
             className="sm:col-span-2"
           />
-          <ReviewItem
-            label="Amenities"
+          <ReviewItem label="Amenities"
             value={
               AMENITIES.filter((a) => form.amenities.includes(a.id))
                 .map((a) => a.name)
@@ -1092,6 +1352,29 @@ function StepImagesReview({
                 .map((s) => `${s.name} (${s.startTime}–${s.endTime}) ₹${s.sessionPrice}`)
                 .join(", ")}
               className="sm:col-span-2"
+            />
+          )}
+          {/* Location */}
+          {form.address && (
+            <ReviewItem
+              label="Location"
+              value={[form.address, form.city, form.state, form.country, form.zipCode]
+                .filter(Boolean)
+                .join(", ")}
+              className="sm:col-span-2"
+            />
+          )}
+          {(form.latitude || form.longitude) && (
+            <ReviewItem
+              label="Coordinates"
+              value={`${form.latitude || "—"}, ${form.longitude || "—"}`}
+            />
+          )}
+          {/* Operating Schedule */}
+          {form.operatingDays.length > 0 && (
+            <ReviewItem
+              label="Operating Days"
+              value={form.operatingDays.join(", ")}
             />
           )}
         </div>

@@ -34,6 +34,16 @@ export interface CreateVenueDto {
     endTime: string;
     sessionPrice: number;
   }[];
+  // Location
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  latitude?: number;
+  longitude?: number;
+  // Operating Schedule
+  operatingDays?: string[];
 }
 
 export interface UpdateVenueDto {
@@ -56,4 +66,14 @@ export interface UpdateVenueDto {
     endTime: string;
     sessionPrice: number;
   }[];
+  // Location
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  latitude?: number;
+  longitude?: number;
+  // Operating Schedule
+  operatingDays?: string[];
 }
