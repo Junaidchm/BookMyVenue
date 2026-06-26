@@ -6,11 +6,13 @@ import { errorHandler } from './middlewares/error.middleware';
 
 const app = express();
 
-app.use(cors({
-  origin: true,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  }),
+);
 
 app.use(helmet());
 app.use(express.json());
