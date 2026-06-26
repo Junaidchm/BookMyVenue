@@ -39,8 +39,10 @@ model Booking {
   endTime     DateTime
 
   // Financial & State Engine
-  totalPrice Decimal       @db.Decimal(12, 2)
-  status     BookingStatus @default(PENDING_PAYMENT)
+  totalPrice       Decimal       @db.Decimal(12, 2)
+  status           BookingStatus @default(PENDING_PAYMENT)
+  riskScore        Int?
+  refundPercentage Decimal       @default(100.00) @db.Decimal(5, 2)
 
   // Payment Gateway Hooks
   paymentId       String? @unique

@@ -1,6 +1,6 @@
-import axios from 'axios';
 import { prisma } from '../prisma/prisma';
 import { env } from '../config/env';
+import { redis } from '../utils/redis';
 
 interface RiskScoreResult {
   score: number;
@@ -12,61 +12,87 @@ interface RiskScoreResult {
   };
 }
 
+interface CachedRiskProfile {
+  totalBookings: number;
+  cancelledBookings: number;
+  totalSpend: number;
+}
+
 export class RiskScoringService {
   /**
-   * Evaluates the risk score of a booking request
-   * @param userId The ID of the user making the booking
-   * @param targetDate The date the user is trying to book
+   * Updates/refreshes the cached risk profile in Redis for a specific user.
    */
-  async calculateRiskScore(userId: number, targetDate: Date): Promise<RiskScoreResult> {
-    // 1. Fetch User Data from Auth Service
-    let accountAgeHours = 0;
-    let isKycVerified = false;
-
-    try {
-      // Fetch specific user details from Auth Service
-      const response = await axios.get(`${env.AUTH_SERVICE_URL}/admin/users/${userId}`, {
-        headers: { 'x-user-roles': 'ADMIN' }, // Internal call using admin privilege
-        timeout: 5000 // 5 seconds timeout
-      });
-      
-      const user = response.data?.data;
-      
-      if (user) {
-        isKycVerified = !!user.isKycVerified;
-        const createdAt = new Date(user.createdAt);
-        accountAgeHours = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60);
-      } else {
-        // Fallback if user not found: high risk
-        accountAgeHours = 0;
-        isKycVerified = false;
-      }
-    } catch (error: any) {
-      if (error.response && error.response.status === 404) {
-        console.warn(`User with ID ${userId} not found in Auth Service. Defaulting to high risk.`);
-        accountAgeHours = 0;
-        isKycVerified = false;
-      } else {
-        console.error(`Auth Service connection failed when checking user ${userId}:`, error.message);
-        // Safe fallback: Treat as a standard unverified user with 7 days account age (moderate risk)
-        accountAgeHours = 168; // 7 days
-        isKycVerified = false;
-      }
-    }
-
-    // 2. Fetch User Booking History from DB
+  static async updateCache(userId: number): Promise<CachedRiskProfile> {
     const history = await prisma.booking.findMany({
       where: { userId }
     });
 
     const totalBookings = history.length;
     const cancelledBookings = history.filter(b => b.status === 'CANCELLED').length;
-    const completedBookings = history.filter(b => b.status === 'CONFIRMED').length;
-
-    // Calculate total spend
     const totalSpend = history
       .filter(b => b.status === 'CONFIRMED')
       .reduce((sum, b) => sum + Number(b.totalPrice), 0);
+
+    const profile: CachedRiskProfile = {
+      totalBookings,
+      cancelledBookings,
+      totalSpend
+    };
+
+    // Cache in Redis for 1 hour to keep it fresh but highly accessible
+    await redis.set(`user:${userId}:risk_profile`, JSON.stringify(profile), 3600);
+    console.log(`[RISK CACHE] Refreshed Redis profile for user ${userId}:`, profile);
+    return profile;
+  }
+
+  /**
+   * Evaluates the risk score of a booking request using Hybrid JWT/Redis Architecture.
+   * @param userId The ID of the user making the booking
+   * @param targetDate The date the user is trying to book
+   * @param isKycVerified KYC verification status from custom JWT claims
+   * @param accountCreatedAt Account creation timestamp from custom JWT claims
+   */
+  async calculateRiskScore(
+    userId: number,
+    targetDate: Date,
+    isKycVerified: boolean,
+    accountCreatedAt: Date
+  ): Promise<RiskScoreResult> {
+    // 1. JWT Claims Evaluation (0ms latency)
+    const accountAgeHours = (Date.now() - accountCreatedAt.getTime()) / (1000 * 60 * 60);
+
+    // 2. Fetch User Booking History (Fast Redis Cache with DB Fallback)
+    let totalBookings = 0;
+    let cancelledBookings = 0;
+    let totalSpend = 0;
+
+    try {
+      const cachedData = await redis.get(`user:${userId}:risk_profile`);
+      if (cachedData) {
+        const profile = JSON.parse(cachedData) as CachedRiskProfile;
+        totalBookings = profile.totalBookings;
+        cancelledBookings = profile.cancelledBookings;
+        totalSpend = profile.totalSpend;
+        console.log(`[RISK CACHE] Cache hit for user ${userId}:`, profile);
+      } else {
+        console.log(`[RISK CACHE] Cache miss for user ${userId}. Querying DB and building cache...`);
+        const profile = await RiskScoringService.updateCache(userId);
+        totalBookings = profile.totalBookings;
+        cancelledBookings = profile.cancelledBookings;
+        totalSpend = profile.totalSpend;
+      }
+    } catch (err: any) {
+      console.error(`[RISK CACHE] Redis error. Falling back to direct database query:`, err.message);
+      // Resilient Fallback to direct DB query if Redis connection breaks
+      const history = await prisma.booking.findMany({
+        where: { userId }
+      });
+      totalBookings = history.length;
+      cancelledBookings = history.filter(b => b.status === 'CANCELLED').length;
+      totalSpend = history
+        .filter(b => b.status === 'CONFIRMED')
+        .reduce((sum, b) => sum + Number(b.totalPrice), 0);
+    }
 
     // 3. Fetch Concurrent Bookings for the target date
     // Normalize targetDate to start and end of day

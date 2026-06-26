@@ -12,6 +12,7 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
     req.path === '/api/auth/register' ||
     req.path === '/api/auth/verify' ||
     req.path === '/api/auth/logout' ||
+    req.path === '/api/bookings/webhook' ||
     (req.path.startsWith('/api/venues') && req.method === 'GET');
 
   if (isPublicRoute) {
@@ -25,6 +26,8 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
       (req as any).user = {
         id: decoded.sub,
         roles: decoded.roles || [],
+        isKycVerified: decoded.isKycVerified !== undefined ? decoded.isKycVerified : false,
+        accountCreatedAt: decoded.accountCreatedAt || new Date().toISOString(),
       };
       next();
     } catch (err) {
