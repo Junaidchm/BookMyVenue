@@ -36,7 +36,7 @@ export default function UserLayout({
 }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/user") return pathname === "/user";
@@ -60,12 +60,12 @@ export default function UserLayout({
             <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20">
               <img
                 src={USER_PROFILE.avatar}
-                alt={`${USER_PROFILE.name} - Profile`}
+                alt={`${user?.fullName || "User"} - Profile`}
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-label-md text-on-surface font-semibold">{USER_PROFILE.name}</span>
+              <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "User"}</span>
               <span className="text-label-sm text-text-muted mt-0.5">User Portal</span>
             </div>
           </div>
@@ -177,11 +177,11 @@ export default function UserLayout({
             <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50">
               <img
                 src={USER_PROFILE.avatar}
-                alt={`${USER_PROFILE.name} - Profile`}
+                alt={`${user?.fullName || "User"} - Profile`}
                 className="h-9 w-9 rounded-full border border-primary-container/20 object-cover"
               />
               <div className="flex flex-col">
-                <span className="text-label-md text-on-surface font-semibold">{USER_PROFILE.name}</span>
+                <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "User"}</span>
                 <span className="text-label-sm text-text-muted">User Portal</span>
               </div>
             </div>
