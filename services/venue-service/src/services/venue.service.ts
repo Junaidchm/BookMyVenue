@@ -501,7 +501,7 @@ export class VenueService {
       where: { id: venueId },
     });
 
-    if (!venue) {
+    if (!venue || venue.status !== 'APPROVED') {
       return { status: 'VENUE_NOT_FOUND', data: null };
     }
 
@@ -544,7 +544,12 @@ export class VenueService {
 
   async getSavedVenues(userId: number) {
     const savedVenues = await prisma.savedVenue.findMany({
-      where: { userId },
+      where: {
+        userId,
+        venue: {
+          status: 'APPROVED',
+        },
+      },
       include: {
         venue: {
           include: {

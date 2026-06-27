@@ -63,7 +63,7 @@ export function filterVenues(
       if (!cityMatch && !locationMatch) return false;
     }
 
-    if (filters.capacity < 500 && venue.capacity > filters.capacity) return false;
+    if (filters.capacity < 500 && venue.capacity < filters.capacity) return false;
 
     if (filters.priceMin && venue.pricePerDay < Number(filters.priceMin)) return false;
     if (filters.priceMax && venue.pricePerDay > Number(filters.priceMax)) return false;

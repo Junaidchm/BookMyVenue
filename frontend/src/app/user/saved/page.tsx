@@ -95,6 +95,7 @@ export default function SavedVenuesPage() {
                     <Button
                       variant="secondary"
                       size="icon"
+                      aria-label="Unsave venue"
                       onClick={(e) => {
                         e.preventDefault();
                         unsaveMutation.mutate(venue.id);
