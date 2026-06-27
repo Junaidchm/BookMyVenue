@@ -9,6 +9,23 @@ export class AdminController {
   }
 
   /**
+   * GET /admin/venues
+   * Returns all venues for admin (all statuses).
+   */
+  getAllVenues = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const venues = await this.venueService.getAllVenuesForAdmin();
+      return res.status(200).json({ success: true, data: venues });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /**
    * GET /admin/venues/pending
    * Returns all venues awaiting admin review.
    */

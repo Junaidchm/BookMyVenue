@@ -39,14 +39,28 @@ model Venue {
   bufferTimeMinutes Int         @default(60) // Crucial for turnaround gaps
   status            VenueStatus @default(PENDING)
   imageUrls         String[]
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+
+  // Location
+  address   String?
+  city      String?
+  state     String?
+  country   String?
+  zipCode   String?
+  latitude  Float?
+  longitude Float?
+
+  // Operating Schedule
+  operatingDays String[] // e.g. ["MON", "TUE", "WED"]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relational Matrix
   amenities  VenueAmenity[]
   capacities VenueCapacity[]
   sessions   VenueSession[]
   closures   VenueClosure[]
+  savedBy    SavedVenue[]
 
   @@map("venues")
 }
@@ -109,4 +123,17 @@ model VenueClosure {
 
   @@index([venueId, startTime, endTime])
   @@map("venue_closures")
+}
+
+// User's Saved Venues
+model SavedVenue {
+  id        String   @id @default(uuid())
+  userId    String // Logical FK to Auth User ID
+  venueId   String
+  createdAt DateTime @default(now())
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, venueId])
+  @@map("saved_venues")
 }

@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+"use client";
+
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -16,12 +18,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Dashboard | BookMyVenue",
-  description: "Your personalized dashboard",
-};
+import { useQuery } from "@tanstack/react-query";
+import { savedVenuesQueryOptions } from "@/lib/venues/queries";
 
 export default function UserDashboardPage() {
+  const { data: savedVenuesData } = useQuery(savedVenuesQueryOptions());
+  const actualSavedVenues = savedVenuesData || [];
+
   return (
     <div className="flex flex-col gap-6 pb-8">
       <div className="mx-auto w-full max-w-[1200px]">
@@ -53,7 +56,7 @@ export default function UserDashboardPage() {
               </div>
               <div>
                 <p className="text-label-sm text-text-muted">Saved Venues</p>
-                <p className="text-2xl font-bold text-on-surface">{DASHBOARD_STATS.savedVenues}</p>
+                <p className="text-2xl font-bold text-on-surface">{actualSavedVenues.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -98,14 +101,14 @@ export default function UserDashboardPage() {
                 </Link>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {SAVED_VENUES.map((venue) => (
+                {actualSavedVenues.slice(0, 4).map((venue) => (
                   <Card
                     key={venue.id}
                     className="group relative overflow-hidden rounded-xl border-border-subtle bg-surface shadow-elevation-card hover:shadow-elevation-card-hover transition-all duration-300"
                   >
                     <div className="relative aspect-[4/3] w-full">
                       <Image
-                        src={venue.image}
+                        src={venue.images.main}
                         alt={venue.name}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -114,7 +117,7 @@ export default function UserDashboardPage() {
                       <Button
                         variant="secondary"
                         size="icon"
-                        className="absolute top-4 right-4 h-8 w-8 rounded-full bg-surface text-secondary-container hover:bg-surface-container-low"
+                        className="absolute top-4 right-4 h-8 w-8 rounded-full bg-surface text-primary-container hover:bg-surface-container-low"
                       >
                         <Heart className="h-4 w-4 fill-current" />
                       </Button>
@@ -126,6 +129,10 @@ export default function UserDashboardPage() {
                     </div>
                   </Card>
                 ))}
+                
+                {actualSavedVenues.length === 0 && (
+                   <p className="text-sm text-text-muted p-4 border border-dashed border-border-subtle rounded-xl text-center col-span-2">No saved venues yet.</p>
+                )}
               </div>
             </section>
           </div>

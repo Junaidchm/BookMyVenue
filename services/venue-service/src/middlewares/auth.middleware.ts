@@ -55,3 +55,23 @@ export const requireAdmin = (
 
   next();
 };
+
+export const requireAuth = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): any => {
+  const userIdHeader = req.headers['x-user-id'];
+  if (!userIdHeader) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized: User is not authenticated.',
+    });
+  }
+  
+  (req as any).user = {
+    id: userIdHeader as string
+  };
+
+  next();
+};
