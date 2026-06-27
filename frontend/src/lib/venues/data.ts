@@ -42,6 +42,15 @@ export type Venue = {
   };
   amenities: VenueAmenity[];
   reviews: VenueReview[];
+  // Location
+  address?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  latitude?: number;
+  longitude?: number;
+  // Operating Schedule
+  operatingDays?: string[];
 };
 
 const IMG = {
