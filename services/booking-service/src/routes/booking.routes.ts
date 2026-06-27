@@ -1,5 +1,13 @@
 import { Router } from 'express';
-import { createBooking, handleWebhook, checkAvailability, getBookingById, getBookings, cancelBooking, rescheduleBooking } from '../controllers/booking.controller';
+import {
+  createBooking,
+  handleWebhook,
+  checkAvailability,
+  getBookingById,
+  getBookings,
+  cancelBooking,
+  rescheduleBooking,
+} from '../controllers/booking.controller';
 import { checkBookingRisk } from '../middlewares/risk.middleware';
 
 const router = Router();
@@ -15,4 +23,3 @@ router.delete('/:id', cancelBooking);
 router.patch('/:id/reschedule', rescheduleBooking);
 
 export const bookingRoutes = router;
-

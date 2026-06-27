@@ -162,7 +162,7 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
     } catch (err: any) {
       console.error("Booking error:", err);
       if (err.response?.status === 403) {
-        setErrorMessage("Booking declined: Your risk profile exceeds the platform's safety limit.");
+        setErrorMessage(err.response?.data?.message || "Booking declined: Forbidden access.");
       } else if (err.response?.status === 409) {
         setErrorMessage("Slot occupied: This slot has just been reserved by another user.");
       } else {

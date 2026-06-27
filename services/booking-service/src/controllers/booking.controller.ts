@@ -6,7 +6,7 @@ import { RiskScoringService } from '../services/risk-scoring.service';
 // Helper to run serializable transaction with retries
 const runSerializableTransaction = async <T>(
   fn: (tx: Prisma.TransactionClient) => Promise<T>,
-  retries = 3
+  retries = 3,
 ): Promise<T> => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -15,11 +15,16 @@ const runSerializableTransaction = async <T>(
       });
     } catch (error: any) {
       // P2034: transaction failed due to write conflict or serialization failure
-      const isSerializationFailure = error.code === 'P2034' || error.message?.includes('40001');
+      const isSerializationFailure =
+        error.code === 'P2034' || error.message?.includes('40001');
       if (isSerializationFailure && attempt < retries) {
-        console.warn(`[CONCURRENCY] Serialization conflict on attempt ${attempt}. Retrying...`);
+        console.warn(
+          `[CONCURRENCY] Serialization conflict on attempt ${attempt}. Retrying...`,
+        );
         // Jittered backoff delay before retrying
-        await new Promise((resolve) => setTimeout(resolve, Math.random() * 100));
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.random() * 100),
+        );
         continue;
       }
       throw error;
@@ -28,17 +33,24 @@ const runSerializableTransaction = async <T>(
   throw new Error('Transaction failed after maximum retries');
 };
 
-export const createBooking = async (req: Request, res: Response): Promise<any> => {
+export const createBooking = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
   try {
     const userIdStr = req.headers['x-user-id'] as string;
     if (!userIdStr) {
-      return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
+      return res
+        .status(401)
+        .json({ success: false, message: 'Unauthorized: User ID is missing' });
     }
     const userId = userIdStr;
     const { venueId, bookingDate, startTime, endTime, totalPrice } = req.body;
 
     if (!venueId || !bookingDate || !startTime || !endTime || !totalPrice) {
-      return res.status(400).json({ success: false, message: 'Missing required booking fields' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Missing required booking fields' });
     }
 
     const parsedVenueId = venueId;
@@ -46,7 +58,9 @@ export const createBooking = async (req: Request, res: Response): Promise<any> =
     const end = new Date(endTime);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
-      return res.status(400).json({ success: false, message: 'Invalid start or end time' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid start or end time' });
     }
 
     // Execute serializable transaction
@@ -77,11 +91,11 @@ export const createBooking = async (req: Request, res: Response): Promise<any> =
 
       // Calculate refund percentage policy based on riskScore
       const riskScore = (req as any).riskScore || 0;
-      let refundPercentage = 100.00;
+      let refundPercentage = 100.0;
       if (riskScore >= 85) {
-        refundPercentage = 0.00; // non-refundable
+        refundPercentage = 0.0; // non-refundable
       } else if (riskScore >= 40) {
-        refundPercentage = 50.00; // reduced refund (50%)
+        refundPercentage = 50.0; // reduced refund (50%)
       }
 
       // 2. The Soft Lock: Create the booking with status PENDING_PAYMENT
@@ -102,29 +116,34 @@ export const createBooking = async (req: Request, res: Response): Promise<any> =
     });
 
     // Update risk cache asynchronously in the background
-    RiskScoringService.updateCache(userId).catch(err => 
-      console.error(`[RISK CACHE] Failed to update cache for user ${userId} after booking creation:`, err)
+    RiskScoringService.updateCache(userId).catch((err) =>
+      console.error(
+        `[RISK CACHE] Failed to update cache for user ${userId} after booking creation:`,
+        err,
+      ),
     );
+
+    const { riskScore: _, ...bookingData } = newBooking;
 
     return res.status(201).json({
       success: true,
-      message: 'Booking request created successfully. Please complete your payment within 10 minutes.',
-      data: {
-        ...newBooking,
-        riskScore: (req as any).riskScore // Access risk score injected by middleware
-      }
+      message:
+        'Booking request created successfully. Please complete your payment within 10 minutes.',
+      data: bookingData,
     });
-
   } catch (error: any) {
     if (error.message === 'SLOT_OCCUPIED') {
       return res.status(409).json({
         success: false,
-        message: 'The requested time slot is already booked or held for payment by another user.'
+        message:
+          'The requested time slot is already booked or held for payment by another user.',
       });
     }
 
     console.error('Error creating booking:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
   }
 };
 
@@ -132,20 +151,26 @@ export const createBooking = async (req: Request, res: Response): Promise<any> =
  * Webhook handler to confirm a booking on successful payment.
  * Supports Stripe or Razorpay format payloads.
  */
-export const handleWebhook = async (req: Request, res: Response): Promise<any> => {
+export const handleWebhook = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
   try {
     const { event, data } = req.body;
 
-    console.log(`[PAYMENT WEBHOOK] Received event: ${event}`, JSON.stringify(data));
+    console.log(
+      `[PAYMENT WEBHOOK] Received event: ${event}`,
+      JSON.stringify(data),
+    );
 
     // Handle payment succeeded events
     // Usually Stripe uses event: 'payment_intent.succeeded' or 'charge.succeeded' or 'checkout.session.completed'
     // Razorpay uses event: 'payment.captured'
     // We will support simple payment succeeded events, or accept any if matched
-    const isSuccessEvent = 
-      event === 'payment.succeeded' || 
-      event === 'payment_intent.succeeded' || 
-      event === 'charge.succeeded' || 
+    const isSuccessEvent =
+      event === 'payment.succeeded' ||
+      event === 'payment_intent.succeeded' ||
+      event === 'charge.succeeded' ||
       event === 'checkout.session.completed' ||
       event === 'payment.captured';
 
@@ -167,29 +192,42 @@ export const handleWebhook = async (req: Request, res: Response): Promise<any> =
 
     if (!bookingId) {
       console.error('[PAYMENT WEBHOOK] Missing bookingId in payload');
-      return res.status(400).json({ success: false, message: 'Missing bookingId' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Missing bookingId' });
     }
 
     const parsedBookingId = String(bookingId);
 
     // Find the booking to get its userId for cache updating
     const bookingToConfirm = await prisma.booking.findUnique({
-      where: { id: parsedBookingId }
+      where: { id: parsedBookingId },
     });
 
     if (!bookingToConfirm) {
-      return res.status(404).json({ success: false, message: `Booking with ID ${parsedBookingId} not found` });
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: `Booking with ID ${parsedBookingId} not found`,
+        });
     }
 
     if (bookingToConfirm.status !== 'PENDING_PAYMENT') {
       if (bookingToConfirm.status === 'CONFIRMED') {
-        console.log(`[PAYMENT WEBHOOK] Booking ${parsedBookingId} was already confirmed`);
-        return res.status(200).json({ success: true, message: 'Booking already confirmed' });
+        console.log(
+          `[PAYMENT WEBHOOK] Booking ${parsedBookingId} was already confirmed`,
+        );
+        return res
+          .status(200)
+          .json({ success: true, message: 'Booking already confirmed' });
       }
-      console.warn(`[PAYMENT WEBHOOK] Booking ${parsedBookingId} status is ${bookingToConfirm.status}, cannot confirm.`);
-      return res.status(400).json({ 
-        success: false, 
-        message: `Booking status is ${bookingToConfirm.status}, cannot be confirmed.` 
+      console.warn(
+        `[PAYMENT WEBHOOK] Booking ${parsedBookingId} status is ${bookingToConfirm.status}, cannot confirm.`,
+      );
+      return res.status(400).json({
+        success: false,
+        message: `Booking status is ${bookingToConfirm.status}, cannot be confirmed.`,
       });
     }
 
@@ -199,33 +237,48 @@ export const handleWebhook = async (req: Request, res: Response): Promise<any> =
       data: {
         status: 'CONFIRMED',
         paymentId: paymentId ? String(paymentId) : `pay_mock_${Date.now()}`,
-        paymentMetadata: data || {}
-      }
+        paymentMetadata: data || {},
+      },
     });
 
     // Update risk cache asynchronously in the background
-    RiskScoringService.updateCache(bookingToConfirm.userId).catch(err => 
-      console.error(`[RISK CACHE] Failed to update cache for user ${bookingToConfirm.userId} after webhook confirmation:`, err)
+    RiskScoringService.updateCache(bookingToConfirm.userId).catch((err) =>
+      console.error(
+        `[RISK CACHE] Failed to update cache for user ${bookingToConfirm.userId} after webhook confirmation:`,
+        err,
+      ),
     );
 
-    console.log(`[PAYMENT WEBHOOK] Booking ${parsedBookingId} hard-locked (status updated to CONFIRMED).`);
+    console.log(
+      `[PAYMENT WEBHOOK] Booking ${parsedBookingId} hard-locked (status updated to CONFIRMED).`,
+    );
     return res.status(200).json({
       success: true,
-      message: 'Booking confirmed successfully'
+      message: 'Booking confirmed successfully',
     });
-
   } catch (error) {
     console.error('[PAYMENT WEBHOOK] Error handling webhook:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
   }
 };
 
-export const checkAvailability = async (req: Request, res: Response): Promise<any> => {
+export const checkAvailability = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
   try {
     const { venueId, startTime, endTime } = req.query;
 
     if (!venueId || !startTime || !endTime) {
-      return res.status(400).json({ success: false, message: 'Missing required query parameters: venueId, startTime, endTime' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message:
+            'Missing required query parameters: venueId, startTime, endTime',
+        });
     }
 
     const parsedVenueId = venueId as string;
@@ -233,7 +286,9 @@ export const checkAvailability = async (req: Request, res: Response): Promise<an
     const end = new Date(endTime as string);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
-      return res.status(400).json({ success: false, message: 'Invalid start or end time' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid start or end time' });
     }
 
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
@@ -255,97 +310,136 @@ export const checkAvailability = async (req: Request, res: Response): Promise<an
 
     return res.status(200).json({
       success: true,
-      available: overlappingBookings.length === 0
+      available: overlappingBookings.length === 0,
     });
   } catch (error) {
     console.error('Error checking availability:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
   }
 };
 
-export const getBookingById = async (req: Request, res: Response): Promise<any> => {
+export const getBookingById = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
   try {
     const { id } = req.params;
     const parsedId = id as string;
 
     if (!parsedId) {
-      return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid booking ID' });
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: parsedId }
+      where: { id: parsedId },
     });
 
     if (!booking) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: 'Booking not found' });
     }
 
+    const { riskScore: _, ...bookingData } = booking;
     return res.status(200).json({
       success: true,
-      data: booking
+      data: bookingData,
     });
   } catch (error) {
     console.error('Error fetching booking by id:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
   }
 };
 
-export const getBookings = async (req: Request, res: Response): Promise<any> => {
+export const getBookings = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
   try {
     const userIdStr = req.headers['x-user-id'] as string;
     if (!userIdStr) {
-      return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
+      return res
+        .status(401)
+        .json({ success: false, message: 'Unauthorized: User ID is missing' });
     }
     const userId = userIdStr;
 
     const bookings = await prisma.booking.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
 
+    const bookingsData = bookings.map(({ riskScore: _, ...b }) => b);
     return res.status(200).json({
       success: true,
-      data: bookings
+      data: bookingsData,
     });
   } catch (error) {
     console.error('Error fetching bookings:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
   }
 };
 
-export const cancelBooking = async (req: Request, res: Response): Promise<any> => {
+export const cancelBooking = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
   try {
     const { id } = req.params;
     const userIdStr = req.headers['x-user-id'] as string;
     if (!userIdStr) {
-      return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
+      return res
+        .status(401)
+        .json({ success: false, message: 'Unauthorized: User ID is missing' });
     }
     const userId = userIdStr;
     const parsedId = id as string;
 
     if (!parsedId) {
-      return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid booking ID' });
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: parsedId }
+      where: { id: parsedId },
     });
 
     if (!booking) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: 'Booking not found' });
     }
 
     // Authorization Check: User must own the booking
     if (booking.userId !== userId) {
-      return res.status(403).json({ success: false, message: 'Forbidden: You do not have permission to cancel this booking' });
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message:
+            'Forbidden: You do not have permission to cancel this booking',
+        });
     }
 
     // Check status: Can only cancel CONFIRMED or PENDING_PAYMENT bookings
     if (booking.status === 'CANCELLED') {
-      return res.status(400).json({ success: false, message: 'Booking is already cancelled' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Booking is already cancelled' });
     }
     if (booking.status === 'FAILED') {
-      return res.status(400).json({ success: false, message: 'Cannot cancel a failed booking' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Cannot cancel a failed booking' });
     }
 
     // Business Rule: Cancellations not allowed within 24 hours of booking start
@@ -356,7 +450,8 @@ export const cancelBooking = async (req: Request, res: Response): Promise<any> =
     if (hoursDiff < 24) {
       return res.status(400).json({
         success: false,
-        message: 'Cancellations are not allowed within 24 hours of the booking start time to protect venue business.'
+        message:
+          'Cancellations are not allowed within 24 hours of the booking start time to protect venue business.',
       });
     }
 
@@ -368,61 +463,89 @@ export const cancelBooking = async (req: Request, res: Response): Promise<any> =
     const updatedBooking = await prisma.booking.update({
       where: { id: parsedId },
       data: {
-        status: 'CANCELLED'
-      }
+        status: 'CANCELLED',
+      },
     });
 
+    const { riskScore: _, ...updatedBookingData } = updatedBooking;
     return res.status(200).json({
       success: true,
       message: `Booking cancelled successfully. Refund of ₹${refundAmount.toFixed(2)} (${refundPct}% of ₹${Number(booking.totalPrice).toFixed(2)}) will be processed.`,
       data: {
-        booking: updatedBooking,
+        booking: updatedBookingData,
         refundAmount,
-        refundPercentage: refundPct
-      }
+        refundPercentage: refundPct,
+      },
     });
-
   } catch (error) {
     console.error('Error cancelling booking:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
   }
 };
 
-export const rescheduleBooking = async (req: Request, res: Response): Promise<any> => {
+export const rescheduleBooking = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
   try {
     const { id } = req.params;
     const userIdStr = req.headers['x-user-id'] as string;
     if (!userIdStr) {
-      return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
+      return res
+        .status(401)
+        .json({ success: false, message: 'Unauthorized: User ID is missing' });
     }
     const userId = userIdStr;
     const parsedId = id as string;
     const { bookingDate, startTime, endTime } = req.body;
 
     if (!bookingDate || !startTime || !endTime) {
-      return res.status(400).json({ success: false, message: 'Missing required rescheduling parameters: bookingDate, startTime, endTime' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message:
+            'Missing required rescheduling parameters: bookingDate, startTime, endTime',
+        });
     }
 
     if (!parsedId) {
-      return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid booking ID' });
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: parsedId }
+      where: { id: parsedId },
     });
 
     if (!booking) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: 'Booking not found' });
     }
 
     // Authorization Check: User must own the booking
     if (booking.userId !== userId) {
-      return res.status(403).json({ success: false, message: 'Forbidden: You do not have permission to reschedule this booking' });
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message:
+            'Forbidden: You do not have permission to reschedule this booking',
+        });
     }
 
     // Check status: Can only reschedule CONFIRMED or PENDING_PAYMENT bookings
     if (booking.status === 'CANCELLED' || booking.status === 'FAILED') {
-      return res.status(400).json({ success: false, message: `Cannot reschedule a ${booking.status.toLowerCase()} booking` });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: `Cannot reschedule a ${booking.status.toLowerCase()} booking`,
+        });
     }
 
     // Business Rule: Rescheduling not allowed within 24 hours of booking start
@@ -433,7 +556,8 @@ export const rescheduleBooking = async (req: Request, res: Response): Promise<an
     if (hoursDiff < 24) {
       return res.status(400).json({
         success: false,
-        message: 'Rescheduling is not allowed within 24 hours of the booking start time.'
+        message:
+          'Rescheduling is not allowed within 24 hours of the booking start time.',
       });
     }
 
@@ -441,12 +565,19 @@ export const rescheduleBooking = async (req: Request, res: Response): Promise<an
     const end = new Date(endTime);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
-      return res.status(400).json({ success: false, message: 'Invalid new start or end time' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid new start or end time' });
     }
 
     // Ensure the new date is in the future
     if (start.getTime() <= now.getTime()) {
-      return res.status(400).json({ success: false, message: 'New booking time must be in the future' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: 'New booking time must be in the future',
+        });
     }
 
     // Check overlap for the new timeslot (excluding this booking itself)
@@ -483,22 +614,23 @@ export const rescheduleBooking = async (req: Request, res: Response): Promise<an
       });
     });
 
+    const { riskScore: _, ...newBookingData } = newBooking;
     return res.status(200).json({
       success: true,
       message: 'Booking rescheduled successfully.',
-      data: newBooking
+      data: newBookingData,
     });
-
   } catch (error: any) {
     if (error.message === 'SLOT_OCCUPIED') {
       return res.status(409).json({
         success: false,
-        message: 'The requested new time slot is already booked or held for payment by another user.'
+        message:
+          'The requested new time slot is already booked or held for payment by another user.',
       });
     }
     console.error('Error rescheduling booking:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
   }
 };
-
-

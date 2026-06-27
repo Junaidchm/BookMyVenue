@@ -24,24 +24,33 @@ export class RiskScoringService {
    */
   static async updateCache(userId: string): Promise<CachedRiskProfile> {
     const history = await prisma.booking.findMany({
-      where: { userId }
+      where: { userId },
     });
 
     const totalBookings = history.length;
-    const cancelledBookings = history.filter(b => b.status === 'CANCELLED').length;
+    const cancelledBookings = history.filter(
+      (b) => b.status === 'CANCELLED',
+    ).length;
     const totalSpend = history
-      .filter(b => b.status === 'CONFIRMED')
+      .filter((b) => b.status === 'CONFIRMED')
       .reduce((sum, b) => sum + Number(b.totalPrice), 0);
 
     const profile: CachedRiskProfile = {
       totalBookings,
       cancelledBookings,
-      totalSpend
+      totalSpend,
     };
 
     // Cache in Redis for 1 hour to keep it fresh but highly accessible
-    await redis.set(`user:${userId}:risk_profile`, JSON.stringify(profile), 3600);
-    console.log(`[RISK CACHE] Refreshed Redis profile for user ${userId}:`, profile);
+    await redis.set(
+      `user:${userId}:risk_profile`,
+      JSON.stringify(profile),
+      3600,
+    );
+    console.log(
+      `[RISK CACHE] Refreshed Redis profile for user ${userId}:`,
+      profile,
+    );
     return profile;
   }
 
@@ -56,10 +65,11 @@ export class RiskScoringService {
     userId: string,
     targetDate: Date,
     isKycVerified: boolean,
-    accountCreatedAt: Date
+    accountCreatedAt: Date,
   ): Promise<RiskScoreResult> {
     // 1. JWT Claims Evaluation (0ms latency)
-    const accountAgeHours = (Date.now() - accountCreatedAt.getTime()) / (1000 * 60 * 60);
+    const accountAgeHours =
+      (Date.now() - accountCreatedAt.getTime()) / (1000 * 60 * 60);
 
     // 2. Fetch User Booking History (Fast Redis Cache with DB Fallback)
     let totalBookings = 0;
@@ -75,22 +85,29 @@ export class RiskScoringService {
         totalSpend = profile.totalSpend;
         console.log(`[RISK CACHE] Cache hit for user ${userId}:`, profile);
       } else {
-        console.log(`[RISK CACHE] Cache miss for user ${userId}. Querying DB and building cache...`);
+        console.log(
+          `[RISK CACHE] Cache miss for user ${userId}. Querying DB and building cache...`,
+        );
         const profile = await RiskScoringService.updateCache(userId);
         totalBookings = profile.totalBookings;
         cancelledBookings = profile.cancelledBookings;
         totalSpend = profile.totalSpend;
       }
     } catch (err: any) {
-      console.error(`[RISK CACHE] Redis error. Falling back to direct database query:`, err.message);
+      console.error(
+        `[RISK CACHE] Redis error. Falling back to direct database query:`,
+        err.message,
+      );
       // Resilient Fallback to direct DB query if Redis connection breaks
       const history = await prisma.booking.findMany({
-        where: { userId }
+        where: { userId },
       });
       totalBookings = history.length;
-      cancelledBookings = history.filter(b => b.status === 'CANCELLED').length;
+      cancelledBookings = history.filter(
+        (b) => b.status === 'CANCELLED',
+      ).length;
       totalSpend = history
-        .filter(b => b.status === 'CONFIRMED')
+        .filter((b) => b.status === 'CONFIRMED')
         .reduce((sum, b) => sum + Number(b.totalPrice), 0);
     }
 
@@ -106,12 +123,12 @@ export class RiskScoringService {
         userId,
         bookingDate: {
           gte: startOfDay,
-          lte: endOfDay
+          lte: endOfDay,
         },
         status: {
-          not: 'CANCELLED'
-        }
-      }
+          not: 'CANCELLED',
+        },
+      },
     });
 
     // --- Factor 1: Cancellation Rate (Weight: 0.35) ---
@@ -163,11 +180,11 @@ export class RiskScoringService {
     }
 
     // Calculate final score
-    const finalScore = 
-      (0.35 * cancellationSeverity) +
-      (0.25 * accountTrustSeverity) +
-      (0.20 * concurrentSeverity) +
-      (0.20 * paymentTrustSeverity);
+    const finalScore =
+      0.35 * cancellationSeverity +
+      0.25 * accountTrustSeverity +
+      0.2 * concurrentSeverity +
+      0.2 * paymentTrustSeverity;
 
     return {
       score: Math.round(finalScore),
@@ -175,8 +192,8 @@ export class RiskScoringService {
         cancellationRate: cancellationSeverity,
         accountTrust: accountTrustSeverity,
         concurrentBookings: concurrentSeverity,
-        paymentTrust: paymentTrustSeverity
-      }
+        paymentTrust: paymentTrustSeverity,
+      },
     };
   }
 }

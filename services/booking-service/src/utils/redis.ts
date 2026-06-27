@@ -16,13 +16,15 @@ class ResilientRedis {
         connectTimeout: 2000, // 2 seconds connect timeout
         retryStrategy(times) {
           // Do not retry endlessly to prevent clogging app start
-          return null; 
-        }
+          return null;
+        },
       });
 
       this.client.on('error', (err) => {
         if (!this.isFallbackMode) {
-          console.warn('[REDIS] Connection failed. Falling back to local in-memory store.');
+          console.warn(
+            '[REDIS] Connection failed. Falling back to local in-memory store.',
+          );
           this.isFallbackMode = true;
         }
       });
@@ -32,7 +34,10 @@ class ResilientRedis {
         this.isFallbackMode = false;
       });
     } catch (err) {
-      console.warn('[REDIS] Initialization failed. Falling back to local in-memory store.', err);
+      console.warn(
+        '[REDIS] Initialization failed. Falling back to local in-memory store.',
+        err,
+      );
       this.isFallbackMode = true;
     }
   }
