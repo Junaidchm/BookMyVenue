@@ -4,6 +4,7 @@ import { Eye, EyeOff, Loader2, AlertCircle, Shield } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 import { AuthForm } from "@/components/auth/auth-form";
 import { GoogleIcon } from "@/components/auth/auth-split-layout";
@@ -222,6 +223,7 @@ export function SignupForm() {
       {/* Google */}
       <button
         type="button"
+        onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
         className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-stone-200 bg-white py-2.5 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 active:scale-[0.98]"
       >
         <GoogleIcon />
