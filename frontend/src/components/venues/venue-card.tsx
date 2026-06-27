@@ -3,12 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin, Star, Users } from "lucide-react";
-import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatVenuePrice } from "@/lib/venues/listing";
 import type { Venue } from "@/lib/venues/data";
+import { savedVenuesQueryOptions } from "@/lib/venues/queries";
+import { venueKeys } from "@/lib/venues/keys";
+import { saveVenue, unsaveVenue } from "@/lib/venues/api";
 
 type VenueCardProps = {
   venue: Venue;
@@ -27,7 +30,35 @@ const BADGE_LABELS: Record<string, string> = {
 };
 
 export function VenueCard({ venue }: VenueCardProps) {
-  const [favorited, setFavorited] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: savedVenues } = useQuery(savedVenuesQueryOptions());
+  
+  const isSaved = savedVenues?.some((sv) => sv.id === venue.id) ?? false;
+
+  const saveMutation = useMutation({
+    mutationFn: () => saveVenue(venue.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: venueKeys.savedList() });
+    },
+  });
+
+  const unsaveMutation = useMutation({
+    mutationFn: () => unsaveVenue(venue.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: venueKeys.savedList() });
+    },
+  });
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (saveMutation.isPending || unsaveMutation.isPending) return;
+
+    if (isSaved) {
+      unsaveMutation.mutate();
+    } else {
+      saveMutation.mutate();
+    }
+  };
 
   return (
     <Link
@@ -67,17 +98,16 @@ export function VenueCard({ venue }: VenueCardProps) {
         {/* Favorite button */}
         <button
           type="button"
-          aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+          aria-label={isSaved ? "Remove from favorites" : "Add to favorites"}
           className="absolute top-3 right-3 flex size-9 items-center justify-center rounded-full bg-white/80 text-text-muted shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-primary-container hover:scale-110"
-          onClick={(e) => {
-            e.preventDefault();
-            setFavorited((prev) => !prev);
-          }}
+          onClick={handleToggleFavorite}
+          disabled={saveMutation.isPending || unsaveMutation.isPending}
         >
           <Heart
             className={cn(
               "size-4 transition-colors",
-              favorited && "fill-primary-container text-primary-container"
+              isSaved && "fill-primary-container text-primary-container",
+              (saveMutation.isPending || unsaveMutation.isPending) && "opacity-50 animate-pulse"
             )}
           />
         </button>
