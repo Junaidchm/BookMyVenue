@@ -1,4 +1,5 @@
-import { VenueService, CreateVenueDto } from './services/venue.service';
+import { VenueService } from './services/venue.service';
+import { CreateVenueDto } from './dtos/venue.dto';
 import { prisma, connectDb, disconnectDb } from './prisma/prisma';
 import { PricingType } from '@prisma/client';
 
@@ -53,6 +54,10 @@ async function runTests() {
         sessionPrice: 800.0,
       },
     ],
+    address: '123 Main Street',
+    city: 'New York',
+    state: 'NY',
+    country: 'USA',
   };
 
   const ownerId = 123; // Valid owner ID placeholder
@@ -95,6 +100,10 @@ async function runTests() {
     imageUrls: [],
     amenities: [99999], // Invalid non-existent amenity ID!
     capacities: [{ type: 'SEATING', maxPeople: 100 }],
+    address: '456 Test Avenue',
+    city: 'Boston',
+    state: 'MA',
+    country: 'USA',
   };
 
   // Record initial count of venues

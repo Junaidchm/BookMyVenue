@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams, useRouter } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   ArrowRight,
@@ -24,24 +24,23 @@ import {
   Clock,
   Sparkles,
   AlertCircle,
-  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  createVenue,
+  updateVenue,
   uploadToCloudinary,
-  type CreateVenuePayload,
+  type UpdateVenuePayload,
 } from "@/lib/venues/api";
 import { venueKeys } from "@/lib/venues/keys";
+import { venueDetailsQueryOptions } from "@/lib/venues/queries";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
 const STEPS = [
   { id: 1, label: "Basic Details", icon: Building2 },
-  { id: 2, label: "Location", icon: MapPin },
-  { id: 3, label: "Pricing & Schedule", icon: DollarSign },
-  { id: 4, label: "Capacity & Amenities", icon: Users },
-  { id: 5, label: "Images & Review", icon: ImageIcon },
+  { id: 2, label: "Pricing & Schedule", icon: DollarSign },
+  { id: 3, label: "Capacity & Amenities", icon: Users },
+  { id: 4, label: "Images & Review", icon: ImageIcon },
 ] as const;
 
 const CATEGORIES = [
@@ -61,16 +60,6 @@ const AMENITIES = [
 ] as const;
 
 const CAPACITY_TYPES = ["Seating", "Dining", "Floating", "Standing", "Theatre"] as const;
-
-const DAYS_OF_WEEK = [
-  { value: "MON", label: "Mon" },
-  { value: "TUE", label: "Tue" },
-  { value: "WED", label: "Wed" },
-  { value: "THU", label: "Thu" },
-  { value: "FRI", label: "Fri" },
-  { value: "SAT", label: "Sat" },
-  { value: "SUN", label: "Sun" },
-] as const;
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -98,16 +87,6 @@ type FormData = {
   capacities: CapacityEntry[];
   sessions: SessionEntry[];
   imageUrls: string[];
-  // Location
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  zipCode: string;
-  latitude: string;
-  longitude: string;
-  // Operating Schedule
-  operatingDays: string[];
 };
 
 const INITIAL_FORM: FormData = {
@@ -121,16 +100,6 @@ const INITIAL_FORM: FormData = {
   capacities: [{ type: "Seating", maxPeople: "", isSeparate: false }],
   sessions: [],
   imageUrls: [],
-  // Location
-  address: "",
-  city: "",
-  state: "",
-  country: "",
-  zipCode: "",
-  latitude: "",
-  longitude: "",
-  // Operating Schedule
-  operatingDays: [],
 };
 
 // ─── Validation ────────────────────────────────────────────────────────────
@@ -147,23 +116,6 @@ function validateStep(step: number, form: FormData): StepErrors {
   }
 
   if (step === 2) {
-    if (!form.address.trim()) errors.address = "Street address is required";
-    if (!form.city.trim()) errors.city = "City is required";
-    if (!form.state.trim()) errors.state = "State is required";
-    if (!form.country.trim()) errors.country = "Country is required";
-    if (form.latitude) {
-      const lat = Number(form.latitude);
-      if (isNaN(lat)) errors.latitude = "Enter a valid latitude";
-      else if (lat < -90 || lat > 90) errors.latitude = "Latitude must be between -90 and 90";
-    }
-    if (form.longitude) {
-      const lng = Number(form.longitude);
-      if (isNaN(lng)) errors.longitude = "Enter a valid longitude";
-      else if (lng < -180 || lng > 180) errors.longitude = "Longitude must be between -180 and 180";
-    }
-  }
-
-  if (step === 3) {
     const price = Number(form.basePrice);
     if (!form.basePrice || isNaN(price) || price <= 0) errors.basePrice = "Enter a valid positive price";
     const buffer = Number(form.bufferTimeMinutes);
@@ -183,7 +135,7 @@ function validateStep(step: number, form: FormData): StepErrors {
     }
   }
 
-  if (step === 4) {
+  if (step === 3) {
     if (form.capacities.length === 0) errors.capacities = "Add at least one capacity entry";
     form.capacities.forEach((c, i) => {
       if (!c.type.trim()) errors[`cap_${i}_type`] = "Select a capacity type";
@@ -198,23 +150,75 @@ function validateStep(step: number, form: FormData): StepErrors {
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
-export default function NewVenuePage() {
+export default function EditVenuePage() {
+  const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const id = params?.id as string;
+
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<StepErrors>({});
   const [uploadingImages, setUploadingImages] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // ── Fetch Details Query ──
+  const { data: venue, isLoading: isLoadingVenue, isError: isErrorVenue } = useQuery({
+    ...venueDetailsQueryOptions(id),
+    enabled: !!id,
+  });
+
+  // ── Populating Form State ──
+  useEffect(() => {
+    if (venue && !isInitialized) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setForm({
+        title: venue.name,
+        description: venue.description || "",
+        category: venue.category || "",
+        basePrice: String(venue.basePrice ?? ""),
+        pricingType: venue.pricingType || "PER_HOUR",
+        bufferTimeMinutes: String(venue.bufferTimeMinutes ?? "60"),
+        amenities: venue.amenities
+          ? venue.amenities
+              .map((a) => {
+                const name = a.label.toLowerCase();
+                if (name.includes("wifi")) return 1;
+                if (name.includes("ac") || name.includes("conditioning")) return 2;
+                if (name.includes("projector") || name.includes("av") || name.includes("equipment")) return 3;
+                if (name.includes("parking")) return 4;
+                return 0;
+              })
+              .filter((val) => val !== 0)
+          : [],
+        capacities: venue.capacity
+          ? [{ type: "Seating", maxPeople: String(venue.capacity), isSeparate: false }]
+          : [{ type: "Seating", maxPeople: "", isSeparate: false }],
+        sessions: venue.sessions
+          ? venue.sessions.map((s) => ({
+              name: s.name,
+              startTime: s.startTime,
+              endTime: s.endTime,
+              sessionPrice: String(s.sessionPrice),
+            }))
+          : [],
+        imageUrls: venue.images
+          ? Array.from(new Set([venue.images.main].concat(venue.images.gallery || []))).filter(Boolean)
+          : [],
+      });
+      setIsInitialized(true);
+    }
+  }, [venue, isInitialized]);
 
   // ── Mutation ──
-  const createMutation = useMutation({
-    mutationKey: venueKeys.create(),
-    mutationFn: createVenue,
+  const updateMutation = useMutation({
+    mutationFn: (payload: UpdateVenuePayload) => updateVenue(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: venueKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: venueKeys.detail(id) });
       setSubmitSuccess(true);
-      setTimeout(() => router.push("/owner/venues"), 2000);
+      setTimeout(() => router.push(`/owner/venues/${id}`), 2000);
     },
   });
 
@@ -235,7 +239,7 @@ export default function NewVenuePage() {
       return;
     }
     setErrors({});
-    setCurrentStep((s) => Math.min(s + 1, 5));
+    setCurrentStep((s) => Math.min(s + 1, 4));
   };
 
   const goPrev = () => {
@@ -327,7 +331,7 @@ export default function NewVenuePage() {
 
   // ── Submit ──
   const handleSubmit = () => {
-    const payload: CreateVenuePayload = {
+    const payload: UpdateVenuePayload = {
       title: form.title.trim(),
       description: form.description.trim() || undefined,
       category: form.category,
@@ -350,20 +354,42 @@ export default function NewVenuePage() {
               sessionPrice: Number(s.sessionPrice),
             }))
           : undefined,
-      // Location
-      address: form.address.trim(),
-      city: form.city.trim(),
-      state: form.state.trim(),
-      country: form.country.trim(),
-      zipCode: form.zipCode.trim() || undefined,
-      latitude: form.latitude ? Number(form.latitude) : undefined,
-      longitude: form.longitude ? Number(form.longitude) : undefined,
-      // Operating Schedule
-      operatingDays: form.operatingDays.length > 0 ? form.operatingDays : undefined,
     };
 
-    createMutation.mutate(payload);
+    updateMutation.mutate(payload);
   };
+
+  // ─── Loading & Error States ───
+  if (isLoadingVenue) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#582200]" />
+      </div>
+    );
+  }
+
+  if (isErrorVenue || !venue) {
+    return (
+      <div className="space-y-6">
+        <Link
+          href={`/owner/venues/${id}`}
+          className="flex items-center gap-2 text-label-md font-bold text-text-muted hover:text-on-surface"
+        >
+          <ArrowLeft className="h-4.5 w-4.5" />
+          Back to Details
+        </Link>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 flex items-start gap-4">
+          <AlertCircle className="h-6 w-6 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-lg font-bold text-red-800">Venue Not Found</h3>
+            <p className="text-body-md text-red-600 mt-1">
+              Could not load the venue details to edit.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ─── Success State ──────────────────────────────────────────────────────
   if (submitSuccess) {
@@ -373,9 +399,9 @@ export default function NewVenuePage() {
           <Check className="h-10 w-10 text-green-600" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-on-surface">Venue Created!</h2>
+          <h2 className="text-3xl font-bold text-on-surface">Venue Updated!</h2>
           <p className="mt-2 text-body-md text-text-muted">
-            Your venue has been submitted for review. Redirecting to your venues…
+            Your venue has been updated successfully. Redirecting back to details…
           </p>
         </div>
       </div>
@@ -387,17 +413,17 @@ export default function NewVenuePage() {
       {/* ─── HEADER ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-4">
         <Link
-          href="/owner"
+          href={`/owner/venues/${id}`}
           className="flex h-10 w-10 items-center justify-center rounded-xl border border-border-subtle bg-white text-on-surface transition-all hover:bg-stone-50 hover:-translate-y-0.5 shadow-sm"
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-on-surface md:text-4xl">
-            Add New Venue
+            Edit Venue Listing
           </h1>
           <p className="mt-1 text-body-md text-text-muted">
-            Create a stunning new listing for your BookMyVenue portfolio.
+            Update operational parameters and branding properties.
           </p>
         </div>
       </div>
@@ -467,9 +493,6 @@ export default function NewVenuePage() {
           <StepBasicDetails form={form} errors={errors} updateField={updateField} />
         )}
         {currentStep === 2 && (
-          <StepLocation form={form} errors={errors} updateField={updateField} />
-        )}
-        {currentStep === 3 && (
           <StepPricingSchedule
             form={form}
             errors={errors}
@@ -480,7 +503,7 @@ export default function NewVenuePage() {
             updateSession={updateSession}
           />
         )}
-        {currentStep === 4 && (
+        {currentStep === 3 && (
           <StepCapacityAmenities
             form={form}
             errors={errors}
@@ -490,7 +513,7 @@ export default function NewVenuePage() {
             toggleAmenity={toggleAmenity}
           />
         )}
-        {currentStep === 5 && (
+        {currentStep === 4 && (
           <StepImagesReview
             form={form}
             errors={errors}
@@ -518,7 +541,7 @@ export default function NewVenuePage() {
           Previous
         </button>
 
-        {currentStep < 5 ? (
+        {currentStep < 4 ? (
           <button
             type="button"
             onClick={goNext}
@@ -531,18 +554,18 @@ export default function NewVenuePage() {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={createMutation.isPending}
+            disabled={updateMutation.isPending}
             className="flex items-center gap-2 rounded-full bg-primary-container px-7 py-3 text-label-md font-bold text-white shadow-lg shadow-primary-container/20 transition-all duration-200 hover:bg-[#e0620f] hover:-translate-y-0.5 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {createMutation.isPending ? (
+            {updateMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Submitting…
+                Updating…
               </>
             ) : (
               <>
                 <Sparkles className="h-4 w-4" />
-                Submit Listing
+                Save Changes
               </>
             )}
           </button>
@@ -550,13 +573,13 @@ export default function NewVenuePage() {
       </div>
 
       {/* ─── Mutation Error ─────────────────────────────────────────────────── */}
-      {createMutation.isError && (
+      {updateMutation.isError && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-4 flex items-start gap-3 animate-fade-in">
           <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <div>
-            <p className="text-label-md font-semibold text-red-700">Submission Failed</p>
+            <p className="text-label-md font-semibold text-red-700">Update Failed</p>
             <p className="text-body-md text-red-600 mt-1">
-              {createMutation.error?.message ?? "Something went wrong. Please try again."}
+              {updateMutation.error?.message ?? "Something went wrong. Please try again."}
             </p>
           </div>
         </div>
@@ -650,176 +673,7 @@ function StepBasicDetails({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// STEP 2 — Location
-// ═══════════════════════════════════════════════════════════════════════════
-
-function StepLocation({
-  form,
-  errors,
-  updateField,
-}: {
-  form: FormData;
-  errors: StepErrors;
-  updateField: <K extends keyof FormData>(key: K, value: FormData[K]) => void;
-}) {
-  return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h2 className="text-2xl font-bold text-on-surface">Location</h2>
-        <p className="mt-1 text-body-md text-text-muted">
-          Help guests find your venue by providing accurate location details.
-        </p>
-      </div>
-
-      {/* Address */}
-      <div className="space-y-2">
-        <label htmlFor="venue-address" className="text-label-md font-semibold text-on-surface">
-          Street Address <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="venue-address"
-          type="text"
-          placeholder="e.g. 42 Park Avenue, Suite 100"
-          value={form.address}
-          onChange={(e) => updateField("address", e.target.value)}
-          className={cn(
-            "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
-            errors.address ? "border-red-400" : "border-border-subtle"
-          )}
-        />
-        {errors.address && <p className="text-label-sm text-red-500">{errors.address}</p>}
-      </div>
-
-      {/* City & State */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label htmlFor="venue-city" className="text-label-md font-semibold text-on-surface">
-            City <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="venue-city"
-            type="text"
-            placeholder="e.g. Mumbai"
-            value={form.city}
-            onChange={(e) => updateField("city", e.target.value)}
-            className={cn(
-              "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
-              errors.city ? "border-red-400" : "border-border-subtle"
-            )}
-          />
-          {errors.city && <p className="text-label-sm text-red-500">{errors.city}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="venue-state" className="text-label-md font-semibold text-on-surface">
-            State / Province <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="venue-state"
-            type="text"
-            placeholder="e.g. Maharashtra"
-            value={form.state}
-            onChange={(e) => updateField("state", e.target.value)}
-            className={cn(
-              "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
-              errors.state ? "border-red-400" : "border-border-subtle"
-            )}
-          />
-          {errors.state && <p className="text-label-sm text-red-500">{errors.state}</p>}
-        </div>
-      </div>
-
-      {/* Country & ZIP */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label htmlFor="venue-country" className="text-label-md font-semibold text-on-surface">
-            Country <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="venue-country"
-            type="text"
-            placeholder="e.g. India"
-            value={form.country}
-            onChange={(e) => updateField("country", e.target.value)}
-            className={cn(
-              "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
-              errors.country ? "border-red-400" : "border-border-subtle"
-            )}
-          />
-          {errors.country && <p className="text-label-sm text-red-500">{errors.country}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="venue-zip" className="text-label-md font-semibold text-on-surface">
-            ZIP / Postal Code
-          </label>
-          <input
-            id="venue-zip"
-            type="text"
-            placeholder="e.g. 400001"
-            value={form.zipCode}
-            onChange={(e) => updateField("zipCode", e.target.value)}
-            className="w-full rounded-xl border border-border-subtle px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand"
-          />
-        </div>
-      </div>
-
-      {/* Coordinates */}
-      <div className="space-y-4 rounded-2xl border border-border-subtle bg-surface-container-lowest p-6">
-        <div>
-          <h3 className="text-label-md font-bold text-on-surface flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary-container" />
-            Coordinates
-          </h3>
-          <p className="text-label-sm text-text-muted mt-0.5">
-            Optional — used to pin your venue on a map for guests.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div className="space-y-2">
-            <label htmlFor="venue-lat" className="text-label-md font-semibold text-on-surface">
-              Latitude
-            </label>
-            <input
-              id="venue-lat"
-              type="number"
-              step="any"
-              placeholder="e.g. 19.0760"
-              value={form.latitude}
-              onChange={(e) => updateField("latitude", e.target.value)}
-              className={cn(
-                "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
-                errors.latitude ? "border-red-400" : "border-border-subtle"
-              )}
-            />
-            {errors.latitude && <p className="text-label-sm text-red-500">{errors.latitude}</p>}
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="venue-lng" className="text-label-md font-semibold text-on-surface">
-              Longitude
-            </label>
-            <input
-              id="venue-lng"
-              type="number"
-              step="any"
-              placeholder="e.g. 72.8777"
-              value={form.longitude}
-              onChange={(e) => updateField("longitude", e.target.value)}
-              className={cn(
-                "w-full rounded-xl border px-4 py-3.5 text-body-md bg-white transition-all focus-ring-brand",
-                errors.longitude ? "border-red-400" : "border-border-subtle"
-              )}
-            />
-            {errors.longitude && <p className="text-label-sm text-red-500">{errors.longitude}</p>}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// STEP 3 — Pricing & Schedule
+// STEP 2 — Pricing & Schedule
 // ═══════════════════════════════════════════════════════════════════════════
 
 function StepPricingSchedule({
@@ -1019,45 +873,6 @@ function StepPricingSchedule({
           ))}
         </div>
       )}
-
-      {/* Operating Schedule */}
-      <div className="space-y-5">
-        <div>
-          <h3 className="text-label-md font-bold text-on-surface">Operating Schedule</h3>
-          <p className="text-label-sm text-text-muted mt-0.5">Set which days and hours your venue is open for bookings.</p>
-        </div>
-
-        {/* Days of the Week */}
-        <div className="space-y-2">
-          <label className="text-label-md font-semibold text-on-surface">Operating Days</label>
-          <div className="flex flex-wrap gap-2">
-            {DAYS_OF_WEEK.map((day) => {
-              const selected = form.operatingDays.includes(day.value);
-              return (
-                <button
-                  key={day.value}
-                  type="button"
-                  onClick={() => {
-                    const next = selected
-                      ? form.operatingDays.filter((d) => d !== day.value)
-                      : [...form.operatingDays, day.value];
-                    updateField("operatingDays", next);
-                  }}
-                  aria-pressed={selected}
-                  className={cn(
-                    "rounded-full border-2 px-4 py-2 text-label-sm font-bold transition-all duration-200",
-                    selected
-                      ? "border-primary-container bg-[#fcf2ed] text-primary-container shadow-sm"
-                      : "border-border-subtle text-text-muted hover:border-on-surface-variant hover:text-on-surface"
-                  )}
-                >
-                  {day.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -1346,7 +1161,8 @@ function StepImagesReview({
             }
             className="sm:col-span-2"
           />
-          <ReviewItem label="Amenities"
+          <ReviewItem
+            label="Amenities"
             value={
               AMENITIES.filter((a) => form.amenities.includes(a.id))
                 .map((a) => a.name)
@@ -1361,29 +1177,6 @@ function StepImagesReview({
                 .map((s) => `${s.name} (${s.startTime}–${s.endTime}) ₹${s.sessionPrice}`)
                 .join(", ")}
               className="sm:col-span-2"
-            />
-          )}
-          {/* Location */}
-          {form.address && (
-            <ReviewItem
-              label="Location"
-              value={[form.address, form.city, form.state, form.country, form.zipCode]
-                .filter(Boolean)
-                .join(", ")}
-              className="sm:col-span-2"
-            />
-          )}
-          {(form.latitude || form.longitude) && (
-            <ReviewItem
-              label="Coordinates"
-              value={`${form.latitude || "—"}, ${form.longitude || "—"}`}
-            />
-          )}
-          {/* Operating Schedule */}
-          {form.operatingDays.length > 0 && (
-            <ReviewItem
-              label="Operating Days"
-              value={form.operatingDays.join(", ")}
             />
           )}
         </div>

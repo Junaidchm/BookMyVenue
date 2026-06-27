@@ -1,5 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { VenueService, CreateVenueDto } from '../services/venue.service';
+import { VenueService } from '../services/venue.service';
+import {
+  CreateVenueDto,
+  UpdateVenueDto,
+  CreateClosureDto,
+  UpdateClosureDto,
+} from '../dtos/venue.dto';
 
 export class VenueController {
   private venueService: VenueService;
@@ -55,10 +61,392 @@ export class VenueController {
     }
   };
 
+  getMyVenues = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const userIdStr = req.headers['x-user-id'] as string;
+      const ownerId = parseInt(userIdStr, 10);
+
+      if (isNaN(ownerId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or missing user identity context.',
+        });
+      }
+
+      const venues = await this.venueService.getVenuesByOwner(ownerId);
+
+      return res.status(200).json({
+        success: true,
+        data: venues,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  update = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const venueId = parseInt(req.params.id as string, 10);
+      if (isNaN(venueId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid venue ID format.',
+        });
+      }
+
+      const userIdStr = req.headers['x-user-id'] as string;
+      const ownerId = parseInt(userIdStr, 10);
+      if (isNaN(ownerId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or missing user identity context.',
+        });
+      }
+
+      const result = await this.venueService.updateVenue(
+        venueId,
+        ownerId,
+        req.body as UpdateVenueDto,
+      );
+
+      if (result.status === 'NOT_FOUND') {
+        return res.status(404).json({
+          success: false,
+          message: 'Venue not found.',
+        });
+      }
+
+      if (result.status === 'FORBIDDEN') {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not own this venue.',
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: result.data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  delete = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const venueId = parseInt(req.params.id as string, 10);
+      if (isNaN(venueId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid venue ID format.',
+        });
+      }
+
+      const userIdStr = req.headers['x-user-id'] as string;
+      const ownerId = parseInt(userIdStr, 10);
+      if (isNaN(ownerId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or missing user identity context.',
+        });
+      }
+
+      const result = await this.venueService.deleteVenue(venueId, ownerId);
+
+      if (result.status === 'NOT_FOUND') {
+        return res.status(404).json({
+          success: false,
+          message: 'Venue not found.',
+        });
+      }
+
+      if (result.status === 'FORBIDDEN') {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not own this venue.',
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Venue deleted successfully.',
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   /**
    * POST /venues
    * Creates a new venue.
    */
+  createClosure = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const venueId = parseInt(req.params.id as string, 10);
+      if (isNaN(venueId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid venue ID format.',
+        });
+      }
+
+      const userIdStr = req.headers['x-user-id'] as string;
+      const ownerId = parseInt(userIdStr, 10);
+      if (isNaN(ownerId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or missing user identity context.',
+        });
+      }
+
+      const result = await this.venueService.createClosure(
+        venueId,
+        ownerId,
+        req.body as CreateClosureDto,
+      );
+
+      if (result.status === 'VENUE_NOT_FOUND') {
+        return res.status(404).json({
+          success: false,
+          message: 'Venue not found.',
+        });
+      }
+
+      if (result.status === 'FORBIDDEN') {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not own this venue.',
+        });
+      }
+
+      if (
+        result.status === 'INVALID_TIME' ||
+        result.status === 'INVALID_TIME_RANGE'
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid closure time range details.',
+        });
+      }
+
+      return res.status(201).json({
+        success: true,
+        data: result.data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getClosures = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const venueId = parseInt(req.params.id as string, 10);
+      if (isNaN(venueId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid venue ID format.',
+        });
+      }
+
+      const userIdStr = req.headers['x-user-id'] as string;
+      const ownerId = parseInt(userIdStr, 10);
+      if (isNaN(ownerId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or missing user identity context.',
+        });
+      }
+
+      const result = await this.venueService.getClosures(venueId, ownerId);
+
+      if (result.status === 'VENUE_NOT_FOUND') {
+        return res.status(404).json({
+          success: false,
+          message: 'Venue not found.',
+        });
+      }
+
+      if (result.status === 'FORBIDDEN') {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not own this venue.',
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: result.data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  deleteClosure = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const venueId = parseInt(req.params.id as string, 10);
+      if (isNaN(venueId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid venue ID format.',
+        });
+      }
+
+      const closureId = parseInt(req.params.closureId as string, 10);
+      if (isNaN(closureId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid closure ID format.',
+        });
+      }
+
+      const userIdStr = req.headers['x-user-id'] as string;
+      const ownerId = parseInt(userIdStr, 10);
+      if (isNaN(ownerId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or missing user identity context.',
+        });
+      }
+
+      const result = await this.venueService.deleteClosure(
+        venueId,
+        closureId,
+        ownerId,
+      );
+
+      if (result.status === 'VENUE_NOT_FOUND') {
+        return res.status(404).json({
+          success: false,
+          message: 'Venue not found.',
+        });
+      }
+
+      if (result.status === 'FORBIDDEN') {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not own this venue.',
+        });
+      }
+
+      if (result.status === 'CLOSURE_NOT_FOUND') {
+        return res.status(404).json({
+          success: false,
+          message: 'Closure not found or does not belong to this venue.',
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Venue closure deleted successfully.',
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  updateClosure = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const venueId = parseInt(req.params.id as string, 10);
+      if (isNaN(venueId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid venue ID format.',
+        });
+      }
+
+      const closureId = parseInt(req.params.closureId as string, 10);
+      if (isNaN(closureId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid closure ID format.',
+        });
+      }
+
+      const userIdStr = req.headers['x-user-id'] as string;
+      const ownerId = parseInt(userIdStr, 10);
+      if (isNaN(ownerId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or missing user identity context.',
+        });
+      }
+
+      const result = await this.venueService.updateClosure(
+        venueId,
+        closureId,
+        ownerId,
+        req.body as UpdateClosureDto,
+      );
+
+      if (result.status === 'VENUE_NOT_FOUND') {
+        return res.status(404).json({
+          success: false,
+          message: 'Venue not found.',
+        });
+      }
+
+      if (result.status === 'FORBIDDEN') {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not own this venue.',
+        });
+      }
+
+      if (result.status === 'CLOSURE_NOT_FOUND') {
+        return res.status(404).json({
+          success: false,
+          message: 'Closure not found or does not belong to this venue.',
+        });
+      }
+
+      if (
+        result.status === 'INVALID_TIME' ||
+        result.status === 'INVALID_TIME_RANGE'
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid closure time range details.',
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: result.data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   create = async (
     req: Request,
     res: Response,

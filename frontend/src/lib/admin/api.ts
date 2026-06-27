@@ -99,6 +99,29 @@ export async function getPendingVenues(): Promise<PendingVenue[]> {
 }
 
 /**
+ * Fetch all venues for admin (all statuses).
+ * Requires the caller to be authenticated as ADMIN.
+ */
+export async function getAllAdminVenues(): Promise<PendingVenue[]> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/admin/venues`, {
+    credentials: "include",
+    cache: "no-store",
+    headers,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to fetch admin venues"
+    );
+  }
+
+  const body = (await res.json()) as AdminVenuesResponse;
+  return body.data ?? [];
+}
+
+/**
  * Approve a venue by ID.
  */
 export async function approveVenue(id: number): Promise<void> {
