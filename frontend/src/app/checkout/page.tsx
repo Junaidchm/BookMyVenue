@@ -35,7 +35,7 @@ function CheckoutContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const bookingIdParam = searchParams.get("bookingId");
-  const bookingId = bookingIdParam ? parseInt(bookingIdParam, 10) : null;
+  const bookingId = bookingIdParam ? String(bookingIdParam) : null;
 
   const [booking, setBooking] = useState<any>(null);
   const [venue, setVenue] = useState<Venue | null>(null);

@@ -150,7 +150,7 @@ const VENUES = [
   },
 ] as const;
 
-const DUMMY_OWNER_ID = 1;
+const DUMMY_OWNER_ID = '1';
 
 async function main() {
   console.log('Seeding amenities...');

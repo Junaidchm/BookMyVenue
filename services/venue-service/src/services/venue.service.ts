@@ -9,7 +9,7 @@ export interface CreateVenueDto {
   pricingType: PricingType;
   bufferTimeMinutes: number;
   imageUrls: string[];
-  amenities: number[];
+  amenities: string[];
   capacities: {
     type: string;
     maxPeople: number;
@@ -46,7 +46,7 @@ export class VenueService {
   /**
    * Retrieve a single venue by its ID.
    */
-  async getVenueById(id: number) {
+  async getVenueById(id: string) {
     const venue = await prisma.venue.findUnique({
       where: { id },
       include: {
@@ -81,7 +81,7 @@ export class VenueService {
   /**
    * Approve a pending venue by setting its status to APPROVED.
    */
-  async approveVenue(id: number) {
+  async approveVenue(id: string) {
     return prisma.venue.update({
       where: { id },
       data: { status: 'APPROVED' },
@@ -91,7 +91,7 @@ export class VenueService {
   /**
    * Reject a pending venue by setting its status to REJECTED.
    */
-  async rejectVenue(id: number) {
+  async rejectVenue(id: string) {
     return prisma.venue.update({
       where: { id },
       data: { status: 'REJECTED' },
@@ -102,7 +102,7 @@ export class VenueService {
    * Creates a new venue and its related records (capacities, sessions, amenities)
    * in a single atomic transaction.
    */
-  async createVenue(ownerId: number, data: CreateVenueDto) {
+  async createVenue(ownerId: string, data: CreateVenueDto) {
     const {
       title,
       description,

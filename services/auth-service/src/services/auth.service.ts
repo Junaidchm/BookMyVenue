@@ -3,7 +3,7 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 
 export interface JwtPayload {
-  sub: number;
+  sub: string;
   email: string;
   fullName: string;
   roles: string[];

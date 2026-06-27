@@ -10,7 +10,7 @@ export const checkBookingRisk = async (req: Request, res: Response, next: NextFu
       return res.status(401).json({ success: false, message: 'Unauthorized. User context missing.' });
     }
 
-    const userId = parseInt(userIdStr, 10);
+    const userId = userIdStr;
     
     const targetDateStr = req.body.bookingDate || req.body.startTime;
     const targetDate = targetDateStr ? new Date(targetDateStr) : new Date();

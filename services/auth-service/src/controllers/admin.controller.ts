@@ -25,12 +25,12 @@ export class AdminController {
         return res.status(403).json({ success: false, message: 'Forbidden: Admin access required.' });
       }
 
-      const id = parseInt(req.params.id as string, 10);
-      if (isNaN(id)) {
+      const { id } = req.params;
+      if (!id) {
         return res.status(400).json({ success: false, message: 'Invalid user ID.' });
       }
 
-      const user = await this.usersService.findById(id);
+      const user = await this.usersService.findById(id as string);
       if (!user) {
         return res.status(404).json({ success: false, message: 'User not found.' });
       }

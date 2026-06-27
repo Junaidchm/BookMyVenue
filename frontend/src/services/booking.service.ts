@@ -20,7 +20,7 @@ export const bookingService = {
   /**
    * Check availability for a specific venue and time slot
    */
-  checkAvailability: async (venueId: string | number, startTime: string, endTime: string) => {
+  checkAvailability: async (venueId: string, startTime: string, endTime: string) => {
     const response = await apiClient.get("/bookings/availability", {
       params: { venueId, startTime, endTime }
     });
@@ -46,7 +46,7 @@ export const bookingService = {
   /**
    * Reschedule an existing booking
    */
-  rescheduleBooking: async (id: string | number, bookingDate: string, startTime: string, endTime: string) => {
+  rescheduleBooking: async (id: string, bookingDate: string, startTime: string, endTime: string) => {
     const response = await apiClient.patch(`/bookings/${id}/reschedule`, {
       bookingDate,
       startTime,
@@ -58,7 +58,7 @@ export const bookingService = {
   /**
    * Simulate confirming a booking via webhook trigger
    */
-  confirmBooking: async (bookingId: number, paymentId: string) => {
+  confirmBooking: async (bookingId: string, paymentId: string) => {
     const response = await apiClient.post("/bookings/webhook", {
       event: "payment.succeeded",
       data: {

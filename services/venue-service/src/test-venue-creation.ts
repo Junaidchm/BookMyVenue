@@ -55,7 +55,7 @@ async function runTests() {
     ],
   };
 
-  const ownerId = 123; // Valid owner ID placeholder
+  const ownerId = '123'; // Valid owner ID placeholder
   const createdVenue = await venueService.createVenue(ownerId, validPayload);
 
   console.log('✅ Venue created successfully!');
@@ -93,7 +93,7 @@ async function runTests() {
     pricingType: PricingType.PER_HOUR,
     bufferTimeMinutes: 30,
     imageUrls: [],
-    amenities: [99999], // Invalid non-existent amenity ID!
+    amenities: ['99999'], // Invalid non-existent amenity ID!
     capacities: [{ type: 'SEATING', maxPeople: 100 }],
   };
 

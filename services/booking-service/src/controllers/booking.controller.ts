@@ -34,14 +34,14 @@ export const createBooking = async (req: Request, res: Response): Promise<any> =
     if (!userIdStr) {
       return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
     }
-    const userId = parseInt(userIdStr, 10);
+    const userId = userIdStr;
     const { venueId, bookingDate, startTime, endTime, totalPrice } = req.body;
 
     if (!venueId || !bookingDate || !startTime || !endTime || !totalPrice) {
       return res.status(400).json({ success: false, message: 'Missing required booking fields' });
     }
 
-    const parsedVenueId = parseInt(venueId, 10);
+    const parsedVenueId = venueId;
     const start = new Date(startTime);
     const end = new Date(endTime);
 
@@ -160,9 +160,9 @@ export const handleWebhook = async (req: Request, res: Response): Promise<any> =
 
     // If metadata contains bookingId, use it
     if (data?.metadata?.bookingId) {
-      bookingId = parseInt(data.metadata.bookingId, 10);
+      bookingId = String(data.metadata.bookingId);
     } else if (data?.object?.metadata?.bookingId) {
-      bookingId = parseInt(data.object.metadata.bookingId, 10);
+      bookingId = String(data.object.metadata.bookingId);
     }
 
     if (!bookingId) {
@@ -170,7 +170,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<any> =
       return res.status(400).json({ success: false, message: 'Missing bookingId' });
     }
 
-    const parsedBookingId = typeof bookingId === 'string' ? parseInt(bookingId, 10) : bookingId;
+    const parsedBookingId = String(bookingId);
 
     // Find the booking to get its userId for cache updating
     const bookingToConfirm = await prisma.booking.findUnique({
@@ -228,7 +228,7 @@ export const checkAvailability = async (req: Request, res: Response): Promise<an
       return res.status(400).json({ success: false, message: 'Missing required query parameters: venueId, startTime, endTime' });
     }
 
-    const parsedVenueId = parseInt(venueId as string, 10);
+    const parsedVenueId = venueId as string;
     const start = new Date(startTime as string);
     const end = new Date(endTime as string);
 
@@ -266,9 +266,9 @@ export const checkAvailability = async (req: Request, res: Response): Promise<an
 export const getBookingById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const parsedId = parseInt(id as string, 10);
+    const parsedId = id as string;
 
-    if (isNaN(parsedId)) {
+    if (!parsedId) {
       return res.status(400).json({ success: false, message: 'Invalid booking ID' });
     }
 
@@ -296,7 +296,7 @@ export const getBookings = async (req: Request, res: Response): Promise<any> => 
     if (!userIdStr) {
       return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
     }
-    const userId = parseInt(userIdStr, 10);
+    const userId = userIdStr;
 
     const bookings = await prisma.booking.findMany({
       where: { userId },
@@ -320,10 +320,10 @@ export const cancelBooking = async (req: Request, res: Response): Promise<any> =
     if (!userIdStr) {
       return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
     }
-    const userId = parseInt(userIdStr, 10);
-    const parsedId = parseInt(id as string, 10);
+    const userId = userIdStr;
+    const parsedId = id as string;
 
-    if (isNaN(parsedId)) {
+    if (!parsedId) {
       return res.status(400).json({ success: false, message: 'Invalid booking ID' });
     }
 
@@ -395,15 +395,15 @@ export const rescheduleBooking = async (req: Request, res: Response): Promise<an
     if (!userIdStr) {
       return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
     }
-    const userId = parseInt(userIdStr, 10);
-    const parsedId = parseInt(id as string, 10);
+    const userId = userIdStr;
+    const parsedId = id as string;
     const { bookingDate, startTime, endTime } = req.body;
 
     if (!bookingDate || !startTime || !endTime) {
       return res.status(400).json({ success: false, message: 'Missing required rescheduling parameters: bookingDate, startTime, endTime' });
     }
 
-    if (isNaN(parsedId)) {
+    if (!parsedId) {
       return res.status(400).json({ success: false, message: 'Invalid booking ID' });
     }
 

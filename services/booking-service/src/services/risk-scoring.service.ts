@@ -22,7 +22,7 @@ export class RiskScoringService {
   /**
    * Updates/refreshes the cached risk profile in Redis for a specific user.
    */
-  static async updateCache(userId: number): Promise<CachedRiskProfile> {
+  static async updateCache(userId: string): Promise<CachedRiskProfile> {
     const history = await prisma.booking.findMany({
       where: { userId }
     });
@@ -53,7 +53,7 @@ export class RiskScoringService {
    * @param accountCreatedAt Account creation timestamp from custom JWT claims
    */
   async calculateRiskScore(
-    userId: number,
+    userId: string,
     targetDate: Date,
     isKycVerified: boolean,
     accountCreatedAt: Date

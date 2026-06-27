@@ -74,7 +74,7 @@ export class UsersService {
   }
 
   async updateOwnerProfile(
-    userId: number,
+    userId: string,
     profileData: {
       phoneNumber?: string;
       businessName?: string;
@@ -106,7 +106,7 @@ export class UsersService {
     });
   }
 
-  async findById(id: number) {
+  async findById(id: string) {
     return await prisma.user.findUnique({
       where: { id },
       include: {

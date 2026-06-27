@@ -35,8 +35,8 @@ export class AdminController {
     next: NextFunction,
   ): Promise<any> => {
     try {
-      const venueId = parseInt(req.params.id as string, 10);
-      if (isNaN(venueId)) {
+      const venueId = req.params.id as string;
+      if (!venueId) {
         return res
           .status(400)
           .json({ success: false, message: 'Invalid venue ID format.' });
@@ -63,8 +63,8 @@ export class AdminController {
     next: NextFunction,
   ): Promise<any> => {
     try {
-      const venueId = parseInt(req.params.id as string, 10);
-      if (isNaN(venueId)) {
+      const venueId = req.params.id as string;
+      if (!venueId) {
         return res
           .status(400)
           .json({ success: false, message: 'Invalid venue ID format.' });

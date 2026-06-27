@@ -31,8 +31,8 @@ export class VenueController {
    */
   getVenueById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const venueId = parseInt(req.params.id as string, 10);
-      if (isNaN(venueId)) {
+      const venueId = req.params.id as string;
+      if (!venueId) {
         res
           .status(400)
           .json({ success: false, message: 'Invalid venue ID format' });
@@ -66,9 +66,9 @@ export class VenueController {
   ): Promise<any> => {
     try {
       const userIdStr = req.headers['x-user-id'] as string;
-      const ownerId = parseInt(userIdStr, 10);
+      const ownerId = userIdStr;
 
-      if (isNaN(ownerId)) {
+      if (!ownerId) {
         return res.status(400).json({
           success: false,
           message: 'Invalid or missing user identity context.',

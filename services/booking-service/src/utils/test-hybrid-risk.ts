@@ -27,7 +27,7 @@ async function runTests() {
   lowRiskUserCreatedAt.setDate(lowRiskUserCreatedAt.getDate() - 200); // 200 days old account
 
   const lowRiskResult = await riskScoringService.calculateRiskScore(
-    9999, // dummy user ID
+    '9999', // dummy user ID
     new Date(),
     true, // KycVerified
     lowRiskUserCreatedAt
@@ -49,9 +49,9 @@ async function runTests() {
   const today = new Date();
   await prisma.booking.createMany({
     data: [
-      { userId: 8888, venueId: 1, bookingDate: today, startTime: new Date(), endTime: new Date(), totalPrice: 100, status: 'PENDING_PAYMENT' },
-      { userId: 8888, venueId: 1, bookingDate: today, startTime: new Date(), endTime: new Date(), totalPrice: 100, status: 'PENDING_PAYMENT' },
-      { userId: 8888, venueId: 1, bookingDate: today, startTime: new Date(), endTime: new Date(), totalPrice: 100, status: 'PENDING_PAYMENT' },
+      { userId: '8888', venueId: '1', bookingDate: today, startTime: new Date(), endTime: new Date(), totalPrice: 100, status: 'PENDING_PAYMENT' },
+      { userId: '8888', venueId: '1', bookingDate: today, startTime: new Date(), endTime: new Date(), totalPrice: 100, status: 'PENDING_PAYMENT' },
+      { userId: '8888', venueId: '1', bookingDate: today, startTime: new Date(), endTime: new Date(), totalPrice: 100, status: 'PENDING_PAYMENT' },
     ]
   });
 
@@ -64,7 +64,7 @@ async function runTests() {
   await redis.set('user:8888:risk_profile', JSON.stringify(highRiskProfile), 60);
 
   const highRiskResult = await riskScoringService.calculateRiskScore(
-    8888,
+    '8888',
     today,
     false, // KycVerified
     highRiskUserCreatedAt
@@ -74,7 +74,7 @@ async function runTests() {
   
   // Clean up
   await prisma.booking.deleteMany({
-    where: { userId: 8888 }
+    where: { userId: '8888' }
   });
   await redis.del('user:8888:risk_profile');
 

@@ -24,13 +24,13 @@ enum BookingStatus {
 }
 
 model Booking {
-  id      Int @id @default(autoincrement())
-  venueId Int // Logical FK to Venue DB
-  userId  Int // Logical FK to Auth DB
+  id      String @id @default(uuid())
+  venueId String // Logical FK to Venue DB
+  userId  String // Logical FK to Auth DB
 
   // Booking Architecture
   type           BookingType @default(HOURLY)
-  venueSessionId Int? // If type is SESSION, references the specific VenueSession ID
+  venueSessionId String? // If type is SESSION, references the specific VenueSession ID
   sessionName    String? // Snapshot string to preserve receipt history if owner alters session name later
 
   // Temporal Anchors (UTC)
