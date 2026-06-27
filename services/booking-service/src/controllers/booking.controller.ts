@@ -313,3 +313,192 @@ export const getBookings = async (req: Request, res: Response): Promise<any> => 
   }
 };
 
+export const cancelBooking = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const userIdStr = req.headers['x-user-id'] as string;
+    if (!userIdStr) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
+    }
+    const userId = parseInt(userIdStr, 10);
+    const parsedId = parseInt(id as string, 10);
+
+    if (isNaN(parsedId)) {
+      return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: parsedId }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    // Authorization Check: User must own the booking
+    if (booking.userId !== userId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You do not have permission to cancel this booking' });
+    }
+
+    // Check status: Can only cancel CONFIRMED or PENDING_PAYMENT bookings
+    if (booking.status === 'CANCELLED') {
+      return res.status(400).json({ success: false, message: 'Booking is already cancelled' });
+    }
+    if (booking.status === 'FAILED') {
+      return res.status(400).json({ success: false, message: 'Cannot cancel a failed booking' });
+    }
+
+    // Business Rule: Cancellations not allowed within 24 hours of booking start
+    const now = new Date();
+    const timeDiff = booking.startTime.getTime() - now.getTime();
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+
+    if (hoursDiff < 24) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cancellations are not allowed within 24 hours of the booking start time to protect venue business.'
+      });
+    }
+
+    // Calculate Refund
+    const refundPct = Number(booking.refundPercentage);
+    const refundAmount = (Number(booking.totalPrice) * refundPct) / 100;
+
+    // Update booking status to CANCELLED
+    const updatedBooking = await prisma.booking.update({
+      where: { id: parsedId },
+      data: {
+        status: 'CANCELLED'
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Booking cancelled successfully. Refund of ₹${refundAmount.toFixed(2)} (${refundPct}% of ₹${Number(booking.totalPrice).toFixed(2)}) will be processed.`,
+      data: {
+        booking: updatedBooking,
+        refundAmount,
+        refundPercentage: refundPct
+      }
+    });
+
+  } catch (error) {
+    console.error('Error cancelling booking:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+export const rescheduleBooking = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const userIdStr = req.headers['x-user-id'] as string;
+    if (!userIdStr) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: User ID is missing' });
+    }
+    const userId = parseInt(userIdStr, 10);
+    const parsedId = parseInt(id as string, 10);
+    const { bookingDate, startTime, endTime } = req.body;
+
+    if (!bookingDate || !startTime || !endTime) {
+      return res.status(400).json({ success: false, message: 'Missing required rescheduling parameters: bookingDate, startTime, endTime' });
+    }
+
+    if (isNaN(parsedId)) {
+      return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: parsedId }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    // Authorization Check: User must own the booking
+    if (booking.userId !== userId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You do not have permission to reschedule this booking' });
+    }
+
+    // Check status: Can only reschedule CONFIRMED or PENDING_PAYMENT bookings
+    if (booking.status === 'CANCELLED' || booking.status === 'FAILED') {
+      return res.status(400).json({ success: false, message: `Cannot reschedule a ${booking.status.toLowerCase()} booking` });
+    }
+
+    // Business Rule: Rescheduling not allowed within 24 hours of booking start
+    const now = new Date();
+    const timeDiff = booking.startTime.getTime() - now.getTime();
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+
+    if (hoursDiff < 24) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rescheduling is not allowed within 24 hours of the booking start time.'
+      });
+    }
+
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
+      return res.status(400).json({ success: false, message: 'Invalid new start or end time' });
+    }
+
+    // Ensure the new date is in the future
+    if (start.getTime() <= now.getTime()) {
+      return res.status(400).json({ success: false, message: 'New booking time must be in the future' });
+    }
+
+    // Check overlap for the new timeslot (excluding this booking itself)
+    const newBooking = await runSerializableTransaction(async (tx) => {
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+      const overlappingBookings = await tx.booking.findMany({
+        where: {
+          venueId: booking.venueId,
+          id: { not: parsedId }, // Exclude the current booking
+          startTime: { lt: end },
+          endTime: { gt: start },
+          OR: [
+            { status: 'CONFIRMED' },
+            {
+              status: 'PENDING_PAYMENT',
+              createdAt: { gte: tenMinutesAgo },
+            },
+          ],
+        },
+      });
+
+      if (overlappingBookings.length > 0) {
+        throw new Error('SLOT_OCCUPIED');
+      }
+
+      return await tx.booking.update({
+        where: { id: parsedId },
+        data: {
+          bookingDate: new Date(bookingDate),
+          startTime: start,
+          endTime: end,
+        },
+      });
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Booking rescheduled successfully.',
+      data: newBooking
+    });
+
+  } catch (error: any) {
+    if (error.message === 'SLOT_OCCUPIED') {
+      return res.status(409).json({
+        success: false,
+        message: 'The requested new time slot is already booked or held for payment by another user.'
+      });
+    }
+    console.error('Error rescheduling booking:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+

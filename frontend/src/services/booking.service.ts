@@ -44,6 +44,18 @@ export const bookingService = {
   },
 
   /**
+   * Reschedule an existing booking
+   */
+  rescheduleBooking: async (id: string | number, bookingDate: string, startTime: string, endTime: string) => {
+    const response = await apiClient.patch(`/bookings/${id}/reschedule`, {
+      bookingDate,
+      startTime,
+      endTime
+    });
+    return response.data;
+  },
+
+  /**
    * Simulate confirming a booking via webhook trigger
    */
   confirmBooking: async (bookingId: number, paymentId: string) => {
