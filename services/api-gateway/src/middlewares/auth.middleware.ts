@@ -35,11 +35,13 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
     req.path === '/api/auth/login' || 
     req.path === '/api/auth/register' ||
     req.path === '/api/auth/verify' ||
+    req.path === '/api/auth/google' ||
     req.path === '/api/auth/logout' ||
     req.path.endsWith('/api/bookings/webhook') ||
     req.path.endsWith('/api/bookings/payment/webhook') ||
     req.path === '/api/bookings/availability' ||
-    (req.path.startsWith('/api/venues') && req.method === 'GET');
+    (req.path.startsWith('/api/venues') && req.method === 'GET') ||
+    (/^\/api\/venues\/\d+$/.test(req.path) && req.method === 'GET');
 
   if (isPublicRoute) {
     return next();
