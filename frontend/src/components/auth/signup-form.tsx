@@ -176,6 +176,8 @@ export function SignupForm() {
     setIsLoading(true);
 
     const fd = new FormData(e.currentTarget);
+    const email = fd.get("email") as string;
+    const password = fd.get("password") as string;
     try {
       await authService.register({
         fullName: fd.get("name") as string,
@@ -183,7 +185,21 @@ export function SignupForm() {
         password: fd.get("password") as string,
         roles: [role],
       });
-      router.push("/login?registered=true");
+
+      // Auto-login after successful registration
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
+
+      if (res?.error) {
+        // Registration succeeded but auto-login failed — fall back to login page
+        router.push("/login?registered=true");
+      } else {
+        router.push("/user");
+        router.refresh();
+      }
     } catch (err: any) {
       let errorMessage = "Failed to register";
       if (err.response?.data?.message) {
