@@ -1,8 +1,9 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Search, Sparkles, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Sparkles, Loader2, AlertTriangle, Map, LayoutGrid } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,11 @@ import {
 
 import { VenueCard } from "./venue-card";
 import { VenueFiltersSidebar } from "./venue-filters";
+
+const VenueMap = dynamic(() => import("./venue-map"), {
+  ssr: false,
+  loading: () => <div className="h-[600px] w-full bg-surface-container-low animate-pulse rounded-2xl"></div>
+});
 
 const VENUES_PER_PAGE = 6;
 
@@ -123,7 +129,7 @@ function Pagination({
 }
 
 export function VenuesListing() {
-  const { data: venues = [], isLoading, isError } = useVenues();
+  const { data: venues = [], isLoading, isError, error } = useVenues();
   const searchParams = useSearchParams();
 
   const [draftFilters, setDraftFilters] =
@@ -133,6 +139,7 @@ export function VenuesListing() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("popular");
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   // Synchronize state with URL search params on mount/change
   useEffect(() => {
@@ -194,8 +201,24 @@ export function VenuesListing() {
         )}
 
         {isError && (
-          <div className="flex h-64 items-center justify-center text-error">
-            <p>Failed to load venues. Please try again later.</p>
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-destructive/20 bg-surface px-6 py-16 text-center shadow-lg shadow-destructive/5">
+            <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive animate-pulse">
+              <AlertTriangle className="size-6" />
+            </div>
+            <p className="font-display text-lg font-bold text-on-surface">
+              Unable to Load Venues
+            </p>
+            <p className="mt-2 max-w-md text-sm text-text-muted leading-relaxed">
+              {error instanceof Error ? error.message : "An unexpected error occurred while fetching the venue catalog."}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-6 rounded-full border-border-subtle px-6 transition-all duration-200 hover:-translate-y-0.5"
+              onClick={() => window.location.reload()}
+            >
+              Retry Connection
+            </Button>
           </div>
         )}
 
@@ -214,29 +237,58 @@ export function VenuesListing() {
                   </p>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-sm text-text-muted">Sort by:</span>
-                  <Select
-                    value={sort}
-                    onValueChange={(value) => {
-                      setSort(value as SortOption);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <SelectTrigger className="h-10 min-w-[150px] rounded-full border-border-subtle bg-surface text-sm font-medium">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="popular">Most Popular</SelectItem>
-                      <SelectItem value="rating">Highest Rated</SelectItem>
-                      <SelectItem value="price-asc">
-                        Price: Low to High
-                      </SelectItem>
-                      <SelectItem value="price-desc">
-                        Price: High to Low
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex shrink-0 items-center gap-4">
+                  <div className="flex items-center rounded-full border border-border-subtle bg-surface p-1 shadow-sm">
+                    <button
+                      onClick={() => setViewMode("list")}
+                      className={cn(
+                        "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all",
+                        viewMode === "list"
+                          ? "bg-primary-container text-white shadow-sm"
+                          : "text-text-muted hover:text-on-surface"
+                      )}
+                    >
+                      <LayoutGrid className="size-4" />
+                      List
+                    </button>
+                    <button
+                      onClick={() => setViewMode("map")}
+                      className={cn(
+                        "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all",
+                        viewMode === "map"
+                          ? "bg-primary-container text-white shadow-sm"
+                          : "text-text-muted hover:text-on-surface"
+                      )}
+                    >
+                      <Map className="size-4" />
+                      Map
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 border-l border-border-subtle pl-4">
+                    <span className="text-sm text-text-muted hidden sm:inline">Sort:</span>
+                    <Select
+                      value={sort}
+                      onValueChange={(value) => {
+                        setSort(value as SortOption);
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="h-10 min-w-[140px] rounded-full border-border-subtle bg-surface text-sm font-medium">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="popular">Most Popular</SelectItem>
+                        <SelectItem value="rating">Highest Rated</SelectItem>
+                        <SelectItem value="price-asc">
+                          Price: Low to High
+                        </SelectItem>
+                        <SelectItem value="price-desc">
+                          Price: High to Low
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
@@ -258,16 +310,24 @@ export function VenuesListing() {
 
             {items.length > 0 ? (
               <>
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {items.map((venue) => (
-                    <VenueCard key={venue.id} venue={venue} />
-                  ))}
-                </div>
-                <Pagination
-                  currentPage={page}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
+                {viewMode === "list" ? (
+                  <>
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      {items.map((venue) => (
+                        <VenueCard key={venue.id} venue={venue} />
+                      ))}
+                    </div>
+                    <Pagination
+                      currentPage={page}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                    />
+                  </>
+                ) : (
+                  <div className="h-[600px] w-full">
+                    <VenueMap venues={filteredVenues} />
+                  </div>
+                )}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant bg-surface px-6 py-20 text-center">

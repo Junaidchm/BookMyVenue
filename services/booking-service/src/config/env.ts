@@ -4,18 +4,32 @@ import fs from 'fs';
 
 const isDocker = fs.existsSync('/.dockerenv');
 
-if (isDocker && process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = process.env.DATABASE_URL.replace('@localhost:', '@bmv_db:');
+if (isDocker) {
+  if (process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = process.env.DATABASE_URL.replace(
+      /@localhost(:\d+)?/,
+      '@bmv_db:5432',
+    );
+  }
+  const authUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:5003';
+  process.env.AUTH_SERVICE_URL = authUrl.replace(
+    '//localhost:',
+    '//auth-service:',
+  );
 }
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(5002),
   DATABASE_URL: z.string().url(),
+  AUTH_SERVICE_URL: z.string().url().default('http://localhost:5003'),
 });
 
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {
-  console.error('❌ Invalid Environment Variables for booking-service:', parsed.error.format());
+  console.error(
+    'Invalid Environment Variables for booking-service:',
+    parsed.error.format(),
+  );
   process.exit(1);
 }
 

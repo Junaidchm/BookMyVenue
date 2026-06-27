@@ -6,18 +6,23 @@ import { errorHandler } from './middlewares/error.middleware';
 
 const app = express();
 
-app.use(cors({
-  origin: true,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  }),
+);
 
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+import { bookingRoutes } from './routes/booking.routes';
+
 // Register routes
-app.use('/bookings', healthRoutes);
+app.use('/', healthRoutes);
+app.use('/bookings', bookingRoutes);
 
 // Generic 404 handler
 app.use((req, res) => {

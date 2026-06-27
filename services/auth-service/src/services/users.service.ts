@@ -74,7 +74,7 @@ export class UsersService {
   }
 
   async updateOwnerProfile(
-    userId: number,
+    userId: string,
     profileData: {
       phoneNumber?: string;
       businessName?: string;
@@ -103,6 +103,20 @@ export class UsersService {
         ownerProfile: true,
       },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findById(id: string) {
+    return await prisma.user.findUnique({
+      where: { id },
+      include: {
+        userRoles: {
+          include: {
+            role: true,
+          },
+        },
+        ownerProfile: true,
+      },
     });
   }
 }

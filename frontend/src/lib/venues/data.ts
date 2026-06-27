@@ -22,6 +22,8 @@ export type Venue = {
   pricePerDay: number;
   pricingType?: "PER_HOUR" | "PER_SESSION";
   basePrice?: number;
+  category?: string;
+  bufferTimeMinutes?: number;
   sessions?: {
     name: string;
     startTime: string;
@@ -40,6 +42,15 @@ export type Venue = {
   };
   amenities: VenueAmenity[];
   reviews: VenueReview[];
+  // Location
+  address?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  latitude?: number;
+  longitude?: number;
+  // Operating Schedule
+  operatingDays?: string[];
 };
 
 const IMG = {
