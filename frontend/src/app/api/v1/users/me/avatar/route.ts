@@ -20,8 +20,29 @@ export async function POST(req: NextRequest) {
       `gw-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const formData = await req.formData();
+    const file = formData.get("avatar") as File | null;
+
+    if (!file) {
+      return NextResponse.json({ message: "No avatar file provided." }, { status: 400 });
+    }
+
+    // Validation: Allowed MIME types and max size of 5MB
+    const MAX_SIZE_BYTES = 5 * 1024 * 1024;
+    const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
+
+    if (file.size > MAX_SIZE_BYTES) {
+      return NextResponse.json({ message: "File size exceeds the 5MB limit." }, { status: 400 });
+    }
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json({ message: "Invalid file type. Only JPEG, PNG, GIF, WebP, and SVG images are allowed." }, { status: 400 });
+    }
 
     // Try sending to the upstream microservice first
+    let upstreamSuccess = false;
+    let upstreamBody: any = null;
+    let upstreamStatus = 200;
+
     try {
       const upstream = await fetch(`${AUTH_SERVICE_URL}/api/v1/users/me/avatar`, {
         method: "POST",
@@ -34,19 +55,26 @@ export async function POST(req: NextRequest) {
       });
 
       if (upstream.ok) {
-        const body = await upstream.json();
-        return NextResponse.json(body, { status: upstream.status });
+        upstreamSuccess = true;
+        upstreamBody = await upstream.json();
+        upstreamStatus = upstream.status;
       }
     } catch (upstreamErr) {
-      console.warn("[avatar:POST] Upstream service unreachable. Falling back to direct cloud mock upload.");
+      console.warn("[avatar:POST] Upstream service unreachable.");
+    }
+
+    if (upstreamSuccess) {
+      return NextResponse.json(upstreamBody, { status: upstreamStatus });
     }
 
     // Fallback: Perform a real upload of the uploaded image to the cloud (tmpfiles.org)
-    const file = formData.get("avatar") as File | null;
-    if (!file) {
-      return NextResponse.json({ message: "No avatar file provided." }, { status: 400 });
+    // ONLY allowed in non-production environments (or if ENABLE_MOCK_UPLOAD environment variable is true)
+    const isMockAllowed = process.env.NODE_ENV !== "production" || process.env.ENABLE_MOCK_UPLOAD === "true";
+    if (!isMockAllowed) {
+      return NextResponse.json({ message: "Avatar upload failed. Upstream service is unreachable." }, { status: 503 });
     }
 
+    // Dev-only public cloud upload fallback (tmpfiles.org)
     const tmpFormData = new FormData();
     tmpFormData.append("file", file);
 
@@ -81,12 +109,8 @@ export async function POST(req: NextRequest) {
 
   } catch (err: any) {
     console.error("[avatar:POST] Cloud upload failed:", err);
-    // Ultimate fallback if even the cloud service is down
-    const defaultUrl = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80";
-    updateMockUserAvatar(defaultUrl);
     return NextResponse.json({
-      avatarUrl: defaultUrl,
-      message: "Avatar upload simulated using placeholder due to service error."
-    }, { status: 200 });
+      message: "Avatar upload failed. Upstream and cloud backup services are unreachable."
+    }, { status: 500 });
   }
 }

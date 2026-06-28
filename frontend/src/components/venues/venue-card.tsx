@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin, Star, Users } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,20 @@ const BADGE_LABELS: Record<string, string> = {
 
 export function VenueCard({ venue }: VenueCardProps) {
   const [favorited, setFavorited] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("bmv_wishlist");
+      if (stored) {
+        try {
+          const list = JSON.parse(stored) as string[];
+          setFavorited(list.includes(venue.id));
+        } catch (e) {
+          console.error("Error parsing bmv_wishlist:", e);
+        }
+      }
+    }
+  }, [venue.id]);
 
   return (
     <Link
@@ -68,16 +82,35 @@ export function VenueCard({ venue }: VenueCardProps) {
         <button
           type="button"
           aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
-          className="absolute top-3 right-3 flex size-9 items-center justify-center rounded-full bg-white/80 text-text-muted shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-primary-container hover:scale-110"
+          className="absolute top-3 right-3 flex size-9 items-center justify-center rounded-full bg-white/80 text-text-muted shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-red-500 hover:scale-110"
           onClick={(e) => {
             e.preventDefault();
-            setFavorited((prev) => !prev);
+            const nextFavorited = !favorited;
+            setFavorited(nextFavorited);
+
+            if (typeof window !== "undefined") {
+              const stored = localStorage.getItem("bmv_wishlist");
+              let list: string[] = [];
+              if (stored) {
+                try {
+                  list = JSON.parse(stored);
+                } catch (err) {}
+              }
+              if (nextFavorited) {
+                if (!list.includes(venue.id)) {
+                  list.push(venue.id);
+                }
+              } else {
+                list = list.filter((id) => id !== venue.id);
+              }
+              localStorage.setItem("bmv_wishlist", JSON.stringify(list));
+            }
           }}
         >
           <Heart
             className={cn(
               "size-4 transition-colors",
-              favorited && "fill-primary-container text-primary-container"
+              favorited ? "fill-red-500 text-red-500" : "text-text-muted"
             )}
           />
         </button>

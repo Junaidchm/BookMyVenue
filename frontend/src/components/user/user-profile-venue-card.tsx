@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin, Star } from "lucide-react";
@@ -10,14 +10,42 @@ import type { Venue } from "@/lib/venues/data";
 type VenueCardProps = {
   venue: Venue;
   isSaved?: boolean;
+  onToggleSave?: (venue: Venue, isSaved: boolean) => void;
 };
 
-export function VenueCard({ venue, isSaved: initialIsSaved = false }: VenueCardProps) {
+export function VenueCard({ venue, isSaved: initialIsSaved = false, onToggleSave }: VenueCardProps) {
   const [isSaved, setIsSaved] = useState(initialIsSaved);
+
+  useEffect(() => {
+    setIsSaved(initialIsSaved);
+  }, [initialIsSaved]);
 
   const toggleSave = (e: React.MouseEvent) => {
     e.preventDefault();
-    setIsSaved(!isSaved);
+    const nextSaved = !isSaved;
+    setIsSaved(nextSaved);
+
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("bmv_wishlist");
+      let list: string[] = [];
+      if (stored) {
+        try {
+          list = JSON.parse(stored);
+        } catch (err) {}
+      }
+      if (nextSaved) {
+        if (!list.includes(venue.id)) {
+          list.push(venue.id);
+        }
+      } else {
+        list = list.filter((id) => id !== venue.id);
+      }
+      localStorage.setItem("bmv_wishlist", JSON.stringify(list));
+    }
+
+    if (onToggleSave) {
+      onToggleSave(venue, nextSaved);
+    }
   };
 
   return (

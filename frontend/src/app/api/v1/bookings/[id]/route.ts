@@ -45,8 +45,19 @@ export async function DELETE(
       return new NextResponse(null, { status: 204 });
     }
 
-    const body = await upstream.json();
-    return NextResponse.json(body, { status: upstream.status });
+    const contentType = upstream.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const body = await upstream.json();
+      return NextResponse.json(body, { status: upstream.status });
+    }
+
+    const text = await upstream.text();
+    return new NextResponse(text || null, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": contentType || "text/plain",
+      },
+    });
   } catch (err) {
     console.error("[booking:DELETE] Upstream error:", err);
     return NextResponse.json(

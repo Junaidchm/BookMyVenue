@@ -16,6 +16,12 @@ export function OwnerProfileHeader({
         className="profile-header__avatar"
         style={{ cursor: isUploading ? "not-allowed" : "pointer", position: "relative" }}
         onClick={handleAvatarClick}
+        onKeyDown={(e) => {
+          if (!isUploading && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            handleAvatarClick();
+          }
+        }}
         role="button"
         tabIndex={0}
         aria-label="Change profile picture"

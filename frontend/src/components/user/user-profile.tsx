@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   User,
   Mail,
@@ -15,12 +15,20 @@ import {
   Edit3,
   LogOut,
   Camera,
+  ChevronLeft,
+  FileText,
+  Download,
+  Trash2,
+  Upload,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { getAllVenues, Venue } from "@/lib/venues/data";
-const FEATURED_VENUES = getAllVenues();
+import { uploadToCloudinary } from "@/lib/venues/api";
 import { VenueCard } from "./user-profile-venue-card";
+import "@/components/ProfileDashboard/ProfileDashboard.css";
+
+const FEATURED_VENUES = getAllVenues();
 
 // Inlined Types
 export type RenterProfile = {
@@ -33,11 +41,11 @@ export type RenterProfile = {
 
 export type RenterBooking = {
   id: string;
-  venueId: string; // Map to FEATURED_VENUES dynamically
+  venueId: string;
   eventDate: string;
   guests: number;
   totalPaid: number;
-  status: "Confirmed" | "Pending" | "Completed";
+  status: "Confirmed" | "Pending" | "Completed" | "Cancelled";
 };
 
 // Inlined Renter Data
@@ -52,7 +60,7 @@ const MOCK_RENTER_PROFILE: RenterProfile = {
 const MOCK_RENTER_BOOKINGS: RenterBooking[] = [
   {
     id: "b1",
-    venueId: "1", // The Glass Pavilion
+    venueId: "1",
     eventDate: "Dec 10, 2024",
     guests: 150,
     totalPaid: 2400,
@@ -60,7 +68,7 @@ const MOCK_RENTER_BOOKINGS: RenterBooking[] = [
   },
   {
     id: "b2",
-    venueId: "4", // Garden House Retreat
+    venueId: "4",
     eventDate: "Jan 15, 2025",
     guests: 45,
     totalPaid: 1850,
@@ -68,7 +76,7 @@ const MOCK_RENTER_BOOKINGS: RenterBooking[] = [
   },
   {
     id: "b3",
-    venueId: "3", // Urban Loft Studio
+    venueId: "3",
     eventDate: "Aug 12, 2024",
     guests: 60,
     totalPaid: 1200,
@@ -101,7 +109,118 @@ const SUGGESTED_LOCATIONS = [
   "Shoreditch, London",
 ];
 
+export type UserDocument = {
+  id: string;
+  name: string;
+  type: "Invoice" | "Receipt" | "Agreement" | "Permit";
+  bookingRef: string;
+  venueName: string;
+  date: string;
+  size: string;
+};
+
+const DEFAULT_DOCUMENTS: UserDocument[] = [
+  {
+    id: "doc1",
+    name: "Invoice_BKG-882.pdf",
+    type: "Invoice",
+    bookingRef: "#BKG-882",
+    venueName: "The Glasshouse Estate",
+    date: "Oct 12, 2024",
+    size: "245 KB",
+  },
+  {
+    id: "doc2",
+    name: "Rental_Agreement_BKG-882.pdf",
+    type: "Agreement",
+    bookingRef: "#BKG-882",
+    venueName: "The Glasshouse Estate",
+    date: "Oct 10, 2024",
+    size: "1.2 MB",
+  },
+  {
+    id: "doc3",
+    name: "Receipt_BKG-901.pdf",
+    type: "Receipt",
+    bookingRef: "#BKG-901",
+    venueName: "Summit Executive Suite",
+    date: "Nov 05, 2024",
+    size: "180 KB",
+  },
+];
+
 export function UserProfile() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const docFileInputRef = useRef<HTMLInputElement>(null);
+
+  const [bookings, setBookings] = useState<RenterBooking[]>(MOCK_RENTER_BOOKINGS);
+  const [savedVenueIds, setSavedVenueIds] = useState<string[]>([]);
+  const [documents, setDocuments] = useState<UserDocument[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("user_documents");
+      if (!stored) {
+        localStorage.setItem("user_documents", JSON.stringify(DEFAULT_DOCUMENTS));
+        setDocuments(DEFAULT_DOCUMENTS);
+      } else {
+        try {
+          setDocuments(JSON.parse(stored));
+        } catch (e) {
+          console.error("Failed to parse documents:", e);
+        }
+      }
+    }
+  }, []);
+
+  const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const newDoc: UserDocument = {
+      id: "doc_" + Date.now(),
+      name: file.name,
+      type: file.name.toLowerCase().includes("agreement") ? "Agreement" :
+            file.name.toLowerCase().includes("invoice") ? "Invoice" :
+            file.name.toLowerCase().includes("receipt") ? "Receipt" : "Permit",
+      bookingRef: "#BKG-NEW",
+      venueName: "Uploaded Document",
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
+      size: (file.size / 1024).toFixed(0) + " KB",
+    };
+
+    const updatedDocs = [newDoc, ...documents];
+    setDocuments(updatedDocs);
+    localStorage.setItem("user_documents", JSON.stringify(updatedDocs));
+  };
+
+  const handleDownloadDocument = (doc: UserDocument) => {
+    alert(`📥 Downloading Receipt / Document: "${doc.name}"`);
+  };
+
+  const handleDeleteDocument = (id: string) => {
+    const updatedDocs = documents.filter((d) => d.id !== id);
+    setDocuments(updatedDocs);
+    localStorage.setItem("user_documents", JSON.stringify(updatedDocs));
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("bmv_wishlist");
+      if (!stored) {
+        const initialWishlist = ["2", "3"];
+        localStorage.setItem("bmv_wishlist", JSON.stringify(initialWishlist));
+        setSavedVenueIds(initialWishlist);
+      } else {
+        try {
+          setSavedVenueIds(JSON.parse(stored));
+        } catch (e) {
+          console.error("Error parsing bmv_wishlist:", e);
+        }
+      }
+    }
+  }, []);
+
   // Local edit states
   const [name, setName] = useState(MOCK_RENTER_PROFILE.name);
   const [email, setEmail] = useState(MOCK_RENTER_PROFILE.email);
@@ -125,7 +244,6 @@ export function UserProfile() {
   // Validation errors state
   const [errors, setErrors] = useState<{
     name?: string;
-    email?: string;
     phone?: string;
     location?: string;
   }>({});
@@ -147,7 +265,10 @@ export function UserProfile() {
         );
         if (response.ok) {
           const data = await response.json();
-          const suggestions = data.map((item: any) => item.display_name);
+          interface NominatimSearchResult {
+            display_name: string;
+          }
+          const suggestions = data.map((item: NominatimSearchResult) => item.display_name);
           setApiSuggestions(suggestions);
         } else {
           throw new Error("Nominatim API response not OK");
@@ -170,33 +291,56 @@ export function UserProfile() {
         loc.toLowerCase().includes(location ? location.toLowerCase() : "")
       );
 
-  // Fetch initial profile data on mount from database API
+  // Fetch initial profile data on mount
   useEffect(() => {
     async function fetchProfile() {
+      // First load from localStorage if exists to keep synced
+      if (typeof window !== "undefined") {
+        const localData = localStorage.getItem("user_profile_data");
+        if (localData) {
+          try {
+            const parsed = JSON.parse(localData);
+            setName(parsed.name || MOCK_RENTER_PROFILE.name);
+            setEmail(parsed.email || MOCK_RENTER_PROFILE.email);
+            setPhone(parsed.phone || MOCK_RENTER_PROFILE.phone);
+            setLocation(parsed.location || MOCK_RENTER_PROFILE.location);
+            setAvatar(parsed.avatar || MOCK_RENTER_PROFILE.avatar);
+
+            setSavedName(parsed.name || MOCK_RENTER_PROFILE.name);
+            setSavedEmail(parsed.email || MOCK_RENTER_PROFILE.email);
+            setSavedPhone(parsed.phone || MOCK_RENTER_PROFILE.phone);
+            setSavedLocation(parsed.location || MOCK_RENTER_PROFILE.location);
+            setSavedAvatar(parsed.avatar || MOCK_RENTER_PROFILE.avatar);
+          } catch (e) {
+            console.error("Failed to parse local profile:", e);
+          }
+        }
+      }
+
       try {
         setIsLoading(true);
-        const response = await fetch("/api/user/profile");
-        if (!response.ok) {
-          throw new Error("API response not OK");
-        }
-        const data = await response.json();
-        
-        // Populate profile with database data
-        setName(data.name || MOCK_RENTER_PROFILE.name);
-        setEmail(data.email || MOCK_RENTER_PROFILE.email);
-        setPhone(data.phone || MOCK_RENTER_PROFILE.phone);
-        setLocation(data.location || MOCK_RENTER_PROFILE.location);
-        setAvatar(data.avatar || MOCK_RENTER_PROFILE.avatar);
+        const response = await fetch("/api/v1/users/me");
+        if (response.ok) {
+          const data = await response.json();
+          
+          setName(data.name || MOCK_RENTER_PROFILE.name);
+          setEmail(data.email || MOCK_RENTER_PROFILE.email);
+          setPhone(data.phone || MOCK_RENTER_PROFILE.phone);
+          setLocation(data.location || data.address || MOCK_RENTER_PROFILE.location);
+          setAvatar(data.avatar || data.avatarUrl || MOCK_RENTER_PROFILE.avatar);
 
-        // Lock in saved states
-        setSavedName(data.name || MOCK_RENTER_PROFILE.name);
-        setSavedEmail(data.email || MOCK_RENTER_PROFILE.email);
-        setSavedPhone(data.phone || MOCK_RENTER_PROFILE.phone);
-        setSavedLocation(data.location || MOCK_RENTER_PROFILE.location);
-        setSavedAvatar(data.avatar || MOCK_RENTER_PROFILE.avatar);
+          setSavedName(data.name || MOCK_RENTER_PROFILE.name);
+          setSavedEmail(data.email || MOCK_RENTER_PROFILE.email);
+          setSavedPhone(data.phone || MOCK_RENTER_PROFILE.phone);
+          setSavedLocation(data.location || data.address || MOCK_RENTER_PROFILE.location);
+          setSavedAvatar(data.avatar || data.avatarUrl || MOCK_RENTER_PROFILE.avatar);
+
+          if (typeof window !== "undefined") {
+            localStorage.setItem("user_profile_data", JSON.stringify(data));
+          }
+        }
       } catch (err) {
         console.warn("Using offline mock data as API backend is not ready:", err);
-        // Fallback already pre-initialized to MOCK_RENTER_PROFILE
       } finally {
         setIsLoading(false);
       }
@@ -205,38 +349,24 @@ export function UserProfile() {
   }, []);
 
   // Map user bookings to common FEATURED_VENUES
-  const userBookings = MOCK_RENTER_BOOKINGS.map((booking) => {
+  const userBookings = bookings.map((booking) => {
     const venue = FEATURED_VENUES.find((v: Venue) => v.id === booking.venueId) || FEATURED_VENUES[0];
     return { ...booking, venue };
   });
 
-  // Alex Rivera has saved Sunset Terrace Estate (id: 2) and Urban Loft Studio (id: 3)
-  const savedVenues = FEATURED_VENUES.filter((venue: Venue) => venue.id === "2" || venue.id === "3");
+  const savedVenues = FEATURED_VENUES.filter((venue: Venue) => savedVenueIds.includes(venue.id));
 
   const validateForm = () => {
     const newErrors: {
       name?: string;
-      email?: string;
       phone?: string;
       location?: string;
     } = {};
 
-    // 1. Name validation
     if (!name || name.trim() === "") {
       newErrors.name = "Name cannot be empty.";
     }
 
-    // 2. Email validation
-    if (!email || email.trim() === "") {
-      newErrors.email = "Email cannot be empty.";
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        newErrors.email = "Please enter a valid email address.";
-      }
-    }
-
-    // 3. Phone validation (expects 10-12 digits to accommodate optional country codes)
     const cleanPhone = phone ? phone.trim() : "";
     const digitsOnly = cleanPhone.replace(/\D/g, "");
     if (!cleanPhone) {
@@ -245,7 +375,6 @@ export function UserProfile() {
       newErrors.phone = "Phone number must be a valid 10 to 12 digit mobile number.";
     }
 
-    // 4. Location validation
     if (!location || location.trim() === "") {
       newErrors.location = "Location cannot be empty.";
     }
@@ -263,7 +392,6 @@ export function UserProfile() {
     }
 
     setIsSaving(true);
-
     const payload = {
       name,
       phone,
@@ -272,9 +400,8 @@ export function UserProfile() {
     };
 
     try {
-      // Put updated data into backend user profile database api
-      const response = await fetch("/api/user/profile", {
-        method: "PUT",
+      const response = await fetch("/api/v1/users/me", {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
@@ -282,25 +409,39 @@ export function UserProfile() {
       });
 
       if (!response.ok) {
-        throw new Error("PUT profile API request failed");
+        throw new Error("PATCH profile API request failed");
       }
 
       const data = await response.json();
-      console.log("Successfully saved profile to database:", data);
-
       setSavedName(data.name || name);
       setSavedEmail(data.email || email);
       setSavedPhone(data.phone || phone);
-      setSavedLocation(data.location || location);
-      setSavedAvatar(data.avatar || avatar);
+      setSavedLocation(data.location || data.address || location);
+      setSavedAvatar(data.avatar || data.avatarUrl || avatar);
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("user_profile_data", JSON.stringify(data));
+        window.dispatchEvent(new Event("storage"));
+      }
     } catch (err) {
       console.warn("Saving profile locally (Offline Mode) as backend API failed:", err);
-      // Local fallback lock in
+      const offlineData = {
+        name,
+        email,
+        phone,
+        location,
+        avatar,
+      };
       setSavedName(name);
       setSavedEmail(email);
       setSavedPhone(phone);
       setSavedLocation(location);
       setSavedAvatar(avatar);
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("user_profile_data", JSON.stringify(offlineData));
+        window.dispatchEvent(new Event("storage"));
+      }
     } finally {
       setIsSaving(false);
       setIsSaved(true);
@@ -309,8 +450,11 @@ export function UserProfile() {
     }
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
   const handleCancel = () => {
-    // Revert inputs back to last saved values
     setName(savedName);
     setEmail(savedEmail);
     setPhone(savedPhone);
@@ -320,11 +464,17 @@ export function UserProfile() {
     setIsEditing(false);
   };
 
+
+  const handleAvatarClick = () => {
+    if (!isUploading) {
+      fileInputRef.current?.click();
+    }
+  };
+
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 1. Validate file size and type
     const MAX_SIZE_MB = 5;
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       alert(`Avatar must be smaller than ${MAX_SIZE_MB} MB.`);
@@ -335,45 +485,63 @@ export function UserProfile() {
       return;
     }
 
-    // 2. Immediately preview the selected image locally
     const localUrl = URL.createObjectURL(file);
     setAvatar(localUrl);
 
-    // 3. Upload to API Gateway/Backend avatar endpoint
     setIsUploading(true);
     try {
+      const secureUrl = await uploadToCloudinary(file);
       const token = typeof window !== "undefined" ? localStorage.getItem("bmv_token") : null;
-      const formData = new FormData();
-      formData.append("avatar", file);
 
-      const res = await fetch("/api/v1/users/me/avatar", {
-        method: "POST",
+      const res = await fetch("/api/v1/users/me", {
+        method: "PATCH",
         headers: {
+          "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: formData,
+        body: JSON.stringify({ avatar: secureUrl }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to upload avatar");
+        throw new Error("Failed to update user profile with avatar URL");
       }
 
       const result = await res.json();
-      if (result.avatarUrl) {
-        setAvatar(result.avatarUrl);
-        setSavedAvatar(result.avatarUrl);
+      const updatedAvatar = result.avatar || result.avatarUrl || secureUrl;
+
+      setAvatar(updatedAvatar);
+      setSavedAvatar(updatedAvatar);
+
+      // Keep user_profile_data localstorage cache synced
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("user_profile_data");
+        if (stored) {
+          try {
+            const data = JSON.parse(stored);
+            data.avatar = updatedAvatar;
+            data.avatarUrl = updatedAvatar;
+            localStorage.setItem("user_profile_data", JSON.stringify(data));
+          } catch (storageErr) {
+            console.warn("Storage sync failed", storageErr);
+          }
+        }
       }
     } catch (err) {
       console.error("Avatar upload error:", err);
       alert("Failed to upload avatar to server.");
+      setAvatar(savedAvatar);
     } finally {
       setIsUploading(false);
+      URL.revokeObjectURL(localUrl);
+      if (e.target) {
+        e.target.value = "";
+      }
     }
   };
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-32 text-center">
+      <div className="mx-auto max-w-6xl px-4 py-32 text-center pd-root">
         <div className="flex flex-col items-center justify-center gap-3">
           <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary-container border-t-transparent" />
           <p className="text-body-md text-text-muted">Loading account details...</p>
@@ -382,337 +550,465 @@ export function UserProfile() {
     );
   }
 
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 md:py-16">
-      {/* Page Header */}
-      <div className="mb-10 border-b border-border-subtle pb-6">
-        <h1 className="font-display text-display-lg-mobile md:text-headline-md font-bold text-on-surface">
-          My Account
-        </h1>
-        <p className="mt-2 text-body-md text-text-muted">
-          Manage your personal details, track event bookings, and view your favorited spaces.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+    <div className="pd-root">
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         
-        {/* ─── LEFT COLUMN: PERSONAL DETAILS FORM ───────────────────────────── */}
-        <div className="lg:col-span-1 space-y-6">
-          <form
-            onSubmit={handleSave}
-            className="rounded-2xl border border-border-subtle bg-white p-6 shadow-elevation-card space-y-6"
+        {/* Profile Header */}
+        <div className="profile-header-card" id="section-profile">
+          <div
+            className="profile-header__avatar"
+            style={{ cursor: isUploading ? "not-allowed" : "pointer", position: "relative" }}
+            onClick={handleAvatarClick}
+            role="button"
+            tabIndex={0}
+            aria-label="Change profile picture"
+            title="Click to upload profile picture"
           >
-            <div className="flex flex-col items-center text-center">
-              <div className="group relative size-24 overflow-hidden rounded-full border border-primary-container/20 shadow-inner bg-stone-100 cursor-pointer">
-                <Image
-                  src={avatar}
-                  alt={name}
-                  fill
-                  className="object-cover transition-opacity group-hover:opacity-75"
-                  sizes="96px"
-                />
-                {/* Change photo overlay */}
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
-                >
-                  <Camera className="size-5 text-white/90" />
-                  <span className="text-[9px] font-bold uppercase mt-1 tracking-wider text-white/95">Change</span>
-                </label>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
-                />
-                
-                {isUploading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white">
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                  </div>
-                )}
-              </div>
-              <h3 className="mt-3.5 font-display text-headline-sm font-semibold text-on-surface">
-                {savedName}
-              </h3>
-            </div>
-
-            <div className="border-t border-border-subtle/60" />
-
-            {/* Notification Alert */}
-            {isSaved && (
-              <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3.5 text-label-sm font-semibold text-emerald-800 flex items-center gap-2 animate-fade-in">
-                <CheckCircle className="size-4 text-emerald-600 shrink-0" />
-                <span>Profile updated successfully!</span>
-              </div>
+            {isUploading ? (
+              <span className="avatar-spinner" style={{ animation: "spin 1s linear infinite" }}>🔄</span>
+            ) : avatar ? (
+              <img
+                src={avatar}
+                alt={`${savedName}'s avatar`}
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+              />
+            ) : (
+              "?"
             )}
 
-            {/* Form Inputs */}
-            <div className="space-y-4 text-left">
-              <div className="space-y-1.5">
-                <label className="text-label-md text-on-surface font-semibold" htmlFor="profile-name">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-text-muted/70">
-                    <User className="size-4.5" />
-                  </div>
-                  <input
-                    id="profile-name"
-                    type="text"
-                    required
-                    disabled={!isEditing}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-xl border border-border-subtle py-3 pl-10 pr-4 text-body-md bg-white focus-ring-brand disabled:bg-stone-50 disabled:text-text-muted disabled:cursor-not-allowed transition-all"
-                  />
-                </div>
-                {errors.name && (
-                  <p className="text-xs text-red-500 font-semibold mt-1">{errors.name}</p>
-                )}
+            {!isUploading && (
+              <div
+                className="avatar-overlay"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderRadius: "50%",
+                  background: "rgba(0, 0, 0, 0.4)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: 0,
+                  transition: "opacity 0.2s ease",
+                  color: "#fff",
+                  fontSize: "1.25rem",
+                }}
+              >
+                📷
               </div>
+            )}
+          </div>
 
-              <div className="space-y-1.5">
-                <label className="text-label-md text-on-surface font-semibold flex items-center justify-between" htmlFor="profile-email">
-                  <span>Email Address</span>
-                  <span className="text-[10px] text-text-muted font-normal font-sans">Non-changeable</span>
-                </label>
-                <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-text-muted/70">
-                    <Mail className="size-4.5" />
-                  </div>
-                  <input
-                    id="profile-email"
-                    type="email"
-                    required
-                    disabled
-                    value={email}
-                    className="w-full rounded-xl border border-border-subtle py-3 pl-10 pr-4 text-body-md bg-stone-50 text-text-muted cursor-not-allowed transition-all opacity-85"
-                  />
-                </div>
-                {errors.email && (
-                  <p className="text-xs text-red-500 font-semibold mt-1">{errors.email}</p>
-                )}
-              </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            accept="image/*"
+            onChange={handleAvatarChange}
+            disabled={isUploading}
+          />
 
-              <div className="space-y-1.5">
-                <label className="text-label-md text-on-surface font-semibold" htmlFor="profile-phone">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-text-muted/70">
-                    <Phone className="size-4.5" />
-                  </div>
-                  <input
-                    id="profile-phone"
-                    type="tel"
-                    required
-                    disabled={!isEditing}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-xl border border-border-subtle py-3 pl-10 pr-4 text-body-md bg-white focus-ring-brand disabled:bg-stone-50 disabled:text-text-muted disabled:cursor-not-allowed transition-all"
-                  />
-                </div>
-                {errors.phone && (
-                  <p className="text-xs text-red-500 font-semibold mt-1">{errors.phone}</p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-label-md text-on-surface font-semibold" htmlFor="profile-location">
-                  Location
-                </label>
-                <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-text-muted/70">
-                    <MapPin className="size-4.5" />
-                  </div>
-                  <input
-                    id="profile-location"
-                    type="text"
-                    required
-                    disabled={!isEditing}
-                    value={location}
-                    onChange={(e) => {
-                      setLocation(e.target.value);
-                      setShowSuggestions(true);
-                    }}
-                    onFocus={() => setShowSuggestions(true)}
-                    onBlur={() => setShowSuggestions(false)}
-                    className="w-full rounded-xl border border-border-subtle py-3 pl-10 pr-4 text-body-md bg-white focus-ring-brand disabled:bg-stone-50 disabled:text-text-muted disabled:cursor-not-allowed transition-all"
-                  />
-                  {isEditing && showSuggestions && suggestionsToDisplay.length > 0 && (
-                    <ul className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-stone-200 bg-white shadow-lg py-1 text-sm text-stone-850">
-                      {suggestionsToDisplay.map((suggestion) => (
-                        <li
-                          key={suggestion}
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setLocation(suggestion);
-                            setShowSuggestions(false);
-                          }}
-                          className="px-4 py-2.5 hover:bg-stone-50 cursor-pointer transition-colors"
-                        >
-                          {suggestion}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                {errors.location && (
-                  <p className="text-xs text-red-500 font-semibold mt-1">{errors.location}</p>
-                )}
-              </div>
+          <div className="profile-header__info">
+            <h1 className="profile-header__name">{savedName}</h1>
+            <p className="profile-header__email">{savedEmail}</p>
+            <div className="profile-header__meta">
+              <span className="badge badge--confirmed badge--sm">Active</span>
+              <span 
+                className="badge badge--sm" 
+                style={{ 
+                  backgroundColor: "var(--clr-primary-faint)", 
+                  color: "var(--clr-primary-dark)", 
+                  borderColor: "var(--clr-primary-muted)" 
+                }}
+              >
+                Customer Portal
+              </span>
             </div>
+          </div>
+        </div>
 
-            {isEditing ? (
-              <div className="flex items-center gap-3">
+        {/* Success message banner */}
+        {isSaved && (
+          <div className="badge badge--confirmed badge--md" style={{ width: "100%", justifyContent: "center", padding: "10px" }}>
+            ✅ Profile updated successfully!
+          </div>
+        )}
+
+        {/* Profile Information */}
+        <section className="dash-card" id="section-info" style={{ overflow: "visible", position: "relative", zIndex: 10 }}>
+          <div className="dash-card__header">
+            <h2 className="dash-card__title">
+              <span className="dash-card__title-icon" aria-hidden="true">👤</span>
+              Profile Information
+            </h2>
+            {!isEditing ? (
+              <button
+                type="button"
+                className="btn btn--outline btn--sm"
+                onClick={handleEdit}
+                aria-label="Edit profile information"
+              >
+                ✏️ Edit Profile
+              </button>
+            ) : (
+              <div className="btn-row">
                 <button
                   type="button"
+                  className="btn btn--primary btn--sm"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  aria-label="Save profile changes"
+                >
+                  {isSaving ? "Saving…" : "💾 Save Changes"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm"
                   onClick={handleCancel}
-                  className="flex-1 rounded-full border border-border-subtle py-3 text-label-md font-bold text-on-surface hover:bg-stone-50 transition-colors cursor-pointer"
+                  disabled={isSaving}
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="flex-1 items-center justify-center gap-2 rounded-full bg-[#582200] py-3 text-label-md font-bold text-white hover:bg-[#3c2d26] transition-all disabled:opacity-75 shadow-md hover:-translate-y-0.5 active:translate-y-0 cursor-pointer flex"
-                >
-                  <Save className="size-4" />
-                  <span>{isSaving ? "Saving..." : "Save"}</span>
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-container py-3.5 text-label-md font-bold text-white hover:bg-[#e0620f] transition-all shadow-md hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-                >
-                  <Edit3 className="size-4" />
-                  <span>Edit Profile</span>
-                </button>
-
-                <div className="relative flex py-1 items-center">
-                  <div className="flex-grow border-t border-border-subtle/60"></div>
-                  <span className="flex-shrink mx-4 text-[10px] font-bold text-text-muted/50 uppercase tracking-wider">Account Actions</span>
-                  <div className="flex-grow border-t border-border-subtle/60"></div>
-                </div>
-
-                <Link
-                  href="/"
-                  className="flex w-full items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50/50 py-3 text-label-md font-bold text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-all cursor-pointer"
-                >
-                  <LogOut className="size-4" />
-                  <span>Logout</span>
-                </Link>
               </div>
             )}
-          </form>
-        </div>
+          </div>
 
-        {/* ─── RIGHT COLUMN: BOOKINGS & FAVORITES ────────────────────────────── */}
-        <div className="lg:col-span-2 space-y-10">
-          
-          <div className="rounded-2xl border border-border-subtle bg-white p-6 shadow-elevation-card space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-headline-sm font-bold text-on-surface">
-                My Venue Bookings
-              </h2>
-              <span className="rounded-full bg-surface-container-low px-3 py-1 text-[11px] font-semibold text-primary-container">
-                {userBookings.length} Bookings Total
-              </span>
+          <div className="dash-card__body">
+            <div className="field-grid">
+              
+              {/* Full Name */}
+              <div className="field-group">
+                <label htmlFor="field-name" className="field-label">Full Name</label>
+                {isEditing ? (
+                  <input
+                    id="field-name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your full name"
+                    className={`field-input${errors.name ? " field-input--error" : ""}`}
+                  />
+                ) : (
+                  <p className="field-value">{savedName}</p>
+                )}
+                {errors.name && <span className="field-error">{errors.name}</span>}
+              </div>
+
+              {/* Email Address */}
+              <div className="field-group">
+                <label htmlFor="field-email" className="field-label">
+                  Email Address <span className="field-badge">Cannot be changed</span>
+                </label>
+                <p id="field-email" className="field-value">{savedEmail}</p>
+              </div>
+
+              {/* Phone Number */}
+              <div className="field-group">
+                <label htmlFor="field-phone" className="field-label">Phone Number</label>
+                {isEditing ? (
+                  <input
+                    id="field-phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Phone number"
+                    className={`field-input${errors.phone ? " field-input--error" : ""}`}
+                  />
+                ) : (
+                  <p className="field-value">{savedPhone}</p>
+                )}
+                {errors.phone && <span className="field-error">{errors.phone}</span>}
+              </div>
+
+              {/* Location */}
+              <div className="field-group" style={{ position: "relative" }}>
+                <label htmlFor="field-location" className="field-label">Location</label>
+                {isEditing ? (
+                  <>
+                    <input
+                      id="field-location"
+                      type="text"
+                      value={location}
+                      onChange={(e) => {
+                        setLocation(e.target.value);
+                        setShowSuggestions(true);
+                      }}
+                      onFocus={() => setShowSuggestions(true)}
+                      onBlur={() => {
+                        setTimeout(() => setShowSuggestions(false), 200);
+                      }}
+                      placeholder="Location"
+                      className={`field-input${errors.location ? " field-input--error" : ""}`}
+                    />
+                    {showSuggestions && suggestionsToDisplay.length > 0 && (
+                      <ul 
+                        style={{
+                          position: "absolute",
+                          zIndex: 100,
+                          left: 0,
+                          right: 0,
+                          top: "100%",
+                          marginTop: "4px",
+                          maxHeight: "150px",
+                          overflowY: "auto",
+                          borderRadius: "8px",
+                          border: "1px solid var(--clr-border, #e5e7eb)",
+                          backgroundColor: "#ffffff",
+                          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                          listStyle: "none",
+                          padding: "4px 0",
+                          margin: 0
+                        }}
+                      >
+                        {suggestionsToDisplay.map((suggestion) => (
+                          <li
+                            key={suggestion}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setLocation(suggestion);
+                              setShowSuggestions(false);
+                            }}
+                            style={{
+                              padding: "8px 16px",
+                              cursor: "pointer",
+                              fontSize: "0.875rem",
+                              color: "#1f2937",
+                              transition: "background-color 0.2s"
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f3f4f6"}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                          >
+                            {suggestion}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  <p className="field-value">{savedLocation}</p>
+                )}
+                {errors.location && <span className="field-error">{errors.location}</span>}
+              </div>
+
             </div>
+          </div>
+        </section>
 
-            <div className="space-y-4">
+        {/* Dashboard Metrics */}
+        <section className="dash-card">
+          <div className="dash-card__header">
+            <h2 className="dash-card__title">📊 Dashboard Stats</h2>
+          </div>
+          <div className="dash-card__body">
+            <div className="stats-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+              <div className="stat-tile stat-tile--accent">
+                <span className="stat-tile__icon">🎟️</span>
+                <span className="stat-tile__value">{bookings.length}</span>
+                <span className="stat-tile__label">Total Bookings</span>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-tile__icon">⚡</span>
+                <span className="stat-tile__value">{bookings.filter(b => b.status === "Confirmed" || b.status === "Pending").length}</span>
+                <span className="stat-tile__label">Active Bookings</span>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-tile__icon">❌</span>
+                <span className="stat-tile__value">{bookings.filter(b => b.status === "Cancelled").length}</span>
+                <span className="stat-tile__label">Cancelled</span>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-tile__icon">❤️</span>
+                <span className="stat-tile__value">{savedVenues.length}</span>
+                <span className="stat-tile__label">Favorites</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Venue Bookings list */}
+        <section className="dash-card">
+          <div className="dash-card__header">
+            <h2 className="dash-card__title">📅 My Venue Bookings</h2>
+            <span className="dash-card__count">{userBookings.length} Bookings Total</span>
+          </div>
+          <div className="dash-card__body dash-card__body--flush">
+            <div className="booking-list">
               {userBookings.map((booking) => {
                 const isConfirmed = booking.status === "Confirmed";
                 const isPending = booking.status === "Pending";
+                const isCancelled = booking.status === "Cancelled";
                 
                 return (
-                  <div
-                    key={booking.id}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border border-border-subtle/50 hover:border-border-subtle hover:bg-stone-50/30 transition-all gap-4"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="relative size-16 overflow-hidden rounded-lg border border-border-subtle/80 shrink-0">
-                        <Image
-                          src={booking.venue.images.main}
-                          alt={booking.venue.name}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
-                        />
-                      </div>
-                      
-                      <div className="flex flex-col min-w-0">
-                        <h4 className="text-label-md text-on-surface font-semibold truncate">
-                          {booking.venue.name}
-                        </h4>
-                        <span className="text-label-sm text-text-muted mt-0.5">
-                          {booking.venue.location}
-                        </span>
-                        <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[12px] text-text-muted">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="size-3.5" />
-                            {booking.eventDate}
-                          </span>
-                          <span>&bull;</span>
-                          <span>{booking.guests} Guests</span>
-                        </div>
+                  <Link href="/user/bookings" key={booking.id} className="booking-row flex hover:bg-stone-100/10 transition-colors">
+                    <div className="booking-row__icon">🏛️</div>
+                    <div className="booking-row__details">
+                      <h4 className="booking-row__venue">{booking.venue.name}</h4>
+                      <div className="booking-row__meta">
+                        <span>📍 {booking.venue.location}</span>
+                        <span>📅 {booking.eventDate}</span>
+                        <span>👥 {booking.guests} Guests</span>
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 border-t border-border-subtle/40 pt-3 sm:border-none sm:pt-0 shrink-0">
-                      <span className="text-label-md font-bold text-primary-container">
-                        ${booking.totalPaid.toLocaleString()}
-                      </span>
-                      
+                    <div className="booking-row__right">
+                      <p className="booking-row__amount">${booking.totalPaid.toLocaleString()}</p>
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                        className={`badge badge--sm ${
                           isConfirmed
-                            ? "bg-sky-50 text-sky-700"
+                            ? "badge--confirmed"
                             : isPending
-                            ? "bg-orange-50 text-orange-700"
-                            : "bg-emerald-50 text-emerald-700"
+                            ? "badge--pending"
+                            : isCancelled
+                            ? "badge--cancelled"
+                            : "badge--completed"
                         }`}
                       >
-                        {isPending && <Clock className="size-3" />}
                         {booking.status}
                       </span>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
+              {userBookings.length === 0 && (
+                <div style={{ padding: "2rem", textAlign: "center", color: "var(--clr-text-muted)" }}>
+                  No bookings found.
+                </div>
+              )}
             </div>
           </div>
+        </section>
 
-          <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <Heart className="size-5.5 text-primary-container fill-primary-container" />
-              <h2 className="font-display text-headline-sm font-bold text-on-surface">
-                Saved Venues
-              </h2>
+        {/* Documents & Receipts */}
+        <section className="dash-card">
+          <div className="dash-card__header flex flex-row items-center justify-between" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+            <h2 className="dash-card__title">📄 Documents & Receipts</h2>
+            <div>
+              <button
+                type="button"
+                onClick={() => docFileInputRef.current?.click()}
+                className="btn btn--primary btn--sm"
+                style={{ padding: "8px 16px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <Upload className="size-4" /> Upload Custom
+              </button>
+              <input
+                type="file"
+                ref={docFileInputRef}
+                onChange={handleDocumentUpload}
+                style={{ display: "none" }}
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+              />
             </div>
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              {savedVenues.map((venue: Venue) => (
-                <VenueCard key={venue.id} venue={venue} isSaved={true} />
-              ))}
+          </div>
+          <div className="dash-card__body">
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", minWidth: "600px" }}>
+                <thead>
+                  <tr style={{ borderBottom: "2px solid var(--clr-border)", color: "var(--clr-text-muted)", fontSize: "0.85rem", fontWeight: "600" }}>
+                    <th style={{ padding: "12px 16px" }}>Document Name</th>
+                    <th style={{ padding: "12px 16px" }}>Type</th>
+                    <th style={{ padding: "12px 16px" }}>Booking Ref</th>
+                    <th style={{ padding: "12px 16px" }}>Date</th>
+                    <th style={{ padding: "12px 16px" }}>Size</th>
+                    <th style={{ padding: "12px 16px", textAlign: "right" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.map((doc) => (
+                    <tr
+                      key={doc.id}
+                      style={{ borderBottom: "1px solid var(--clr-border)" }}
+                      className="hover:bg-stone-100/5 transition-colors"
+                    >
+                      <td style={{ padding: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
+                        <FileText className="size-5 text-orange-500" style={{ color: "var(--clr-primary)" }} />
+                        <span style={{ fontWeight: "600", color: "var(--clr-text)" }}>{doc.name}</span>
+                      </td>
+                      <td style={{ padding: "16px" }}>
+                        <span
+                          style={{
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                            fontSize: "0.75rem",
+                            fontWeight: "700",
+                            textTransform: "uppercase",
+                            backgroundColor:
+                              doc.type === "Agreement" ? "var(--clr-surface-low)" :
+                              doc.type === "Invoice" ? "var(--clr-success-bg)" :
+                              doc.type === "Receipt" ? "var(--clr-primary-faint)" : "var(--clr-warning-bg)",
+                            color:
+                              doc.type === "Agreement" ? "var(--clr-text-muted)" :
+                              doc.type === "Invoice" ? "var(--clr-success-text)" :
+                              doc.type === "Receipt" ? "var(--clr-primary)" : "var(--clr-warning-text)",
+                            border:
+                              doc.type === "Agreement" ? "1px solid var(--clr-border)" :
+                              doc.type === "Invoice" ? "1px solid var(--clr-success-border)" :
+                              doc.type === "Receipt" ? "1px solid var(--clr-primary-muted)" : "1px solid var(--clr-warning-border)",
+                          }}
+                        >
+                          {doc.type}
+                        </span>
+                      </td>
+                      <td style={{ padding: "16px" }}>
+                        <div style={{ fontWeight: "600" }}>{doc.bookingRef}</div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--clr-text-muted)" }}>{doc.venueName}</div>
+                      </td>
+                      <td style={{ padding: "16px", color: "var(--clr-text-muted)" }}>{doc.date}</td>
+                      <td style={{ padding: "16px", color: "var(--clr-text-muted)" }}>{doc.size}</td>
+                      <td style={{ padding: "16px", textAlign: "right" }}>
+                        <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", alignItems: "center" }}>
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadDocument(doc)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: "var(--clr-primary)",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              fontSize: "0.85rem",
+                              fontWeight: "600",
+                            }}
+                            className="hover:underline"
+                          >
+                            <Download className="size-4" /> Download
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteDocument(doc.id)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: "var(--clr-error)",
+                              cursor: "pointer",
+                            }}
+                            className="hover:scale-110 transition-transform"
+                            title="Delete Document"
+                          >
+                            <Trash2 className="size-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            {savedVenues.length === 0 && (
-              <div className="rounded-xl border border-dashed border-border-subtle p-8 text-center">
-                <Sparkles className="size-8 text-text-muted mx-auto mb-2 opacity-65" />
-                <p className="text-body-md text-text-muted">
-                  No saved venues yet. Explore and heart venues to see them here!
-                </p>
+            {documents.length === 0 && (
+              <div style={{ padding: "3rem 1.5rem", textAlign: "center", color: "var(--clr-text-muted)" }}>
+                <FileText className="size-8" style={{ margin: "0 auto 10px", color: "var(--clr-border-strong)" }} />
+                <p style={{ fontSize: "0.95rem" }}>No documents or receipts uploaded yet.</p>
               </div>
             )}
           </div>
+        </section>
 
-        </div>
+
 
       </div>
     </div>

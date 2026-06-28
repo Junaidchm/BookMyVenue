@@ -78,7 +78,7 @@ export function OwnerProfile() {
     const delayDebounceFn = setTimeout(async () => {
       try {
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(draft.address || "")}&format=json&limit=5`
+          `/api/location/search?q=${encodeURIComponent(draft.address || "")}`
         );
         if (response.ok) {
           const data = await response.json();
@@ -273,8 +273,7 @@ export function OwnerProfile() {
     }
 
     const localUrl = URL.createObjectURL(file);
-    const updatedWithLocal = { ...profile, avatar: localUrl };
-    setProfile(updatedWithLocal);
+    setProfile((prev) => ({ ...prev, avatar: localUrl }));
 
     setIsUploading(true);
     try {
@@ -293,18 +292,35 @@ export function OwnerProfile() {
       if (res.ok) {
         const result = await res.json();
         if (result.avatarUrl) {
-          const finalProfile = { ...profile, avatar: result.avatarUrl };
-          setProfile(finalProfile);
-          localStorage.setItem("owner_profile_data", JSON.stringify(finalProfile));
+          setProfile((prev) => {
+            const finalProfile = { ...prev, avatar: result.avatarUrl };
+            localStorage.setItem("owner_profile_data", JSON.stringify(finalProfile));
+            return finalProfile;
+          });
         }
       } else {
         throw new Error("Upload response failed");
       }
     } catch (err) {
-      console.warn("Avatar server upload failed, using local URL:", err);
-      localStorage.setItem("owner_profile_data", JSON.stringify(updatedWithLocal));
+      console.warn("Avatar server upload failed, reverting local URL:", err);
+      setProfile((prev) => {
+        const stored = localStorage.getItem("owner_profile_data");
+        let fallbackAvatar = "";
+        if (stored) {
+          try {
+            fallbackAvatar = JSON.parse(stored).avatar;
+          } catch {}
+        }
+        const finalProfile = { ...prev, avatar: fallbackAvatar || "" };
+        localStorage.setItem("owner_profile_data", JSON.stringify(finalProfile));
+        return finalProfile;
+      });
     } finally {
       setIsUploading(false);
+      URL.revokeObjectURL(localUrl);
+      if (e.target) {
+        e.target.value = "";
+      }
     }
   };
 

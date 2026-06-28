@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Calendar,
   Heart,
@@ -19,7 +20,6 @@ import { cn } from "@/lib/utils";
 import {
   USER_NAV,
   USER_NAV_BOTTOM,
-  USER_PROFILE,
 } from "@/lib/user/data";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -37,9 +37,48 @@ type UserNavProps = {
   className?: string;
 };
 
+const DEFAULT_USER_PROFILE = {
+  name: "Alex Rivera",
+  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
+};
+
 export function UserNav({ onNavigate, className }: UserNavProps) {
   const pathname = usePathname();
   const { signOut } = useAuth();
+
+  const [profile, setProfile] = useState(DEFAULT_USER_PROFILE);
+
+  useEffect(() => {
+    const handleProfileSync = () => {
+      if (typeof window !== "undefined") {
+        const localData = localStorage.getItem("user_profile_data");
+        if (localData) {
+          try {
+            const parsed = JSON.parse(localData);
+            if (parsed.name && parsed.avatar) {
+              setProfile({
+                name: parsed.name,
+                avatar: parsed.avatar,
+              });
+            }
+          } catch (e) {
+            console.error("Failed to parse user profile data:", e);
+          }
+        }
+      }
+    };
+
+    handleProfileSync();
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handleProfileSync);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("storage", handleProfileSync);
+      }
+    };
+  }, [pathname]);
 
   const isActive = (href: string) => {
     if (href === "/user") return pathname === "/user";
@@ -48,20 +87,20 @@ export function UserNav({ onNavigate, className }: UserNavProps) {
 
   return (
     <div className={cn("flex h-full flex-col", className)}>
-      <div className="mb-8 flex items-center gap-3 rounded-2xl bg-surface-container p-4">
+      <Link href="/user/profile" className="mb-8 flex items-center gap-3 rounded-2xl bg-surface-container p-4 hover:bg-surface-container-high transition-all cursor-pointer">
         <Avatar className="size-10 border border-border-subtle">
-          <AvatarImage src={USER_PROFILE.avatar} alt={USER_PROFILE.name} />
-          <AvatarFallback>{USER_PROFILE.name.charAt(0)}</AvatarFallback>
+          <AvatarImage src={profile.avatar} alt={profile.name} />
+          <AvatarFallback>{profile.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
           <span className="text-label-sm text-text-muted">
             Welcome back,
           </span>
           <span className="font-display text-label-lg font-bold text-on-surface">
-            {USER_PROFILE.name}
+            {profile.name}
           </span>
         </div>
-      </div>
+      </Link>
 
       <nav className="flex flex-1 flex-col gap-2">
         {USER_NAV.map((item) => {
