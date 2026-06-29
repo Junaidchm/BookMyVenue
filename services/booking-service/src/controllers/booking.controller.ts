@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../prisma/prisma';
 import { RiskScoringService } from '../services/risk-scoring.service';
+import Razorpay from 'razorpay';
+import { env } from '../config/env';
 
 // Helper to run serializable transaction with retries
 const runSerializableTransaction = async <T>(
@@ -144,6 +146,69 @@ export const createBooking = async (
     return res
       .status(500)
       .json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+export const createPaymentOrder = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const id = req.params.id as string;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+    });
+
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Booking not found' });
+    }
+
+    if (booking.status !== 'PENDING_PAYMENT') {
+      return res.status(400).json({
+        success: false,
+        message: `Payment order cannot be created for bookings with status: ${booking.status}`,
+      });
+    }
+
+    const razorpay = new Razorpay({
+      key_id: env.RAZORPAY_KEY_ID,
+      key_secret: env.RAZORPAY_KEY_SECRET,
+    });
+
+    const amountInPaise = Math.round(Number(booking.totalPrice) * 100);
+
+    const order = await razorpay.orders.create({
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt: booking.id,
+      notes: {
+        bookingId: booking.id,
+        userId: booking.userId,
+      },
+    });
+
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: { paymentId: order.id },
+    });
+
+    return res.status(200).json({
+      success: true,
+      key: env.RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: order.currency,
+      orderId: order.id,
+      bookingId: booking.id,
+    });
+  } catch (error: any) {
+    console.error('Error creating Razorpay Order:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to create payment order',
+    });
   }
 };
 
