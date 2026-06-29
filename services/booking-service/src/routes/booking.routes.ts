@@ -3,6 +3,7 @@ import {
   createBooking,
   createPaymentOrder,
   verifyPayment,
+  handleRazorpayWebhook,
   handleWebhook,
   checkAvailability,
   getBookingById,
@@ -21,6 +22,7 @@ router.get('/:id', getBookingById);
 router.post('/', checkBookingRisk, createBooking);
 router.post('/:id/payment/order', createPaymentOrder);
 router.post('/:id/payment/verify', verifyPayment);
+router.post('/payment/webhook', handleRazorpayWebhook);
 router.post('/webhook', handleWebhook);
 router.post('/:id/cancel', cancelBooking);
 router.delete('/:id', cancelBooking);

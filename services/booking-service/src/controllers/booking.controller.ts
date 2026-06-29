@@ -305,6 +305,123 @@ export const verifyPayment = async (
   }
 };
 
+export const handleRazorpayWebhook = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const signature = req.headers['x-razorpay-signature'] as string;
+    if (!signature) {
+      console.warn('[WEBHOOK] Missing x-razorpay-signature header');
+      return res
+        .status(400)
+        .json({ success: false, message: 'Missing signature' });
+    }
+
+    const rawBody = (req as any).rawBody;
+    if (!rawBody) {
+      console.error('[WEBHOOK] Raw body not captured');
+      return res
+        .status(400)
+        .json({ success: false, message: 'Raw body missing' });
+    }
+
+    // Cryptographic Signature Validation
+    const expectedSignature = crypto
+      .createHmac('sha256', env.RAZORPAY_WEBHOOK_SECRET)
+      .update(rawBody)
+      .digest('hex');
+
+    if (expectedSignature !== signature) {
+      console.warn('[WEBHOOK] Signature mismatch');
+      return res
+        .status(400)
+        .json({ success: false, message: 'Signature mismatch' });
+    }
+
+    const { event, payload } = req.body;
+    console.log(`[WEBHOOK] Verified webhook event: ${event}`);
+
+    // Process only payment capture events (payments successfully charged)
+    if (event !== 'payment.captured') {
+      return res.status(200).json({ success: true, status: 'ignored_event' });
+    }
+
+    const payment = payload?.payment?.entity;
+    if (!payment) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid payload structure' });
+    }
+
+    const razorpay_order_id = payment.order_id;
+    const razorpay_payment_id = payment.id;
+
+    if (!razorpay_order_id || !razorpay_payment_id) {
+      return res.status(400).json({ success: false, message: 'Missing IDs' });
+    }
+
+    // Locate the booking by Razorpay Order ID
+    const booking = await prisma.booking.findFirst({
+      where: { paymentId: razorpay_order_id },
+    });
+
+    if (!booking) {
+      console.warn(
+        `[WEBHOOK] No booking found for order ID: ${razorpay_order_id}`,
+      );
+      return res
+        .status(404)
+        .json({ success: false, message: 'Booking not found' });
+    }
+
+    // Idempotency: Payment has already been verified and confirmed
+    if (booking.status === 'CONFIRMED') {
+      return res
+        .status(200)
+        .json({ success: true, message: 'Booking already confirmed' });
+    }
+
+    if (booking.status !== 'PENDING_PAYMENT') {
+      return res.status(400).json({
+        success: false,
+        message: `Booking state is ${booking.status}, cannot confirm.`,
+      });
+    }
+
+    // Update status to CONFIRMED and map paymentId to the actual Captured Payment ID
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: {
+        status: 'CONFIRMED',
+        paymentId: razorpay_payment_id,
+        paymentMetadata: {
+          razorpay_order_id,
+          razorpay_payment_id,
+          event,
+        },
+      },
+    });
+
+    RiskScoringService.updateCache(booking.userId).catch((err) =>
+      console.error(
+        `[RISK CACHE] Failed to update cache for user ${booking.userId} after webhook:`,
+        err,
+      ),
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Booking confirmed successfully via webhook',
+    });
+  } catch (error: any) {
+    console.error('[WEBHOOK] Error handling webhook:', error);
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
 /**
  * Webhook handler to confirm a booking on successful payment.
  * Supports Stripe or Razorpay format payloads.

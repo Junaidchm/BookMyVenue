@@ -15,7 +15,15 @@ app.use(
 );
 
 app.use(helmet());
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req: any, res, buf) => {
+      if (req.originalUrl && req.originalUrl.includes('/webhook')) {
+        req.rawBody = buf.toString();
+      }
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 
 import { bookingRoutes } from './routes/booking.routes';
