@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   createBooking,
   createPaymentOrder,
+  verifyPayment,
   handleWebhook,
   checkAvailability,
   getBookingById,
@@ -19,6 +20,7 @@ router.get('/availability', checkAvailability);
 router.get('/:id', getBookingById);
 router.post('/', checkBookingRisk, createBooking);
 router.post('/:id/payment/order', createPaymentOrder);
+router.post('/:id/payment/verify', verifyPayment);
 router.post('/webhook', handleWebhook);
 router.post('/:id/cancel', cancelBooking);
 router.delete('/:id', cancelBooking);

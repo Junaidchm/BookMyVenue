@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../prisma/prisma';
 import { RiskScoringService } from '../services/risk-scoring.service';
 import Razorpay from 'razorpay';
+import crypto from 'crypto';
 import { env } from '../config/env';
 
 // Helper to run serializable transaction with retries
@@ -208,6 +209,98 @@ export const createPaymentOrder = async (
     return res.status(500).json({
       success: false,
       message: error.message || 'Failed to create payment order',
+    });
+  }
+};
+
+export const verifyPayment = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const id = req.params.id as string;
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
+      req.body;
+
+    if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required payment verification details',
+      });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+    });
+
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Booking not found' });
+    }
+
+    if (booking.status === 'CONFIRMED') {
+      return res.status(200).json({
+        success: true,
+        message: 'Payment already verified and booking confirmed',
+      });
+    }
+
+    if (booking.status !== 'PENDING_PAYMENT') {
+      return res.status(400).json({
+        success: false,
+        message: `Verification failed. Booking status is ${booking.status}`,
+      });
+    }
+
+    if (booking.paymentId !== razorpay_order_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payment details. Order ID mismatch.',
+      });
+    }
+
+    const generatedSignature = crypto
+      .createHmac('sha256', env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    if (generatedSignature !== razorpay_signature) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment verification failed. Signature mismatch.',
+      });
+    }
+
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: {
+        status: 'CONFIRMED',
+        paymentId: razorpay_payment_id,
+        paymentMetadata: {
+          razorpay_order_id,
+          razorpay_payment_id,
+          razorpay_signature,
+        },
+      },
+    });
+
+    RiskScoringService.updateCache(booking.userId).catch((err) =>
+      console.error(
+        `[RISK CACHE] Failed to update cache for user ${booking.userId} after payment verification:`,
+        err,
+      ),
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Payment verified and booking confirmed successfully',
+    });
+  } catch (error: any) {
+    console.error('Error verifying payment:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to verify payment',
     });
   }
 };
