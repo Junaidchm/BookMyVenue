@@ -493,4 +493,77 @@ export class VenueService {
 
     return { status: 'SUCCESS', data: updated };
   }
+
+  // ─── Saved Venues Methods ─────────────────────────────────────────────────
+
+  async saveVenue(userId: number, venueId: number) {
+    const venue = await prisma.venue.findUnique({
+      where: { id: venueId },
+    });
+
+    if (!venue || venue.status !== 'APPROVED') {
+      return { status: 'VENUE_NOT_FOUND', data: null };
+    }
+
+    try {
+      const savedVenue = await prisma.savedVenue.create({
+        data: {
+          userId,
+          venueId,
+        },
+      });
+      return { status: 'SUCCESS', data: savedVenue };
+    } catch (err: any) {
+      if (err.code === 'P2002') {
+        // Unique constraint failed, already saved
+        return { status: 'ALREADY_SAVED', data: null };
+      }
+      throw err;
+    }
+  }
+
+  async unsaveVenue(userId: number, venueId: number) {
+    try {
+      await prisma.savedVenue.delete({
+        where: {
+          userId_venueId: {
+            userId,
+            venueId,
+          },
+        },
+      });
+      return { status: 'SUCCESS' };
+    } catch (err: any) {
+      if (err.code === 'P2025') {
+        // Record not found
+        return { status: 'NOT_FOUND' };
+      }
+      throw err;
+    }
+  }
+
+  async getSavedVenues(userId: number) {
+    const savedVenues = await prisma.savedVenue.findMany({
+      where: {
+        userId,
+        venue: {
+          status: 'APPROVED',
+        },
+      },
+      include: {
+        venue: {
+          include: {
+            amenities: {
+              include: { amenity: true },
+            },
+            capacities: true,
+            sessions: true,
+          }
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { status: 'SUCCESS', data: savedVenues.map(sv => sv.venue) };
+  }
 }
