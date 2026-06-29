@@ -354,16 +354,6 @@ export function OwnerProfile() {
     <div className="pd-root">
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         
-        {/* Back Link */}
-        <div>
-          <Link
-            href="/owner"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#f97316] hover:underline"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span>Back to Dashboard</span>
-          </Link>
-        </div>
 
         {/* Profile Header */}
         <OwnerProfileHeader

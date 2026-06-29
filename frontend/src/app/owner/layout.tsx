@@ -83,9 +83,7 @@ export default function DashboardLayout({
             <div className="flex flex-col">
               <span className="text-label-md text-on-surface font-semibold">{displayName}</span>
               <span className="text-label-sm text-text-muted mt-0.5">Owner Portal</span>
-              <span className="mt-1 w-max rounded-full bg-primary-fixed px-2 py-0.5 text-[10px] font-semibold text-on-primary-fixed">
-                Premium Partner
-              </span>
+
             </div>
           </Link>
 

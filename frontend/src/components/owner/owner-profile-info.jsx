@@ -63,8 +63,8 @@ export function OwnerProfileInfo({
     <section className="dash-card" id="section-info" style={{ overflow: "visible", position: "relative", zIndex: 10 }}>
       <div className="dash-card__header">
         <h2 className="dash-card__title">
-          <span className="dash-card__title-icon" aria-hidden="true">👤</span>
-          Profile Information
+          <span className="dash-card__title-icon" aria-hidden="true"> 👤</span>
+         Profile Information
         </h2>
         {!isEditing ? (
           <button

@@ -78,16 +78,7 @@ export function OwnerProfileHeader({
         <p className="profile-header__email">{profile.email}</p>
         <div className="profile-header__meta">
           <span className="badge badge--confirmed badge--sm">Active</span>
-          <span 
-            className="badge badge--sm" 
-            style={{ 
-              backgroundColor: "var(--clr-primary-faint)", 
-              color: "var(--clr-primary-dark)", 
-              borderColor: "var(--clr-primary-muted)" 
-            }}
-          >
-            Premium Partner
-          </span>
+
           <span className="profile-header__since">
             Member since {memberYear}
           </span>
