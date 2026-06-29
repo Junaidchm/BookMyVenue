@@ -32,7 +32,7 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -60,17 +60,17 @@ export default function AdminLayout({
         </div>
 
         {/* Admin Profile */}
-        <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="w-10 h-10 rounded-full bg-surface-container overflow-hidden ring-2 ring-outline-variant/30">
+        <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50 mb-8 mx-2">
+          <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20">
             <img
               src="https://i.pravatar.cc/40?img=3"
-              alt="Admin avatar"
-              className="w-full h-full object-cover"
+              alt={`${user?.fullName || "Admin"} - Profile`}
+              className="h-full w-full object-cover"
             />
           </div>
-          <div>
-            <p className="font-semibold text-sm text-on-surface">Admin Console</p>
-            <p className="text-xs text-text-muted">Marketplace Control</p>
+          <div className="flex flex-col">
+            <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "Admin"}</span>
+            <span className="text-label-sm text-text-muted mt-0.5">Admin Portal</span>
           </div>
         </div>
 

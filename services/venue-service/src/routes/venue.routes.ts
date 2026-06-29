@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { requireOwner } from '../middlewares/auth.middleware';
+import { requireOwner, requireAuth } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validation.middleware';
 import {
   createVenueSchema,
@@ -17,6 +17,9 @@ const controller = new VenueController();
 router.post('/', requireOwner, validate(createVenueSchema), controller.create);
 router.get('/', controller.getAllVenues);
 router.get('/my-venues', requireOwner, controller.getMyVenues);
+router.get('/saved', requireAuth, controller.getSavedVenues);
+router.post('/:id/save', requireAuth, controller.saveVenue);
+router.delete('/:id/save', requireAuth, controller.unsaveVenue);
 router.get('/:id', controller.getVenueById);
 router.put(
   '/:id',
