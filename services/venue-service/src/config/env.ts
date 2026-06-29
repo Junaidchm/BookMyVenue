@@ -6,8 +6,8 @@ const isDocker = fs.existsSync('/.dockerenv');
 
 if (isDocker && process.env.DATABASE_URL) {
   process.env.DATABASE_URL = process.env.DATABASE_URL.replace(
-    '@localhost:',
-    '@bmv_db:',
+    /@localhost(:\d+)?/,
+    '@bmv_db:5432',
   );
 }
 
@@ -23,7 +23,7 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {
   console.error(
-    '❌ Invalid Environment Variables for venue-service:',
+    'Invalid Environment Variables for venue-service:',
     parsed.error.format(),
   );
   process.exit(1);

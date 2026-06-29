@@ -6,18 +6,21 @@ const isDocker = fs.existsSync('/.dockerenv');
 
 if (isDocker) {
   if (process.env.DATABASE_URL) {
-    process.env.DATABASE_URL = process.env.DATABASE_URL.replace('@localhost:', '@bmv_db:');
+    process.env.DATABASE_URL = process.env.DATABASE_URL.replace(
+      /@localhost(:\d+)?/,
+      '@bmv_db:5432',
+    );
   }
-  if (process.env.AUTH_SERVICE_URL) {
-    process.env.AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL.replace('//localhost:', '//auth-service:');
-  } else {
-    process.env.AUTH_SERVICE_URL = 'http://auth-service:5003';
-  }
-  if (process.env.VENUE_SERVICE_URL) {
-    process.env.VENUE_SERVICE_URL = process.env.VENUE_SERVICE_URL.replace('//localhost:', '//venue-service:');
-  } else {
-    process.env.VENUE_SERVICE_URL = 'http://venue-service:5001';
-  }
+  const authUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:5003';
+  process.env.AUTH_SERVICE_URL = authUrl.replace(
+    '//localhost:',
+    '//auth-service:',
+  );
+  const venueUrl = process.env.VENUE_SERVICE_URL || 'http://localhost:5001';
+  process.env.VENUE_SERVICE_URL = venueUrl.replace(
+    '//localhost:',
+    '//venue-service:',
+  );
 }
 
 const envSchema = z.object({

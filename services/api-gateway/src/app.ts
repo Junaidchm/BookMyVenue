@@ -41,6 +41,8 @@ const createServiceProxy = (targetUrl: string, prefix: string) => {
         if ((req as any).user) {
           proxyReq.setHeader('x-user-id', (req as any).user.id.toString());
           proxyReq.setHeader('x-user-roles', (req as any).user.roles.join(','));
+          proxyReq.setHeader('x-user-is-kyc-verified', (req as any).user.isKycVerified.toString());
+          proxyReq.setHeader('x-user-created-at', (req as any).user.accountCreatedAt);
         }
       }
     }

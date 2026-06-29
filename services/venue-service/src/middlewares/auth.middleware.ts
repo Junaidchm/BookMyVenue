@@ -70,7 +70,7 @@ export const requireAuth = (
   }
   
   (req as any).user = {
-    id: parseInt(userIdHeader as string, 10)
+    id: userIdHeader as string
   };
 
   next();

@@ -45,7 +45,7 @@ export const createVenueSchema = z
         .default([]),
       amenities: z
         .array(
-          z.number().int().positive('Amenity ID must be a positive integer'),
+          z.string().uuid('Invalid amenity ID format'),
         )
         .default([]),
       capacities: z.array(capacitySchema).default([]),
@@ -101,7 +101,7 @@ export const updateVenueSchema = z
       imageUrls: z.array(z.string().url('Invalid image URL format')).optional(),
       amenities: z
         .array(
-          z.number().int().positive('Amenity ID must be a positive integer'),
+          z.string().uuid('Invalid amenity ID format'),
         )
         .optional(),
       capacities: z.array(capacitySchema).optional(),
@@ -120,7 +120,7 @@ export const updateVenueSchema = z
         .optional(),
     }),
     params: z.object({
-      id: z.string().regex(/^\d+$/, 'Venue ID must be a positive integer'),
+      id: z.string().uuid('Invalid venue ID format'),
     }),
   })
   .superRefine((data, ctx) => {
@@ -151,7 +151,7 @@ export const createClosureSchema = z
       description: z.string().max(500, 'Description is too long').optional(),
     }),
     params: z.object({
-      id: z.string().regex(/^\d+$/, 'Venue ID must be a positive integer'),
+      id: z.string().uuid('Invalid venue ID format'),
     }),
   })
   .superRefine((data, ctx) => {
@@ -170,16 +170,14 @@ export const createClosureSchema = z
 
 export const getClosuresSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^\d+$/, 'Venue ID must be a positive integer'),
+    id: z.string().uuid('Invalid venue ID format'),
   }),
 });
 
 export const deleteClosureSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^\d+$/, 'Venue ID must be a positive integer'),
-    closureId: z
-      .string()
-      .regex(/^\d+$/, 'Closure ID must be a positive integer'),
+    id: z.string().uuid('Invalid venue ID format'),
+    closureId: z.string().uuid('Invalid closure ID format'),
   }),
 });
 
@@ -198,10 +196,8 @@ export const updateClosureSchema = z
       description: z.string().max(500, 'Description is too long').optional(),
     }),
     params: z.object({
-      id: z.string().regex(/^\d+$/, 'Venue ID must be a positive integer'),
-      closureId: z
-        .string()
-        .regex(/^\d+$/, 'Closure ID must be a positive integer'),
+      id: z.string().uuid('Invalid venue ID format'),
+      closureId: z.string().uuid('Invalid closure ID format'),
     }),
   })
   .superRefine((data, ctx) => {

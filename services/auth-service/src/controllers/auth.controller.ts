@@ -75,7 +75,7 @@ export class AuthController {
       if (!userIdStr) {
         return res.status(401).json({ success: false, message: 'User context missing.' });
       }
-      const userId = parseInt(userIdStr, 10);
+      const userId = userIdStr;
 
       const { phoneNumber, businessName, bankRoutingNumber, bankAccountNumber } = req.body;
       const profile = await this.usersService.updateOwnerProfile(userId, {
