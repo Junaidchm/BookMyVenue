@@ -112,6 +112,16 @@ export class VenueService {
       amenities,
       capacities,
       sessions,
+      // Location
+      address,
+      city,
+      state,
+      country,
+      zipCode,
+      latitude,
+      longitude,
+      // Operating Schedule
+      operatingDays,
     } = data;
 
     // Use Prisma nested write to insert everything atomically
@@ -125,6 +135,16 @@ export class VenueService {
         pricingType,
         bufferTimeMinutes,
         imageUrls,
+        // Location
+        address,
+        city,
+        state,
+        country,
+        zipCode,
+        latitude,
+        longitude,
+        // Operating Schedule
+        operatingDays: operatingDays ?? [],
         // Nested relation inserts
         capacities: {
           create: capacities.map((cap) => ({
@@ -201,6 +221,16 @@ export class VenueService {
       amenities,
       capacities,
       sessions,
+      // Location
+      address,
+      city,
+      state,
+      country,
+      zipCode,
+      latitude,
+      longitude,
+      // Operating Schedule
+      operatingDays,
     } = data;
 
     const updatedVenue = await prisma.$transaction(async (tx) => {
@@ -268,6 +298,16 @@ export class VenueService {
           bufferTimeMinutes:
             bufferTimeMinutes !== undefined ? bufferTimeMinutes : undefined,
           imageUrls: imageUrls !== undefined ? imageUrls : undefined,
+          // Location
+          address: address !== undefined ? address : undefined,
+          city: city !== undefined ? city : undefined,
+          state: state !== undefined ? state : undefined,
+          country: country !== undefined ? country : undefined,
+          zipCode: zipCode !== undefined ? zipCode : undefined,
+          latitude: latitude !== undefined ? latitude : undefined,
+          longitude: longitude !== undefined ? longitude : undefined,
+          // Operating Schedule
+          operatingDays: operatingDays !== undefined ? operatingDays : undefined,
           status: 'PENDING',
         },
         include: {
@@ -452,5 +492,78 @@ export class VenueService {
     });
 
     return { status: 'SUCCESS', data: updated };
+  }
+
+  // ─── Saved Venues Methods ─────────────────────────────────────────────────
+
+  async saveVenue(userId: number, venueId: number) {
+    const venue = await prisma.venue.findUnique({
+      where: { id: venueId },
+    });
+
+    if (!venue || venue.status !== 'APPROVED') {
+      return { status: 'VENUE_NOT_FOUND', data: null };
+    }
+
+    try {
+      const savedVenue = await prisma.savedVenue.create({
+        data: {
+          userId,
+          venueId,
+        },
+      });
+      return { status: 'SUCCESS', data: savedVenue };
+    } catch (err: any) {
+      if (err.code === 'P2002') {
+        // Unique constraint failed, already saved
+        return { status: 'ALREADY_SAVED', data: null };
+      }
+      throw err;
+    }
+  }
+
+  async unsaveVenue(userId: number, venueId: number) {
+    try {
+      await prisma.savedVenue.delete({
+        where: {
+          userId_venueId: {
+            userId,
+            venueId,
+          },
+        },
+      });
+      return { status: 'SUCCESS' };
+    } catch (err: any) {
+      if (err.code === 'P2025') {
+        // Record not found
+        return { status: 'NOT_FOUND' };
+      }
+      throw err;
+    }
+  }
+
+  async getSavedVenues(userId: number) {
+    const savedVenues = await prisma.savedVenue.findMany({
+      where: {
+        userId,
+        venue: {
+          status: 'APPROVED',
+        },
+      },
+      include: {
+        venue: {
+          include: {
+            amenities: {
+              include: { amenity: true },
+            },
+            capacities: true,
+            sessions: true,
+          }
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { status: 'SUCCESS', data: savedVenues.map(sv => sv.venue) };
   }
 }

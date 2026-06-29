@@ -476,4 +476,113 @@ export class VenueController {
       next(error);
     }
   };
+
+  // ─── Saved Venues ─────────────────────────────────────────────────────────
+
+  getSavedVenues = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const user = (req as any).user;
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized.',
+        });
+      }
+
+      const result = await this.venueService.getSavedVenues(user.id);
+      return res.status(200).json(result);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  saveVenue = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const user = (req as any).user;
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized.',
+        });
+      }
+
+      const venueId = parseInt(req.params.id as string, 10);
+      if (isNaN(venueId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid venue ID format.',
+        });
+      }
+
+      const result = await this.venueService.saveVenue(user.id, venueId);
+      if (result.status === 'VENUE_NOT_FOUND') {
+        return res.status(404).json({
+          success: false,
+          message: 'Venue not found.',
+        });
+      }
+
+      if (result.status === 'ALREADY_SAVED') {
+        return res.status(400).json({
+          success: false,
+          message: 'Venue is already saved.',
+        });
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: 'Venue saved successfully.',
+        data: result.data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  unsaveVenue = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const user = (req as any).user;
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized.',
+        });
+      }
+
+      const venueId = parseInt(req.params.id as string, 10);
+      if (isNaN(venueId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid venue ID format.',
+        });
+      }
+
+      const result = await this.venueService.unsaveVenue(user.id, venueId);
+      if (result.status === 'NOT_FOUND') {
+        return res.status(404).json({
+          success: false,
+          message: 'Saved venue not found.',
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'Venue unsaved successfully.',
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
