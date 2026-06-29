@@ -181,7 +181,7 @@ export const handleWebhook = async (
     // Extract bookingId and paymentId
     // Standardize finding the bookingId and paymentId from body:
     let bookingId = data?.bookingId;
-    let paymentId = data?.paymentId || data?.id; // Stripe checkout session id, charge id or payment intent id
+    const paymentId = data?.paymentId || data?.id; // Stripe checkout session id, charge id or payment intent id
 
     // If metadata contains bookingId, use it
     if (data?.metadata?.bookingId) {
@@ -205,12 +205,10 @@ export const handleWebhook = async (
     });
 
     if (!bookingToConfirm) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: `Booking with ID ${parsedBookingId} not found`,
-        });
+      return res.status(404).json({
+        success: false,
+        message: `Booking with ID ${parsedBookingId} not found`,
+      });
     }
 
     if (bookingToConfirm.status !== 'PENDING_PAYMENT') {
@@ -272,13 +270,11 @@ export const checkAvailability = async (
     const { venueId, startTime, endTime } = req.query;
 
     if (!venueId || !startTime || !endTime) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message:
-            'Missing required query parameters: venueId, startTime, endTime',
-        });
+      return res.status(400).json({
+        success: false,
+        message:
+          'Missing required query parameters: venueId, startTime, endTime',
+      });
     }
 
     const parsedVenueId = venueId as string;
@@ -421,13 +417,10 @@ export const cancelBooking = async (
 
     // Authorization Check: User must own the booking
     if (booking.userId !== userId) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message:
-            'Forbidden: You do not have permission to cancel this booking',
-        });
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You do not have permission to cancel this booking',
+      });
     }
 
     // Check status: Can only cancel CONFIRMED or PENDING_PAYMENT bookings
@@ -502,13 +495,11 @@ export const rescheduleBooking = async (
     const { bookingDate, startTime, endTime } = req.body;
 
     if (!bookingDate || !startTime || !endTime) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message:
-            'Missing required rescheduling parameters: bookingDate, startTime, endTime',
-        });
+      return res.status(400).json({
+        success: false,
+        message:
+          'Missing required rescheduling parameters: bookingDate, startTime, endTime',
+      });
     }
 
     if (!parsedId) {
@@ -529,23 +520,19 @@ export const rescheduleBooking = async (
 
     // Authorization Check: User must own the booking
     if (booking.userId !== userId) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message:
-            'Forbidden: You do not have permission to reschedule this booking',
-        });
+      return res.status(403).json({
+        success: false,
+        message:
+          'Forbidden: You do not have permission to reschedule this booking',
+      });
     }
 
     // Check status: Can only reschedule CONFIRMED or PENDING_PAYMENT bookings
     if (booking.status === 'CANCELLED' || booking.status === 'FAILED') {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: `Cannot reschedule a ${booking.status.toLowerCase()} booking`,
-        });
+      return res.status(400).json({
+        success: false,
+        message: `Cannot reschedule a ${booking.status.toLowerCase()} booking`,
+      });
     }
 
     // Business Rule: Rescheduling not allowed within 24 hours of booking start
@@ -572,12 +559,10 @@ export const rescheduleBooking = async (
 
     // Ensure the new date is in the future
     if (start.getTime() <= now.getTime()) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: 'New booking time must be in the future',
-        });
+      return res.status(400).json({
+        success: false,
+        message: 'New booking time must be in the future',
+      });
     }
 
     // Check overlap for the new timeslot (excluding this booking itself)

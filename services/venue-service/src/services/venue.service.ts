@@ -307,7 +307,8 @@ export class VenueService {
           latitude: latitude !== undefined ? latitude : undefined,
           longitude: longitude !== undefined ? longitude : undefined,
           // Operating Schedule
-          operatingDays: operatingDays !== undefined ? operatingDays : undefined,
+          operatingDays:
+            operatingDays !== undefined ? operatingDays : undefined,
           status: 'PENDING',
         },
         include: {
@@ -558,12 +559,12 @@ export class VenueService {
             },
             capacities: true,
             sessions: true,
-          }
+          },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    return { status: 'SUCCESS', data: savedVenues.map(sv => sv.venue) };
+    return { status: 'SUCCESS', data: savedVenues.map((sv) => sv.venue) };
   }
 }

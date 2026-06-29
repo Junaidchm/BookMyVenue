@@ -137,21 +137,43 @@ async function runIntegrationTest() {
     );
 
     if (response.status === 201) {
-      console.log('✔ Test passed: High risk booking was successfully allowed with 201 Created!');
-      console.log('Exposed Risk Score (should be undefined):', response.data.data.riskScore);
+      console.log(
+        '✔ Test passed: High risk booking was successfully allowed with 201 Created!',
+      );
+      console.log(
+        'Exposed Risk Score (should be undefined):',
+        response.data.data.riskScore,
+      );
       if (response.data.data.riskScore === undefined) {
-        console.log('✔ Test passed: Correctly hid riskScore from client response!');
+        console.log(
+          '✔ Test passed: Correctly hid riskScore from client response!',
+        );
       } else {
-        console.error('❌ Test failed: Exposed riskScore to client response:', response.data.data.riskScore);
+        console.error(
+          '❌ Test failed: Exposed riskScore to client response:',
+          response.data.data.riskScore,
+        );
       }
-      console.log('Refund Percentage Policy:', response.data.data.refundPercentage);
+      console.log(
+        'Refund Percentage Policy:',
+        response.data.data.refundPercentage,
+      );
       if (Number(response.data.data.refundPercentage) === 0) {
-        console.log('✔ Test passed: Correctly applied non-refundable (0%) refund policy!');
+        console.log(
+          '✔ Test passed: Correctly applied non-refundable (0%) refund policy!',
+        );
       } else {
-        console.error('❌ Test failed: Incorrect refund policy applied:', response.data.data.refundPercentage);
+        console.error(
+          '❌ Test failed: Incorrect refund policy applied:',
+          response.data.data.refundPercentage,
+        );
       }
     } else {
-      console.error('❌ Test failed: Unexpected status code:', response.status, response.data);
+      console.error(
+        '❌ Test failed: Unexpected status code:',
+        response.status,
+        response.data,
+      );
     }
   } catch (err: any) {
     console.error(
@@ -193,9 +215,14 @@ async function runIntegrationTest() {
         response.data.data.riskScore,
       );
       if (response.data.data.riskScore === undefined) {
-        console.log('✔ Test passed: Correctly hid riskScore from client response!');
+        console.log(
+          '✔ Test passed: Correctly hid riskScore from client response!',
+        );
       } else {
-        console.error('❌ Test failed: Exposed riskScore to client response:', response.data.data.riskScore);
+        console.error(
+          '❌ Test failed: Exposed riskScore to client response:',
+          response.data.data.riskScore,
+        );
       }
     } else {
       console.error(

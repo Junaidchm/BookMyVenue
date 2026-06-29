@@ -68,9 +68,9 @@ export const requireAuth = (
       message: 'Unauthorized: User is not authenticated.',
     });
   }
-  
+
   (req as any).user = {
-    id: userIdHeader as string
+    id: userIdHeader as string,
   };
 
   next();

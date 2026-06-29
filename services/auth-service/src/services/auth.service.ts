@@ -47,7 +47,10 @@ export class AuthService {
     }
 
     // Verify password
-    const isPasswordValid = await this.comparePassword(password, user.passwordHash);
+    const isPasswordValid = await this.comparePassword(
+      password,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
       throw new Error('Invalid email or password.');
     }
@@ -65,7 +68,9 @@ export class AuthService {
       accountCreatedAt: user.createdAt.toISOString(),
     };
 
-    const token = jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN } as jwt.SignOptions);
+    const token = jwt.sign(payload, env.JWT_SECRET, {
+      expiresIn: env.JWT_EXPIRES_IN,
+    } as jwt.SignOptions);
 
     return {
       access_token: token,
@@ -93,7 +98,10 @@ export class AuthService {
     return bcrypt.hash(password, saltRounds);
   }
 
-  private async comparePassword(password: string, hash: string): Promise<boolean> {
+  private async comparePassword(
+    password: string,
+    hash: string,
+  ): Promise<boolean> {
     return bcrypt.compare(password, hash);
   }
 }

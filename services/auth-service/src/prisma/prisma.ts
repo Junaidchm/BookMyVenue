@@ -17,7 +17,11 @@ if (
   prisma = new PrismaClient({ adapter });
 } else {
   prisma = new PrismaClient({
-    accelerateUrl: databaseUrl,
+    datasources: {
+      db: {
+        url: databaseUrl,
+      },
+    },
   });
 }
 

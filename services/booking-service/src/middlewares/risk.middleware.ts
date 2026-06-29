@@ -11,12 +11,10 @@ export const checkBookingRisk = async (
   try {
     const userIdStr = req.headers['x-user-id'] as string;
     if (!userIdStr) {
-      return res
-        .status(401)
-        .json({
-          success: false,
-          message: 'Unauthorized. User context missing.',
-        });
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized. User context missing.',
+      });
     }
 
     const userId = userIdStr;

@@ -44,9 +44,7 @@ export const createVenueSchema = z
         .array(z.string().url('Invalid image URL format'))
         .default([]),
       amenities: z
-        .array(
-          z.string().uuid('Invalid amenity ID format'),
-        )
+        .array(z.string().uuid('Invalid amenity ID format'))
         .default([]),
       capacities: z.array(capacitySchema).default([]),
       sessions: z.array(sessionSchema).default([]),
@@ -100,9 +98,7 @@ export const updateVenueSchema = z
         .optional(),
       imageUrls: z.array(z.string().url('Invalid image URL format')).optional(),
       amenities: z
-        .array(
-          z.string().uuid('Invalid amenity ID format'),
-        )
+        .array(z.string().uuid('Invalid amenity ID format'))
         .optional(),
       capacities: z.array(capacitySchema).optional(),
       sessions: z.array(sessionSchema).optional(),
