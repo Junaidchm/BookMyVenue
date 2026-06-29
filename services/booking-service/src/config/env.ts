@@ -28,6 +28,9 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   AUTH_SERVICE_URL: z.string().url().default('http://localhost:5003'),
   VENUE_SERVICE_URL: z.string().url().default('http://localhost:5001'),
+  RAZORPAY_KEY_ID: z.string().default('rzp_test_mockkeyid123'),
+  RAZORPAY_KEY_SECRET: z.string().default('mocksecret123'),
+  RAZORPAY_WEBHOOK_SECRET: z.string().default('mockwebhooksecret123'),
 });
 
 const parsed = envSchema.safeParse(process.env);
