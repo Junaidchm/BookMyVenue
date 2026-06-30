@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
 import {
-  CreditCard,
   ShieldCheck,
   Calendar,
   Clock,
@@ -45,12 +44,14 @@ function CheckoutContent() {
   const [error, setError] = useState("");
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [mockCard, setMockCard] = useState({
-    number: "4111 2222 3333 4444",
-    expiry: "12/28",
-    cvv: "123",
-    name: "",
-  });
+  const [guestName, setGuestName] = useState("");
+
+  // Sync user context name
+  useEffect(() => {
+    if (user?.fullName && !guestName) {
+      setGuestName(user.fullName);
+    }
+  }, [user, guestName]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -355,8 +356,8 @@ function CheckoutContent() {
                       <Input
                         id="guestName"
                         type="text"
-                        value={mockCard.name || user?.fullName || ""}
-                        onChange={(e) => setMockCard({ ...mockCard, name: e.target.value })}
+                        value={guestName}
+                        onChange={(e) => setGuestName(e.target.value)}
                         required
                         placeholder="John Doe"
                         className="mt-1.5 rounded-xl border-stone-200 focus-visible:ring-primary"
@@ -377,56 +378,14 @@ function CheckoutContent() {
 
                 <Separator className="bg-border-subtle" />
 
-                <div>
-                  <h2 className="text-base font-bold text-on-surface mb-4 flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-primary" />
-                    Payment Details
-                  </h2>
-                  <div className="flex flex-col gap-4">
+                <div className="rounded-xl border border-stone-250 bg-stone-50/40 p-5">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="h-5 w-5 text-emerald-650 shrink-0 mt-0.5" />
                     <div>
-                      <Label htmlFor="cardNumber">Credit Card Number</Label>
-                      <div className="relative mt-1.5">
-                        <Input
-                          id="cardNumber"
-                          type="text"
-                          value={mockCard.number}
-                          onChange={(e) => setMockCard({ ...mockCard, number: e.target.value })}
-                          required
-                          placeholder="4111 2222 3333 4444"
-                          className="rounded-xl border-stone-200 pr-10 focus-visible:ring-primary font-mono"
-                        />
-                        <span className="absolute inset-y-0 right-3 flex items-center">
-                          <Lock className="h-4 w-4 text-text-muted" />
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="cardExpiry">Expiration Date</Label>
-                        <Input
-                          id="cardExpiry"
-                          type="text"
-                          value={mockCard.expiry}
-                          onChange={(e) => setMockCard({ ...mockCard, expiry: e.target.value })}
-                          required
-                          placeholder="MM/YY"
-                          className="mt-1.5 rounded-xl border-stone-200 focus-visible:ring-primary font-mono"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cardCvv">CVV</Label>
-                        <Input
-                          id="cardCvv"
-                          type="password"
-                          maxLength={3}
-                          value={mockCard.cvv}
-                          onChange={(e) => setMockCard({ ...mockCard, cvv: e.target.value })}
-                          required
-                          placeholder="***"
-                          className="mt-1.5 rounded-xl border-stone-200 focus-visible:ring-primary font-mono"
-                        />
-                      </div>
+                      <p className="text-sm font-semibold text-stone-850">Protected by Razorpay Secure</p>
+                      <p className="text-xs text-stone-600 leading-relaxed mt-1">
+                        All payments are processed securely via Razorpay's PCI-DSS compliant payment gateway. You can pay using UPI, Credit/Debit cards, Net Banking, or Wallets in the next step.
+                      </p>
                     </div>
                   </div>
                 </div>
