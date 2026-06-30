@@ -44,6 +44,8 @@ export async function generateMetadata({
   }
 }
 
+import { VenueTracker } from "@/components/venues/venue-tracker";
+
 export default async function VenueDetailPage({ params }: VenuePageProps) {
   const { id } = await params;
   
@@ -76,6 +78,7 @@ export default async function VenueDetailPage({ params }: VenuePageProps) {
   return (
     <div className="flex min-h-screen flex-col bg-background antialiased">
       <SiteNavbar />
+      <VenueTracker venue={venue} />
 
       {/* Ambient gradient blurs */}
       <div className="pointer-events-none fixed top-0 right-0 -z-10 size-72 rounded-full bg-primary-container/5 blur-[120px]" />

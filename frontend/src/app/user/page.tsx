@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { savedVenuesQueryOptions, venuesQueryOptions } from "@/lib/venues/queries";
 import { bookingService } from "@/services/booking.service";
+import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
 
 const formatDateTime = (date: Date) => {
   return (
@@ -30,6 +31,8 @@ const formatDateTime = (date: Date) => {
 export default function UserDashboardPage() {
   const { data: savedVenuesData } = useQuery(savedVenuesQueryOptions());
   const actualSavedVenues = savedVenuesData || [];
+
+  const { recentVenues } = useRecentlyViewed();
 
   const { data: bookingsResponse, isLoading: bookingsLoading } = useQuery({
     queryKey: ["bookings"],
@@ -193,6 +196,44 @@ export default function UserDashboardPage() {
               )}
             </div>
           </section>
+
+          {recentVenues.length > 0 && (
+            <section>
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-on-surface">
+                  Recently Viewed
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                {recentVenues.map((venue) => (
+                  <Card
+                    key={venue.id}
+                    className="group relative overflow-hidden rounded-xl border-border-subtle bg-surface shadow-elevation-card hover:shadow-elevation-card-hover transition-all duration-300"
+                  >
+                    <Link href={`/venues/${venue.id}`}>
+                      <div className="relative aspect-[4/3] w-full">
+                        <Image
+                          src={venue.image}
+                          alt={venue.name}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute right-4 bottom-4 left-4">
+                          <p className="text-sm font-medium text-white">
+                            {venue.name}
+                          </p>
+                          <p className="text-xs text-white/80">
+                            {venue.city}, {venue.state}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>

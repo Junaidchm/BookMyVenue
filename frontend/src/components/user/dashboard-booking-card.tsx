@@ -1,9 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Calendar, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { UpcomingBooking } from "@/lib/user/data";
 import { STATUS_LABELS } from "@/lib/user/data";
@@ -61,15 +59,6 @@ export function DashboardBookingCard({ booking }: DashboardBookingCardProps) {
           </div>
         </div>
 
-        <div className="mt-auto flex flex-wrap gap-3">
-          <Button
-            variant="outline"
-            className="rounded-full px-6"
-            asChild
-          >
-            <Link href={`#`}>View Receipt</Link>
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );
