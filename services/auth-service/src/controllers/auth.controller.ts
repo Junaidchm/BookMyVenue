@@ -31,6 +31,7 @@ export class AuthController {
       const result = await this.authService.login(email, password);
       res.status(200).json({ success: true, data: result });
     } catch (err: any) {
+      console.error('[LOGIN ERROR]:', err);
       // Normalize error to ensure it has a string message
       const errorMessage = err instanceof Error ? err.message : String(err);
 
