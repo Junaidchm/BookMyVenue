@@ -9,7 +9,7 @@ type VenueTrackerProps = {
     name: string;
     images: { main: string };
     city: string;
-    state: string;
+    state?: string;
   };
 };
 
@@ -22,7 +22,7 @@ export function VenueTracker({ venue }: VenueTrackerProps) {
       name: venue.name,
       image: venue.images.main,
       city: venue.city,
-      state: venue.state,
+      state: venue.state || "",
     });
   }, [venue, addViewedVenue]);
 

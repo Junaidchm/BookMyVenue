@@ -149,54 +149,6 @@ export default function UserDashboardPage() {
             )}
           </section>
 
-          <section>
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-on-surface">
-                Saved Venues
-              </h2>
-              <Link
-                href="/user/saved"
-                className="text-sm font-semibold text-primary-container hover:underline"
-              >
-                View All
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {actualSavedVenues.slice(0, 3).map((venue) => (
-                <Card
-                  key={venue.id}
-                  className="group relative overflow-hidden rounded-xl border-border-subtle bg-surface shadow-elevation-card hover:shadow-elevation-card-hover transition-all duration-300"
-                >
-                  <div className="relative aspect-[4/3] w-full">
-                    <Image
-                      src={venue.images.main}
-                      alt={venue.name}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="absolute top-4 right-4 h-8 w-8 rounded-full bg-surface text-primary-container hover:bg-surface-container-low"
-                    >
-                      <Heart className="h-4 w-4 fill-current" />
-                    </Button>
-                    <div className="absolute right-4 bottom-4 left-4">
-                      <p className="text-sm font-medium text-white">
-                        {venue.name}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-              
-              {actualSavedVenues.length === 0 && (
-                 <p className="text-sm text-text-muted p-4 border border-dashed border-border-subtle rounded-xl text-center col-span-3">No saved venues yet.</p>
-              )}
-            </div>
-          </section>
-
           {recentVenues.length > 0 && (
             <section>
               <div className="mb-6 flex items-center justify-between">
