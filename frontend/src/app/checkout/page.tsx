@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import {
   CreditCard,
   ShieldCheck,
@@ -127,22 +128,70 @@ function CheckoutContent() {
     setError("");
 
     try {
-      // Simulate secure transaction wait
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Invoke simulated Stripe/Razorpay payment success webhook confirmation
-      const paymentId = `ch_mock_${Math.random().toString(36).substr(2, 9)}`;
-      const confirmRes = await bookingService.confirmBooking(bookingId, paymentId);
-
-      if (confirmRes.success) {
-        setPaymentSuccess(true);
-      } else {
-        setError(confirmRes.message || "Payment verification failed. Please try again.");
+      // 1. Fetch Razorpay Order parameters from secure backend
+      const orderRes = await bookingService.createPaymentOrder(bookingId);
+      if (!orderRes.success || !orderRes.orderId) {
+        throw new Error(orderRes.message || "Failed to create payment order");
       }
+
+      // 2. Ensure Razorpay script has registered globally in the browser
+      if (typeof (window as any).Razorpay === "undefined") {
+        throw new Error("Razorpay SDK failed to load. Please verify your network connection.");
+      }
+
+      // 3. Configure Checkout popup properties
+      const options = {
+        key: orderRes.key,
+        amount: orderRes.amount,
+        currency: orderRes.currency,
+        name: "BookMyVenue",
+        description: `Booking reservation payment for ${venue?.name || "Venue"}`,
+        order_id: orderRes.orderId,
+        handler: async (response: any) => {
+          try {
+            setPayLoading(true);
+            setError("");
+            
+            // 4. Send token parameters to verify server endpoint
+            const verifyRes = await bookingService.verifyPayment(bookingId, {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            if (verifyRes.success) {
+              setPaymentSuccess(true);
+            } else {
+              setError(verifyRes.message || "Payment verification failed. Please try again.");
+            }
+          } catch (verifyErr: any) {
+            console.error("Verification verification error:", verifyErr);
+            setError(verifyErr.response?.data?.message || "Failed to confirm payment signature.");
+          } finally {
+            setPayLoading(false);
+          }
+        },
+        prefill: {
+          name: user?.fullName || "",
+          email: user?.email || "",
+        },
+        theme: {
+          color: "#0F172A", // Slate Dark Theme
+        },
+        modal: {
+          ondismiss: () => {
+            // Restore button trigger state if the user cancels checkout
+            setPayLoading(false);
+          },
+        },
+      };
+
+      // 5. Open checkout UI window
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
     } catch (err: any) {
-      console.error("Payment confirmation error:", err);
-      setError(err.response?.data?.message || "An error occurred while processing payment.");
-    } finally {
+      console.error("Payment setup error:", err);
+      setError(err.message || err.response?.data?.message || "An error occurred while launching payment.");
       setPayLoading(false);
     }
   };
@@ -518,6 +567,7 @@ export default function CheckoutPage() {
       </div>
     }>
       <CheckoutContent />
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
     </Suspense>
   );
 }
