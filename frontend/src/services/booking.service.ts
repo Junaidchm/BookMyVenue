@@ -68,6 +68,29 @@ export const bookingService = {
     });
     return response.data;
   },
+
+  /**
+   * Initiate a Razorpay payment order for a booking
+   */
+  createPaymentOrder: async (bookingId: string) => {
+    const response = await apiClient.post(`/bookings/${bookingId}/payment/order`);
+    return response.data;
+  },
+
+  /**
+   * Cryptographically verify a Razorpay payment transaction on the server
+   */
+  verifyPayment: async (
+    bookingId: string,
+    payload: {
+      razorpay_payment_id: string;
+      razorpay_order_id: string;
+      razorpay_signature: string;
+    },
+  ) => {
+    const response = await apiClient.post(`/bookings/${bookingId}/payment/verify`, payload);
+    return response.data;
+  },
 };
 
 export default bookingService;
