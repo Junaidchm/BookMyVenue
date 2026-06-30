@@ -12,7 +12,6 @@ export const USER_NAV = [
     icon: "calendar" as const,
   },
   { href: "/user/saved", label: "Saved Venues", icon: "heart" as const },
-  { href: "/user/messages", label: "Messages", icon: "message-circle" as const },
   { href: "/user/settings", label: "Settings", icon: "settings" as const },
 ] as const;
 
@@ -43,43 +42,7 @@ export type PastBooking = {
   image: string;
 };
 
-export const UPCOMING_BOOKINGS: UpcomingBooking[] = [
-  {
-    id: "1",
-    reference: "#BKG-882",
-    venue: "The Glasshouse Estate",
-    location: "Napa Valley, CA",
-    dateTime: "Oct 12, 2024 • 4:00 PM",
-    status: "CONFIRMED",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCRXToQMNF3VGPVDCK5-PtXPHCBVHBgXXE_70hDC9B1hEt13ZT9l6Ry_z9II_AD9gJ-NFzoCsnpFMNlP62TdZhEXkEAXzV1EKyKoORJPeUJH-UfhWAdAz0e78-oaVElauMwhUK8pIfmaUr_6PLpvLEXIf7WVAl5JEPxa0PPky88r_iizdG_k5jHhIJkPaR-qBxzbpbzjYza504VN8RUT9JdInKkfl_HP2Gd0oq01BvVmi5nsDYXJ5AC5r9S360Vu9FWrjrKqD_VWi0",
-    href: "/venues/glass-pavilion",
-    guests: 50,
-  },
-  {
-    id: "2",
-    reference: "#BKG-901",
-    venue: "Summit Executive Suite",
-    location: "Downtown Seattle, WA",
-    dateTime: "Nov 05, 2024 • 9:00 AM",
-    status: "PENDING_PAYMENT",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuChi5B4tYiFzfsUZil7krPo7P8OX4GBUUCocpRAB3Wcn_pEgeccUFkNgT7VehGaOZL0ausJJLtrrUAZLBOoarSjl2-JJivJn6Tr8y0VHCzn99e02iGSnMXB_WAw7_Co-R2n9lw0a_NYUuZIKoo7qFHz-R_lI_mTM9YR9a3a28266siHTWpVzMZ6-9KKQDol2vQ2yzIBtaj8gHwaXDTdsYZjJq2lWwduQfwNjNYL4IrUGtrgE5NPlFi4tYDJNwSJGpDbGAW_nrabulc",
-    href: "#",
-    guests: 120,
-  },
-];
 
-export const PAST_BOOKINGS: PastBooking[] = [
-  {
-    id: "1",
-    venue: "Villa Serenity Courtyard",
-    dateLocation: "Aug 20, 2024 • Austin, TX",
-    status: "COMPLETED",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDJNNVMbFl4E4TrFZpMDptjKn14CiGT_XwJi8ZDITMkTrPacKM1UJ9bkeMpyjuJT8U_fpsNVLahVnpYduj5G_oZJtHOp5eRR_b9a7CxxQhAzLt5TaYxUPx81yuSY3fxytSfnzlWQjYuoK1aLQrPjZw13CgSsF7tDSZjppDKXJk2fvDBErhmd2x2Y7VaC1o29Sloq5OoMdZ8HoyICQ3aXAfC7SJhTyJP4VrLLnjwLZJoAgzDkPhKNrclvq_JiqD9icaAeAFISHdHMPY",
-  },
-];
 
 export const STATUS_LABELS: Record<BookingStatus, string> = {
   CONFIRMED: "Confirmed",

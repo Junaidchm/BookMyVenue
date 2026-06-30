@@ -10,20 +10,72 @@ import {
   CheckCircle,
   Star,
   Activity,
+  Loader2,
 } from "lucide-react";
 
-import { DASHBOARD_STATS, UPCOMING_BOOKINGS, SAVED_VENUES, RECENT_ACTIVITY } from "@/lib/user/data";
+import { DASHBOARD_STATS, SAVED_VENUES, RECENT_ACTIVITY, type UpcomingBooking, type BookingStatus } from "@/lib/user/data";
 import { DashboardBookingCard } from "@/components/user/dashboard-booking-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { useQuery } from "@tanstack/react-query";
-import { savedVenuesQueryOptions } from "@/lib/venues/queries";
+import { savedVenuesQueryOptions, venuesQueryOptions } from "@/lib/venues/queries";
+import { bookingService } from "@/services/booking.service";
+
+const formatDateTime = (date: Date) => {
+  return (
+    date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
+    " • " +
+    date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+  );
+};
 
 export default function UserDashboardPage() {
   const { data: savedVenuesData } = useQuery(savedVenuesQueryOptions());
   const actualSavedVenues = savedVenuesData || [];
+
+  const { data: bookingsResponse, isLoading: bookingsLoading } = useQuery({
+    queryKey: ["bookings"],
+    queryFn: () => bookingService.getBookings(),
+  });
+
+  const { data: venues, isLoading: venuesLoading } = useQuery(venuesQueryOptions());
+
+  const isLoading = bookingsLoading || venuesLoading;
+  const backendBookings = bookingsResponse?.data || [];
+  
+  const formattedUpcoming: UpcomingBooking[] = [];
+  let totalBookingsCount = 0;
+
+  if (!isLoading && venues) {
+    totalBookingsCount = backendBookings.length;
+    
+    backendBookings.forEach((b: any) => {
+      const venue = venues.find((v) => v.id === b.venueId);
+      if (!venue) return;
+
+      const startTime = new Date(b.startTime);
+      const isPast = startTime < new Date();
+
+      if (b.status !== "COMPLETED" && b.status !== "CANCELLED" && b.status !== "FAILED" && !isPast) {
+        formattedUpcoming.push({
+          id: b.id,
+          reference: `#BKG-${b.id.substring(0, 6).toUpperCase()}`,
+          venue: venue.name,
+          location: `${venue.city}, ${venue.state}`,
+          dateTime: formatDateTime(startTime),
+          status: b.status as BookingStatus,
+          image: venue.images.main,
+          href: `/venues/${venue.id}`,
+          guests: 0,
+        });
+      }
+    });
+  }
+
+  // Take only the first 3 upcoming bookings for the dashboard
+  const displayUpcoming = formattedUpcoming.slice(0, 3);
 
   return (
     <div className="flex flex-col gap-6 pb-8">
@@ -33,7 +85,7 @@ export default function UserDashboardPage() {
             Dashboard Overview
           </h1>
           <p className="text-text-muted text-body-md">
-            You have {UPCOMING_BOOKINGS.length} upcoming bookings this month.
+            You have {formattedUpcoming.length} upcoming bookings this month.
           </p>
         </header>
 
@@ -45,7 +97,7 @@ export default function UserDashboardPage() {
               </div>
               <div>
                 <p className="text-label-sm text-text-muted">Total Bookings</p>
-                <p className="text-2xl font-bold text-on-surface">{DASHBOARD_STATS.totalBookings}</p>
+                <p className="text-2xl font-bold text-on-surface">{isLoading ? "-" : totalBookingsCount}</p>
               </div>
             </CardContent>
           </Card>
@@ -78,14 +130,38 @@ export default function UserDashboardPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <section className="mb-10">
-              <h2 className="mb-6 text-xl font-bold text-on-surface">
-                Upcoming Bookings
-              </h2>
-              <div className="flex flex-col gap-4">
-                {UPCOMING_BOOKINGS.map((booking) => (
-                  <DashboardBookingCard key={booking.id} booking={booking} />
-                ))}
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-on-surface">
+                  Upcoming Bookings
+                </h2>
+                <Link
+                  href="/user/bookings"
+                  className="text-sm font-semibold text-primary-container hover:underline"
+                >
+                  View All Bookings
+                </Link>
               </div>
+              
+              {isLoading ? (
+                <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-border-subtle">
+                  <Loader2 className="size-8 animate-spin text-primary-container" />
+                </div>
+              ) : displayUpcoming.length > 0 ? (
+                <div className="flex flex-col gap-4">
+                  {displayUpcoming.map((booking) => (
+                    <DashboardBookingCard key={booking.id} booking={booking} />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border-subtle p-8 text-center">
+                  <Calendar className="mb-4 size-10 text-text-muted opacity-50" />
+                  <p className="mb-2 text-lg font-semibold text-on-surface">No upcoming events</p>
+                  <p className="text-body-md text-text-muted">Ready to plan your next event?</p>
+                  <Button className="mt-4 rounded-full bg-primary-container text-on-primary-container hover:bg-secondary-container" asChild>
+                    <Link href="/venues">Find Venues</Link>
+                  </Button>
+                </div>
+              )}
             </section>
 
             <section>
@@ -146,7 +222,7 @@ export default function UserDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-6">
-                  {RECENT_ACTIVITY.map((activity, index) => {
+                  {RECENT_ACTIVITY.map((activity) => {
                     const Icon = activity.icon === "check-circle" ? CheckCircle : activity.icon === "message-square" ? MessageSquare : Heart;
                     return (
                       <div key={activity.id} className="flex gap-4">
