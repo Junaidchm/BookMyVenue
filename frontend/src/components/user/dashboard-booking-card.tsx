@@ -14,7 +14,7 @@ type DashboardBookingCardProps = {
 };
 
 export function DashboardBookingCard({ booking }: DashboardBookingCardProps) {
-  const isConfirmed = booking.status === "confirmed";
+  const isConfirmed = booking.status === "CONFIRMED";
 
   return (
     <Card className="flex flex-col gap-0 overflow-hidden rounded-xl border border-border-subtle bg-surface p-0 shadow-elevation-card hover:shadow-elevation-card-hover transition-all duration-300 sm:flex-row">
@@ -67,16 +67,8 @@ export function DashboardBookingCard({ booking }: DashboardBookingCardProps) {
             className="rounded-full px-6"
             asChild
           >
-            <Link href={booking.href}>View Details</Link>
+            <Link href={`#`}>View Receipt</Link>
           </Button>
-          {isConfirmed && (
-            <Button
-              variant="outline"
-              className="rounded-full px-6"
-            >
-              Contact Host
-            </Button>
-          )}
         </div>
       </CardContent>
     </Card>
