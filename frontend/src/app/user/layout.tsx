@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -37,6 +37,25 @@ export default function UserLayout({
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { signOut, user } = useAuth();
+  const [avatar, setAvatar] = useState(USER_PROFILE.avatar);
+
+  useEffect(() => {
+    const updateAvatar = () => {
+      const stored = localStorage.getItem("user_profile_data");
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          if (data.avatar) {
+            setAvatar(data.avatar);
+          }
+        } catch (err) {}
+      }
+    };
+
+    updateAvatar();
+    window.addEventListener("user-profile-updated", updateAvatar);
+    return () => window.removeEventListener("user-profile-updated", updateAvatar);
+  }, []);
 
   const isActive = (href: string) => {
     if (href === "/user") return pathname === "/user";
@@ -59,7 +78,7 @@ export default function UserLayout({
           <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50">
             <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20">
               <img
-                src={USER_PROFILE.avatar}
+                src={avatar}
                 alt={`${user?.fullName || "User"} - Profile`}
                 className="h-full w-full object-cover"
               />
@@ -176,7 +195,7 @@ export default function UserLayout({
             {/* Profile */}
             <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50">
               <img
-                src={USER_PROFILE.avatar}
+                src={avatar}
                 alt={`${user?.fullName || "User"} - Profile`}
                 className="h-9 w-9 rounded-full border border-primary-container/20 object-cover"
               />

@@ -176,6 +176,10 @@ export function UserProfile() {
         if (res.ok) {
           const data = await res.json();
           setProfile(data);
+          localStorage.setItem("user_profile_data", JSON.stringify(data));
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("user-profile-updated"));
+          }
         } else {
           throw new Error("API offline");
         }
@@ -288,6 +292,9 @@ export function UserProfile() {
         const data = await response.json();
         setProfile(data);
         localStorage.setItem("user_profile_data", JSON.stringify(data));
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("user-profile-updated"));
+        }
       } else {
         throw new Error("PUT failed");
       }
@@ -295,6 +302,9 @@ export function UserProfile() {
       console.warn("Offline Save Fallback:");
       setProfile(updated);
       localStorage.setItem("user_profile_data", JSON.stringify(updated));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("user-profile-updated"));
+      }
     } finally {
       setIsSaving(false);
       setIsEditing(false);
@@ -334,6 +344,9 @@ export function UserProfile() {
       setProfile((prev) => {
         const finalProfile = { ...prev, avatar: avatarUrl };
         localStorage.setItem("user_profile_data", JSON.stringify(finalProfile));
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("user-profile-updated"));
+        }
         
         // Persist immediately to the backend profile database
         fetch("/api/user/profile", {
@@ -358,6 +371,9 @@ export function UserProfile() {
         }
         const finalProfile = { ...prev, avatar: fallbackAvatar || DEFAULT_USER_PROFILE.avatar };
         localStorage.setItem("user_profile_data", JSON.stringify(finalProfile));
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("user-profile-updated"));
+        }
         return finalProfile;
       });
       alert(err.message || "Failed to upload avatar to Cloudinary.");
@@ -700,7 +716,7 @@ export function UserProfile() {
             style={{ width: "100%", padding: "14px", fontSize: "0.95rem" }}
             onClick={handleLogout}
           >
-            🚪 Logout from Account
+            🚪 Logout
           </button>
         </div>
 
