@@ -127,6 +127,51 @@ export function UserProfile() {
     wishlistCount: 2,
   });
 
+  // Load live activity overview stats
+  useEffect(() => {
+    async function loadActivityStats() {
+      try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("bmv_token") : null;
+        const res = await fetch("/api/v1/users/me/bookings", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        
+        if (res.ok) {
+          const bookings = await res.json();
+          const list = Array.isArray(bookings) ? bookings : (bookings.bookings || []);
+          const total = list.length;
+          const upcoming = list.filter((b: any) => b.status === "Confirmed" || b.status === "Pending").length;
+          const completed = list.filter((b: any) => b.status === "Completed").length;
+          
+          setMetrics(prev => ({
+            ...prev,
+            totalBookings: total,
+            upcomingEvents: upcoming,
+            completedEvents: completed
+          }));
+        }
+      } catch (err) {
+        console.warn("Failed to fetch live booking stats, using mock fallback:", err);
+      }
+
+      // Fetch live wishlist count from localStorage
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("bmv_wishlist");
+        if (stored) {
+          try {
+            const list = JSON.parse(stored);
+            setMetrics(prev => ({
+              ...prev,
+              wishlistCount: list.length
+            }));
+          } catch {}
+        }
+      }
+    }
+
+    loadActivityStats();
+  }, []);
+
   // Autocomplete suggestions states
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
   const [apiAddressSuggestions, setApiAddressSuggestions] = useState<string[]>([]);
