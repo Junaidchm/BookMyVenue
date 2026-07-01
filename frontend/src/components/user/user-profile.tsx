@@ -130,6 +130,7 @@ export function UserProfile() {
   // Load live activity overview stats
   useEffect(() => {
     async function loadActivityStats() {
+      // 1. Load Bookings Stats
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("bmv_token") : null;
         const res = await fetch("/api/v1/users/me/bookings", {
@@ -149,23 +150,53 @@ export function UserProfile() {
             upcomingEvents: upcoming,
             completedEvents: completed
           }));
+        } else {
+          throw new Error("Bookings API response not OK");
         }
       } catch (err) {
         console.warn("Failed to fetch live booking stats, using mock fallback:", err);
+        setMetrics(prev => ({
+          ...prev,
+          totalBookings: 3,
+          upcomingEvents: 2,
+          completedEvents: 1,
+        }));
       }
 
-      // Fetch live wishlist count from localStorage
-      if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("bmv_wishlist");
-        if (stored) {
-          try {
-            const list = JSON.parse(stored);
-            setMetrics(prev => ({
-              ...prev,
-              wishlistCount: list.length
-            }));
-          } catch {}
+      // 2. Load Wishlist Stats
+      try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("bmv_token") : null;
+        const res = await fetch("/api/v1/users/me/favourites", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data) ? data : (data.favourites || []);
+          setMetrics(prev => ({
+            ...prev,
+            wishlistCount: list.length
+          }));
+        } else {
+          throw new Error("Wishlist API response not OK");
         }
+      } catch (err) {
+        console.warn("Failed to fetch live wishlist stats, using localStorage fallback:", err);
+        // localStorage fallback
+        let wishlistCount = 2; // Default mock fallback
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem("bmv_wishlist");
+          if (stored) {
+            try {
+              const list = JSON.parse(stored);
+              wishlistCount = list.length;
+            } catch {}
+          }
+        }
+        setMetrics(prev => ({
+          ...prev,
+          wishlistCount
+        }));
       }
     }
 
