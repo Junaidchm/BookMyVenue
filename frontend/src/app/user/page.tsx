@@ -1,6 +1,4 @@
-"use client";
-
-import React from "react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,20 +7,21 @@ import {
   MessageSquare,
   CheckCircle,
   Star,
+  Activity,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { savedVenuesQueryOptions } from "@/lib/venues/queries";
 
-import { DASHBOARD_STATS, UPCOMING_BOOKINGS, RECENT_ACTIVITY } from "@/lib/user/data";
-import { DashboardBookingCard } from "@/components/user/user-profile-dashboard-booking-card";
+import { DASHBOARD_STATS, UPCOMING_BOOKINGS, SAVED_VENUES, RECENT_ACTIVITY } from "@/lib/user/data";
+import { DashboardBookingCard } from "@/components/user/dashboard-booking-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export default function UserDashboardPage() {
-  const { data: savedVenuesData } = useQuery(savedVenuesQueryOptions());
-  const actualSavedVenues = savedVenuesData || [];
+export const metadata: Metadata = {
+  title: "Dashboard | BookMyVenue",
+  description: "Your personalized dashboard",
+};
 
+export default function UserDashboardPage() {
   return (
     <div className="flex flex-col gap-6 pb-8">
       <div className="mx-auto w-full max-w-[1200px]">
@@ -54,7 +53,7 @@ export default function UserDashboardPage() {
               </div>
               <div>
                 <p className="text-label-sm text-text-muted">Saved Venues</p>
-                <p className="text-2xl font-bold text-on-surface">{actualSavedVenues.length}</p>
+                <p className="text-2xl font-bold text-on-surface">{DASHBOARD_STATS.savedVenues}</p>
               </div>
             </CardContent>
           </Card>
@@ -99,41 +98,34 @@ export default function UserDashboardPage() {
                 </Link>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {actualSavedVenues.slice(0, 4).map((venue) => (
+                {SAVED_VENUES.map((venue) => (
                   <Card
                     key={venue.id}
                     className="group relative overflow-hidden rounded-xl border-border-subtle bg-surface shadow-elevation-card hover:shadow-elevation-card-hover transition-all duration-300"
                   >
                     <div className="relative aspect-[4/3] w-full">
                       <Image
-                        src={venue.images.main}
+                        src={venue.image}
                         alt={venue.name}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      
-                      {/* Venue Name Overlay */}
-                      <div className="absolute right-4 bottom-4 left-4 z-10">
-                        <p className="text-sm font-medium text-white group-hover:text-primary-container-light transition-colors">
-                          {venue.name}
-                        </p>
-                      </div>
-
                       <Button
                         variant="secondary"
                         size="icon"
-                        className="absolute top-4 right-4 h-8 w-8 rounded-full bg-surface text-red-500 hover:bg-surface-container-low z-20 shadow-sm"
+                        className="absolute top-4 right-4 h-8 w-8 rounded-full bg-surface text-secondary-container hover:bg-surface-container-low"
                       >
-                        <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                        <Heart className="h-4 w-4 fill-current" />
                       </Button>
+                      <div className="absolute right-4 bottom-4 left-4">
+                        <p className="text-sm font-medium text-white">
+                          {venue.name}
+                        </p>
+                      </div>
                     </div>
                   </Card>
                 ))}
-                
-                {actualSavedVenues.length === 0 && (
-                   <p className="text-sm text-text-muted p-4 border border-dashed border-border-subtle rounded-xl text-center col-span-2">No saved venues yet.</p>
-                )}
               </div>
             </section>
           </div>
@@ -147,7 +139,7 @@ export default function UserDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-6">
-                  {RECENT_ACTIVITY.map((activity) => {
+                  {RECENT_ACTIVITY.map((activity, index) => {
                     const Icon = activity.icon === "check-circle" ? CheckCircle : activity.icon === "message-square" ? MessageSquare : Heart;
                     return (
                       <div key={activity.id} className="flex gap-4">

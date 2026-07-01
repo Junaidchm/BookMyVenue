@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/session-provider";
-import "@/components/ProfileDashboard/ProfileDashboard.css";
+import { uploadToCloudinary } from "@/lib/venues/api";
+import "./owner-profile.css";
 
 // Import modular sub-components
 import { OwnerProfileHeader } from "./owner-profile-header";
@@ -277,32 +278,26 @@ export function OwnerProfile() {
 
     setIsUploading(true);
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("bmv_token") : null;
-      const formData = new FormData();
-      formData.append("avatar", file);
+      // Upload directly to Cloudinary
+      const avatarUrl = await uploadToCloudinary(file);
+      
+      setProfile((prev) => {
+        const finalProfile = { ...prev, avatar: avatarUrl };
+        localStorage.setItem("owner_profile_data", JSON.stringify(finalProfile));
+        
+        // Persist immediately to the backend owner profile database
+        fetch("/api/owner/profile", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(finalProfile),
+        }).catch((err) => console.warn("Offline fallback: failed to sync avatar with DB:", err));
 
-      const res = await fetch("/api/v1/users/me/avatar", {
-        method: "POST",
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: formData,
+        return finalProfile;
       });
-
-      if (res.ok) {
-        const result = await res.json();
-        if (result.avatarUrl) {
-          setProfile((prev) => {
-            const finalProfile = { ...prev, avatar: result.avatarUrl };
-            localStorage.setItem("owner_profile_data", JSON.stringify(finalProfile));
-            return finalProfile;
-          });
-        }
-      } else {
-        throw new Error("Upload response failed");
-      }
     } catch (err) {
-      console.warn("Avatar server upload failed, reverting local URL:", err);
+      console.warn("Cloudinary upload failed, reverting avatar to last saved:", err);
       setProfile((prev) => {
         const stored = localStorage.getItem("owner_profile_data");
         let fallbackAvatar = "";
@@ -311,10 +306,11 @@ export function OwnerProfile() {
             fallbackAvatar = JSON.parse(stored).avatar;
           } catch {}
         }
-        const finalProfile = { ...prev, avatar: fallbackAvatar || "" };
+        const finalProfile = { ...prev, avatar: fallbackAvatar || DEFAULT_OWNER_PROFILE.avatar };
         localStorage.setItem("owner_profile_data", JSON.stringify(finalProfile));
         return finalProfile;
       });
+      alert(err.message || "Failed to upload avatar to Cloudinary.");
     } finally {
       setIsUploading(false);
       URL.revokeObjectURL(localUrl);
