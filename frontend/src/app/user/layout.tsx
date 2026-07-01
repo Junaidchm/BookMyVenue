@@ -38,9 +38,10 @@ export default function UserLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { signOut, user } = useAuth();
   const [avatar, setAvatar] = useState(USER_PROFILE.avatar);
+  const [fullName, setFullName] = useState(user?.fullName || "User");
 
   useEffect(() => {
-    const updateAvatar = () => {
+    const updateProfileData = () => {
       const stored = localStorage.getItem("user_profile_data");
       if (stored) {
         try {
@@ -48,14 +49,19 @@ export default function UserLayout({
           if (data.avatar) {
             setAvatar(data.avatar);
           }
+          if (data.name) {
+            setFullName(data.name);
+          }
         } catch (err) {}
+      } else if (user?.fullName) {
+        setFullName(user.fullName);
       }
     };
 
-    updateAvatar();
-    window.addEventListener("user-profile-updated", updateAvatar);
-    return () => window.removeEventListener("user-profile-updated", updateAvatar);
-  }, []);
+    updateProfileData();
+    window.addEventListener("user-profile-updated", updateProfileData);
+    return () => window.removeEventListener("user-profile-updated", updateProfileData);
+  }, [user?.fullName]);
 
   const isActive = (href: string) => {
     if (href === "/user") return pathname === "/user";
@@ -84,7 +90,7 @@ export default function UserLayout({
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "User"}</span>
+              <span className="text-label-md text-on-surface font-semibold">{fullName}</span>
               <span className="text-label-sm text-text-muted mt-0.5">User Portal</span>
             </div>
           </div>
@@ -200,7 +206,7 @@ export default function UserLayout({
                 className="h-9 w-9 rounded-full border border-primary-container/20 object-cover"
               />
               <div className="flex flex-col">
-                <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "User"}</span>
+                <span className="text-label-md text-on-surface font-semibold">{fullName}</span>
                 <span className="text-label-sm text-text-muted">User Portal</span>
               </div>
             </div>
