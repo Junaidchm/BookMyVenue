@@ -1,14 +1,14 @@
-/* ═══════════════════════════════════════════════════════════════════════════
+﻿/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
    ProfileDashboard.css
-   BookMyVenue – User Profile Dashboard
+   BookMyVenue ΓÇô User Profile Dashboard
    Design System: Crisp Light Theme (DESIGN.md)
    Primary: Sunset Orange #f97316 | Font: Syne (headings) + Plus Jakarta Sans
-   ═══════════════════════════════════════════════════════════════════════════ */
+   ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
 
-/* ── 1. Fonts (loaded via Google Fonts in layout or index.html) ─────────── */
+/* ΓöÇΓöÇ 1. Fonts (loaded via Google Fonts in layout or index.html) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap');
 
-/* ── 2. Design Tokens ────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 2. Design Tokens ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .pd-root {
   /* Colors */
   --clr-bg:              #fafaf9;
@@ -61,7 +61,7 @@
   --navbar-h:            5rem;  /* clear the fixed floating navbar */
 }
 
-/* ── 3. Root Layout ───────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 3. Root Layout ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .pd-root {
   font-family: var(--font-body);
   color: var(--clr-text);
@@ -79,7 +79,7 @@
   margin: 0 auto;
 }
 
-/* ── 4. Sidebar ──────────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 4. Sidebar ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .pd-sidebar {
   position: sticky;
   top: calc(var(--navbar-h) + 1.5rem);
@@ -173,7 +173,7 @@
 
 .pd-sidebar__nav-icon { font-size: 1rem; width: 1.25rem; text-align: center; }
 
-/* ── 5. Mobile Tab Bar ───────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 5. Mobile Tab Bar ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .pd-tabbar {
   display: none;   /* shown on mobile only */
   position: sticky;
@@ -217,7 +217,7 @@
 }
 .pd-tabbar__label { font-size: 0.65rem; }
 
-/* ── 6. Main Content ─────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 6. Main Content ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .pd-main {
   padding: 2rem 2.5rem 4rem;
   display: flex;
@@ -226,7 +226,7 @@
   min-width: 0;  /* prevent grid blowout */
 }
 
-/* ── 7. Profile Header Card ──────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 7. Profile Header Card ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .profile-header-card {
   display: flex;
   align-items: center;
@@ -299,7 +299,7 @@
   color: var(--clr-text-muted);
 }
 
-/* ── 8. Generic Dashboard Card ────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 8. Generic Dashboard Card ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .dash-card {
   background: var(--clr-surface);
   border: 1px solid var(--clr-border);
@@ -343,7 +343,7 @@
   border-radius: var(--radius-full);
 }
 
-/* ── 9. Status Badges ─────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 9. Status Badges ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -362,7 +362,7 @@
 .badge--completed { background: var(--clr-completed-bg); color: var(--clr-completed-text);border: 1px solid var(--clr-border-strong);  }
 .badge--default   { background: var(--clr-surface-dim);  color: var(--clr-text-muted);    border: 1px solid var(--clr-border);         }
 
-/* ── 10. Buttons ──────────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 10. Buttons ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -434,7 +434,7 @@
 
 .btn-row { display: flex; align-items: center; gap: 0.5rem; }
 
-/* ── 11. Form Fields ──────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 11. Form Fields ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .field-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -489,7 +489,7 @@
 .field-value--empty { color: var(--clr-text-muted); font-style: italic; }
 .field-error { color: var(--clr-error); font-size: 0.78rem; font-weight: 500; }
 
-/* ── 12. Booking Stats Grid ───────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 12. Booking Stats Grid ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -532,7 +532,7 @@
   letter-spacing: 0.04em;
 }
 
-/* ── 13. Booking Rows ─────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 13. Booking Rows ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .booking-list { display: flex; flex-direction: column; }
 
 .booking-row {
@@ -608,7 +608,7 @@
   display: inline-block;
 }
 
-/* ── 14. Favourite Cards ──────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 14. Favourite Cards ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .fav-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -682,7 +682,7 @@
 .fav-card__price-unit { font-size: 0.75rem; font-weight: 400; color: var(--clr-text-muted); }
 .fav-card__actions { display: flex; gap: 0.5rem; align-items: center; }
 
-/* ── 15. Activity Feed ────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 15. Activity Feed ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .activity-list { list-style: none; padding: 0; margin: 0; }
 
 .activity-item {
@@ -713,7 +713,7 @@
 .activity-item__meta  { font-size: 0.75rem; color: var(--clr-text-muted); font-family: monospace; margin: 0; }
 .activity-item__time  { font-size: 0.75rem; color: var(--clr-text-muted); white-space: nowrap; flex-shrink: 0; }
 
-/* ── 16. Account Settings ────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 16. Account Settings ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .settings-group { margin-bottom: 0.5rem; }
 .settings-group__title {
   font-family: var(--font-display);
@@ -794,7 +794,7 @@
 }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* ── 17. Skeleton Loading ─────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 17. Skeleton Loading ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .skeleton-line {
   border-radius: var(--radius-sm);
   background: linear-gradient(90deg, #e7e5e4 25%, #f5f4f3 50%, #e7e5e4 75%);
@@ -832,7 +832,7 @@
   100% { background-position: -200% 0; }
 }
 
-/* ── 18. Empty State ──────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 18. Empty State ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -845,7 +845,7 @@
 .empty-state__title { font-family: var(--font-display); font-size: 1.0625rem; font-weight: 700; color: var(--clr-text); margin: 0; }
 .empty-state__desc  { font-size: 0.875rem; color: var(--clr-text-muted); max-width: 28ch; margin: 0; }
 
-/* ── 19. Error State ──────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 19. Error State ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .error-state {
   display: flex;
   align-items: center;
@@ -861,7 +861,7 @@
 .error-state__icon { font-size: 1rem; }
 .error-state__text { margin: 0; }
 
-/* ── 20. Toast Notifications ─────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 20. Toast Notifications ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .toast-region {
   position: fixed;
   top: 1.25rem;
@@ -913,7 +913,7 @@
   to   { opacity: 1; }
 }
 
-/* ── 21. Responsive — Tablet (768px – 1024px) ────────────────────────────── */
+/* ΓöÇΓöÇ 21. Responsive ΓÇö Tablet (768px ΓÇô 1024px) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 @media (max-width: 1024px) {
   .pd-layout {
     grid-template-columns: 200px 1fr;
@@ -923,7 +923,7 @@
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* ── 22. Responsive — Mobile (<768px) ────────────────────────────────────── */
+/* ΓöÇΓöÇ 22. Responsive ΓÇö Mobile (<768px) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 @media (max-width: 767px) {
   .pd-tabbar { display: block; }
 
@@ -964,14 +964,14 @@
   .toggle-row { flex-direction: column; gap: 0.5rem; }
 }
 
-/* ── 23. Very small screens (<480px) ─────────────────────────────────────── */
+/* ΓöÇΓöÇ 23. Very small screens (<480px) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 @media (max-width: 480px) {
   .fav-grid   { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .profile-header__name { font-size: 1.375rem; }
 }
 
-/* ── 24. Modal Dialogs ────────────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 24. Modal Dialogs ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 .pd-modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -1038,7 +1038,7 @@
 }
 
 
-/* ── 27. Print Receipt Rules ─────────────────────────────────────────────── */
+/* ΓöÇΓöÇ 27. Print Receipt Rules ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 @media print {
   body * {
     visibility: hidden;
