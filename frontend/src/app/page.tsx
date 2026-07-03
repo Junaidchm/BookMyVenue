@@ -1,28 +1,28 @@
 import type { Metadata } from "next";
-
-import { CategorySection } from "@/components/landing/category-section";
-import { CtaSection } from "@/components/landing/cta-section";
-import { FeaturedVenuesSection } from "@/components/landing/featured-venues-section";
+import { SiteNavbar } from "@/components/layout/site-navbar";
 import { HeroSection } from "@/components/landing/hero-section";
+import { CategorySection } from "@/components/landing/category-section";
+import { FeaturedVenuesSection } from "@/components/landing/featured-venues-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { ReviewsSection } from "@/components/landing/reviews-section";
+import { CtaSection } from "@/components/landing/cta-section";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteNavbar } from "@/components/layout/site-navbar";
 
 export const metadata: Metadata = {
-  title: "BookMyVenue — Find the Perfect Event Space",
+  title: "BookMyVenue | Find & Book Premium Venues",
   description:
-    "Discover and book premium venues for weddings, corporate events, parties, and more.",
+    "Simplifying the process of finding and booking premium event venues — from gorgeous lakeside estates and urban lofts to garden retreats.",
 };
 
-export default function Home() {
+export default function LandingPage() {
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="relative min-h-screen bg-background text-on-surface">
       <SiteNavbar />
-      <main className="flex-1">
+      <main>
         <HeroSection />
-        <FeaturedVenuesSection />
         <CategorySection />
+        <FeaturedVenuesSection />
         <HowItWorksSection />
         <ReviewsSection />
         <CtaSection />
