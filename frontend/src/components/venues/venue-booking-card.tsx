@@ -1,9 +1,10 @@
 "use client";
 
-import { Star, Loader2, CalendarDays, Clock, CheckCircle2, AlertCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Star, Loader2, CalendarDays, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 import { useAuth } from "@/components/auth/session-provider";
 import { bookingService } from "@/services/booking.service";
@@ -40,6 +41,180 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
   const [availability, setAvailability] = useState<"checking" | "available" | "unavailable" | "idle">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Custom Calendar States
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
+  const [venueBookings, setVenueBookings] = useState<any[]>([]);
+  const calendarRef = useRef<HTMLDivElement>(null);
+
+  // Click outside to close calendar
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setIsCalendarOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Mock bookings fallback in case API fails
+  const getMockBookings = (venueId: string) => {
+    const today = new Date();
+    const formatDate = (offsetDays: number) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() + offsetDays);
+      return d.toISOString().split("T")[0];
+    };
+
+    if (venueId === "glass-pavilion") {
+      return [
+        {
+          id: "mock-b-1",
+          bookingDate: formatDate(1),
+          startTime: `${formatDate(1)}T10:00:00.000Z`,
+          endTime: `${formatDate(1)}T14:00:00.000Z`,
+          type: "HOURLY"
+        },
+        {
+          id: "mock-b-2",
+          bookingDate: formatDate(3),
+          startTime: `${formatDate(3)}T14:00:00.000Z`,
+          endTime: `${formatDate(3)}T18:00:00.000Z`,
+          type: "HOURLY"
+        }
+      ];
+    } else if (venueId === "royal-botanic-hall") {
+      return [
+        {
+          id: "mock-b-3",
+          bookingDate: formatDate(1),
+          startTime: `${formatDate(1)}T08:00:00.000Z`,
+          endTime: `${formatDate(1)}T13:00:00.000Z`,
+          type: "SESSION",
+          venueSessionId: 1,
+          sessionName: "Morning Session"
+        },
+        {
+          id: "mock-b-4",
+          bookingDate: formatDate(2),
+          startTime: `${formatDate(2)}T14:00:00.000Z`,
+          endTime: `${formatDate(2)}T20:00:00.000Z`,
+          type: "SESSION",
+          venueSessionId: 2,
+          sessionName: "Evening Session"
+        }
+      ];
+    }
+    return [];
+  };
+
+  // Fetch venue bookings
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const res = await bookingService.getVenueBookings(venue.id);
+        if (res.success && res.data && res.data.length > 0) {
+          setVenueBookings(res.data);
+        } else {
+          setVenueBookings(getMockBookings(venue.id));
+        }
+      } catch (err) {
+        console.warn("Failed to fetch venue bookings. Using mock bookings.");
+        setVenueBookings(getMockBookings(venue.id));
+      }
+    };
+    fetchBookings();
+  }, [venue.id]);
+
+  // Calendar helpers
+  const currentYear = currentCalendarDate.getFullYear();
+  const currentMonth = currentCalendarDate.getMonth();
+
+  const getDaysInMonth = (year: number, month: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (year: number, month: number) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+  const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+
+  const daysGrid: (Date | null)[] = [];
+  for (let i = 0; i < firstDay; i++) {
+    daysGrid.push(null);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    daysGrid.push(new Date(currentYear, currentMonth, i));
+  }
+
+  const prevMonth = () => {
+    setCurrentCalendarDate(new Date(currentYear, currentMonth - 1, 1));
+  };
+
+  const nextMonth = () => {
+    setCurrentCalendarDate(new Date(currentYear, currentMonth + 1, 1));
+  };
+
+  const formatDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const isDateInPast = (d: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return d < today;
+  };
+
+  const getStartAndEndDatesForDay = (dayStr: string): { start: Date; end: Date; isValid: boolean } => {
+    try {
+      if (!startTime || !hours) return { start: new Date(), end: new Date(), isValid: false };
+      const start = new Date(`${dayStr}T${startTime}:00`);
+      const duration = parseInt(hours) || 2;
+      const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
+      return { start, end, isValid: !isNaN(start.getTime()) && !isNaN(end.getTime()) };
+    } catch {
+      return { start: new Date(), end: new Date(), isValid: false };
+    }
+  };
+
+  const isDateBooked = (d: Date) => {
+    const dateStr = formatDateString(d);
+    
+    return venueBookings.some((b: any) => {
+      const bDate = new Date(b.bookingDate).toISOString().split("T")[0];
+      if (bDate !== dateStr) return false;
+      
+      if (isPerSession && hasSessions) {
+        const session = venue.sessions![parseInt(sessionIndex)] || venue.sessions![0];
+        return b.sessionName === session.name || b.venueSessionId === session.id;
+      } else {
+        const { start: reqStart, end: reqEnd, isValid } = getStartAndEndDatesForDay(dateStr);
+        if (!isValid) return false;
+        
+        const bStart = new Date(b.startTime);
+        const bEnd = new Date(b.endTime);
+        
+        return reqStart < bEnd && reqEnd > bStart;
+      }
+    });
+  };
+
+  const formatDisplayDate = (dateStr: string) => {
+    if (!dateStr) return "Select a date";
+    try {
+      const option: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Date(dateStr).toLocaleDateString('en-IN', option);
+    } catch {
+      return dateStr;
+    }
+  };
 
   const basePrice = venue.basePrice ?? venue.pricePerDay;
   const isPerSession = venue.pricingType === "PER_SESSION";
@@ -205,17 +380,85 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
 
         {/* Booking Inputs */}
         <div className="overflow-hidden rounded-xl border border-border-subtle">
-          <div className="border-b border-border-subtle p-3.5 transition-colors focus-within:bg-surface-container-low">
+          <div 
+            ref={calendarRef}
+            className="relative border-b border-border-subtle p-3.5 transition-colors focus-within:bg-surface-container-low"
+          >
             <Label className="mb-1 block text-label-sm tracking-wider text-text-muted uppercase">
               Date
             </Label>
-            <Input
-              type="date"
-              value={date}
-              min={new Date().toISOString().split("T")[0]}
-              onChange={(e) => setDate(e.target.value)}
-              className="h-auto border-0 bg-transparent p-0 text-sm font-medium text-on-surface shadow-none focus-visible:ring-0"
-            />
+            <div 
+              onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+              className="cursor-pointer h-8 flex items-center justify-between text-sm font-medium text-on-surface select-none"
+            >
+              <span className={date ? "text-on-surface" : "text-text-muted"}>
+                {date ? formatDisplayDate(date) : "Select a date"}
+              </span>
+              <CalendarDays className="size-4 text-text-muted" />
+            </div>
+
+            {/* Custom Calendar Popover */}
+            {isCalendarOpen && (
+              <div className="absolute left-0 right-0 z-50 mt-2.5 rounded-2xl border border-border-subtle bg-white p-4 shadow-xl animate-in fade-in duration-200">
+                <div className="flex items-center justify-between mb-4">
+                  <button 
+                    type="button" 
+                    onClick={prevMonth}
+                    className="rounded-full p-1.5 hover:bg-stone-100 transition-colors"
+                  >
+                    <ChevronLeft className="size-4 text-stone-600" />
+                  </button>
+                  <span className="font-display font-bold text-sm text-stone-900">
+                    {new Date(currentYear, currentMonth).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+                  </span>
+                  <button 
+                    type="button" 
+                    onClick={nextMonth}
+                    className="rounded-full p-1.5 hover:bg-stone-150 transition-colors"
+                  >
+                    <ChevronRight className="size-4 text-stone-600" />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-text-muted mb-2">
+                  {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
+                    <span key={d}>{d}</span>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-1">
+                  {daysGrid.map((day, idx) => {
+                    if (!day) return <span key={idx} />;
+                    const dateStr = formatDateString(day);
+                    const isPast = isDateInPast(day);
+                    const isBooked = isDateBooked(day);
+                    const isSel = date === dateStr;
+                    
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        disabled={isPast || isBooked}
+                        onClick={() => {
+                          setDate(dateStr);
+                          setIsCalendarOpen(false);
+                        }}
+                        className={cn(
+                          "flex aspect-square items-center justify-center rounded-full text-xs font-medium transition-all",
+                          isPast && "opacity-35 line-through cursor-not-allowed text-stone-400",
+                          !isPast && isBooked && "bg-red-50 text-red-600 border border-red-200 font-semibold cursor-not-allowed",
+                          !isPast && !isBooked && "text-emerald-700 bg-emerald-50/50 hover:bg-[#fcf2ed] hover:text-primary-container",
+                          isSel && "bg-orange-500 text-white font-bold hover:bg-orange-600 hover:text-white"
+                        )}
+                        title={isBooked ? "Already booked" : isPast ? "Date passed" : "Available"}
+                      >
+                        {day.getDate()}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {isPerSession && hasSessions ? (

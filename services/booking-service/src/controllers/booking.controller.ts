@@ -659,6 +659,51 @@ export const getBookings = async (
   }
 };
 
+export const getVenueBookings = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { venueId } = req.params;
+    if (!venueId) {
+      return res.status(400).json({ success: false, message: 'Missing venueId parameter' });
+    }
+
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const parsedVenueId = parseInt(venueId) || Number(venueId);
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        venueId: parsedVenueId,
+        OR: [
+          { status: 'CONFIRMED' },
+          {
+            status: 'PENDING_PAYMENT',
+            createdAt: { gte: tenMinutesAgo },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        startTime: true,
+        endTime: true,
+        bookingDate: true,
+        type: true,
+        venueSessionId: true,
+        sessionName: true,
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: bookings,
+    });
+  } catch (error) {
+    console.error('Error fetching venue bookings:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
 export const cancelBooking = async (
   req: Request,
   res: Response,

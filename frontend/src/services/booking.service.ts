@@ -91,6 +91,14 @@ export const bookingService = {
     const response = await apiClient.post(`/bookings/${bookingId}/payment/verify`, payload);
     return response.data;
   },
+
+  /**
+   * Fetch all active bookings for a specific venue (for calendar availability display)
+   */
+  getVenueBookings: async (venueId: string) => {
+    const response = await apiClient.get(`/bookings/venue/${venueId}`);
+    return response.data;
+  },
 };
 
 export default bookingService;
