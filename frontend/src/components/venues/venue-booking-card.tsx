@@ -3,6 +3,7 @@
 import { Star, Loader2, CalendarDays, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { useAuth } from "@/components/auth/session-provider";
 import { bookingService } from "@/services/booking.service";
@@ -31,7 +32,6 @@ type VenueBookingCardProps = {
 export function VenueBookingCard({ venue }: VenueBookingCardProps) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-
   const [date, setDate] = useState("");
   const [sessionIndex, setSessionIndex] = useState("0");
   const [hours, setHours] = useState("2");
@@ -129,29 +129,42 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
 
     const { start, end, isValid } = getStartAndEndDates();
     if (!date) {
-      setErrorMessage("Please select a date first.");
+      toast.error("Please select a date", {
+        description: "A booking date is required to proceed with your reservation.",
+      });
       return;
     }
     if (!isValid) {
-      setErrorMessage("Invalid dates selected.");
+      toast.error("Invalid dates selected", {
+        description: "Please check your start time and duration.",
+      });
       return;
     }
 
     if (availability === "unavailable") {
-      setErrorMessage("This time slot is already booked.");
+      toast.error("Slot unavailable", {
+        description: "This time slot is already booked.",
+      });
       return;
     }
 
     setLoading(true);
     setErrorMessage("");
 
+    const selectedSession = isPerSession && hasSessions 
+      ? venue.sessions![parseInt(sessionIndex)] 
+      : null;
+
     try {
       const response = await bookingService.createBooking({
-        venueId: venue.id,
+        venueId: parseInt(venue.id) || Number(venue.id),
         bookingDate: date,
         startTime: start.toISOString(),
         endTime: end.toISOString(),
         totalPrice: total,
+        type: isPerSession ? "SESSION" : "HOURLY",
+        venueSessionId: isPerSession && selectedSession ? selectedSession.id : undefined,
+        sessionName: isPerSession && selectedSession ? selectedSession.name : undefined,
       });
 
       if (response.success && response.data?.id) {

@@ -11,7 +11,7 @@ async function getAuthHeaders(): Promise<HeadersInit> {
   return {};
 }
 
-import type { Venue, VenueAmenity } from "./data";
+import { type Venue, type VenueAmenity, getAllVenues, getVenue } from "./data";
 type ApiAmenity = {
   amenity: {
     name: string;
@@ -24,6 +24,7 @@ type ApiCapacity = {
 };
 
 type ApiSession = {
+  id?: number;
   name: string;
   startTime: string;
   endTime: string;
@@ -157,6 +158,7 @@ export function mapApiVenueToVenue(venue: ApiVenue): Venue {
     category: venue.category,
     bufferTimeMinutes: venue.bufferTimeMinutes,
     sessions: venue.sessions?.map((s) => ({
+      id: s.id,
       name: s.name,
       startTime: s.startTime,
       endTime: s.endTime,
@@ -196,11 +198,9 @@ export async function getVenues(): Promise<Venue[]> {
 
     const body = (await res.json()) as VenuesApiResponse;
     return (body.data ?? []).map(mapApiVenueToVenue);
-  } catch (error: any) {
-    if (error.message && error.message.includes("Failed to fetch venues")) {
-      throw error;
-    }
-    throw new Error(`Failed to fetch venues: Network error or backend service is unreachable. (${error?.message || error})`);
+  } catch (err: any) {
+    console.warn("[getVenues] Upstream unreachable. Returning mock data. Error details:", err?.message || err);
+    return getAllVenues();
   }
 }
 
@@ -214,11 +214,9 @@ export async function getVenueById(id: string | number): Promise<Venue | undefin
 
     const body = (await res.json()) as { success: boolean; data: ApiVenue };
     return mapApiVenueToVenue(body.data);
-  } catch (error: any) {
-    if (error.message && error.message.includes("Failed to fetch venue")) {
-      throw error;
-    }
-    throw new Error(`Failed to fetch venue: Network error or backend service is unreachable. (${error?.message || error})`);
+  } catch (err: any) {
+    console.warn(`[getVenueById] Upstream unreachable for ID ${id}. Returning mock data. Error details:`, err?.message || err);
+    return getVenue(String(id));
   }
 }
 

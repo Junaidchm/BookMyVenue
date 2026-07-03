@@ -466,10 +466,19 @@ function CheckoutContent() {
                     <div className="flex items-start gap-3 text-sm text-stone-800">
                       <Clock className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-semibold">Selected Hours</p>
-                        <p className="text-xs text-text-muted">
-                          {formatTimeSlot(booking.startTime, booking.endTime)}
+                        <p className="font-semibold">
+                          {booking.type === "SESSION" ? "Selected Session" : "Selected Hours"}
                         </p>
+                        <div className="text-xs text-text-muted font-medium">
+                          {booking.type === "SESSION" && booking.sessionName ? (
+                            <div>
+                              <strong className="text-stone-800 block text-xs mb-0.5">{booking.sessionName}</strong>
+                              {formatTimeSlot(booking.startTime, booking.endTime)}
+                            </div>
+                          ) : (
+                            formatTimeSlot(booking.startTime, booking.endTime)
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
