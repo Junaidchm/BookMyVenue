@@ -298,26 +298,69 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
   }, [date, startTime, hours, sessionIndex, venue.id, isPerSession, hasSessions]);
 
   // 4. Reserve Action
-  const handleReserve = () => {
+  const handleReserve = async () => {
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=/venues/${venue.id}`);
+      return;
+    }
+
+    const { start, end, isValid } = getStartAndEndDates();
     if (!date) {
       toast.error("Please select a date", {
         description: "A booking date is required to proceed with your reservation.",
       });
       return;
     }
-
-    const params = new URLSearchParams();
-    params.set("date", date);
-    params.set("total", total.toString());
-    
-    if (isPerSession && hasSessions) {
-      params.set("sessionIndex", sessionIndex);
-    } else {
-      params.set("hours", Math.max(2, parseInt(hours) || 2).toString());
-      if (startTime) params.set("startTime", startTime);
+    if (!isValid) {
+      toast.error("Invalid dates selected", {
+        description: "Please check your start time and duration.",
+      });
+      return;
     }
 
-    router.push(`/venues/${venue.id}/reserve?${params.toString()}`);
+    if (availability === "unavailable") {
+      toast.error("Slot unavailable", {
+        description: "This time slot is already booked.",
+      });
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage("");
+
+    const selectedSession = isPerSession && hasSessions 
+      ? venue.sessions![parseInt(sessionIndex)] 
+      : null;
+
+    try {
+      const response = await bookingService.createBooking({
+        venueId: parseInt(venue.id) || Number(venue.id),
+        bookingDate: date,
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+        totalPrice: total,
+        type: isPerSession ? "SESSION" : "HOURLY",
+        venueSessionId: isPerSession && selectedSession ? selectedSession.id : undefined,
+        sessionName: isPerSession && selectedSession ? selectedSession.name : undefined,
+      });
+
+      if (response.success && response.data?.id) {
+        router.push(`/checkout?bookingId=${response.data.id}`);
+      } else {
+        setErrorMessage(response.message || "Failed to create booking request.");
+      }
+    } catch (err: any) {
+      console.error("Booking error:", err);
+      if (err.response?.status === 403) {
+        setErrorMessage(err.response?.data?.message || "Booking declined: Forbidden access.");
+      } else if (err.response?.status === 409) {
+        setErrorMessage("Slot occupied: This slot has just been reserved by another user.");
+      } else {
+        setErrorMessage(err.response?.data?.message || "Failed to make reservation. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
