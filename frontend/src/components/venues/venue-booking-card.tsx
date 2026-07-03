@@ -379,7 +379,7 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
         </div>
 
         {/* Booking Inputs */}
-        <div className="overflow-hidden rounded-xl border border-border-subtle">
+        <div className="rounded-xl border border-border-subtle">
           <div 
             ref={calendarRef}
             className="relative border-b border-border-subtle p-3.5 transition-colors focus-within:bg-surface-container-low"
