@@ -27,6 +27,20 @@ import type { Venue } from "@/lib/venues/data";
 import { formatVenuePrice } from "@/lib/venues/listing";
 import { BookingModal } from "@/components/venues/booking-modal";
 
+// Helper to parse 12h time string (e.g. "08:00 AM") to 24h format (e.g. "08:00")
+function parseTimeTo24h(timeStr: string): string {
+  if (!timeStr) return "00:00";
+  if (/^\d{2}:\d{2}$/.test(timeStr)) return timeStr;
+  const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return timeStr;
+  let hr = parseInt(match[1]);
+  const min = match[2];
+  const ampm = match[3].toUpperCase();
+  if (ampm === "PM" && hr < 12) hr += 12;
+  if (ampm === "AM" && hr === 12) hr = 0;
+  return `${hr.toString().padStart(2, "0")}:${min}`;
+}
+
 type VenueBookingCardProps = {
   venue: Venue;
 };
@@ -179,7 +193,7 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
   const getStartAndEndDatesForDay = (dayStr: string): { start: Date; end: Date; isValid: boolean } => {
     try {
       if (!startTime || !hours) return { start: new Date(), end: new Date(), isValid: false };
-      const start = new Date(`${dayStr}T${startTime}:00`);
+      const start = new Date(`${dayStr}T${parseTimeTo24h(startTime)}:00`);
       const duration = parseInt(hours) || 2;
       const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
       return { start, end, isValid: !isNaN(start.getTime()) && !isNaN(end.getTime()) };
@@ -233,6 +247,7 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
     total = basePrice * Math.max(2, parseInt(hours) || 2);
   }
 
+
   // Helper to parse start/end dates
   const getStartAndEndDates = (): { start: Date; end: Date; isValid: boolean } => {
     if (!date) return { start: new Date(), end: new Date(), isValid: false };
@@ -240,12 +255,12 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
     try {
       if (isPerSession && hasSessions) {
         const session = venue.sessions![parseInt(sessionIndex)] || venue.sessions![0];
-        const start = new Date(`${date}T${session.startTime}:00`);
-        const end = new Date(`${date}T${session.endTime}:00`);
+        const start = new Date(`${date}T${parseTimeTo24h(session.startTime)}:00`);
+        const end = new Date(`${date}T${parseTimeTo24h(session.endTime)}:00`);
         return { start, end, isValid: !isNaN(start.getTime()) && !isNaN(end.getTime()) };
       } else {
         if (!startTime || !hours) return { start: new Date(), end: new Date(), isValid: false };
-        const start = new Date(`${date}T${startTime}:00`);
+        const start = new Date(`${date}T${parseTimeTo24h(startTime)}:00`);
         const duration = parseInt(hours) || 2;
         const end = new Date(start.getTime() + duration * 60 * 60 * 1000);
         return { start, end, isValid: !isNaN(start.getTime()) && !isNaN(end.getTime()) };
