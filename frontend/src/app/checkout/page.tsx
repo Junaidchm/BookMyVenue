@@ -188,17 +188,11 @@ function CheckoutContent() {
       };
 
       // 5. Open checkout UI window
-      try {
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
-      } catch (sdkErr) {
-        console.warn("Razorpay script load error or initialization issue. Simulating mock payment success for development.");
-        setPaymentSuccess(true);
-        setPayLoading(false);
-      }
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
     } catch (err: any) {
-      console.warn("Payment setup error. Falling back to mock checkout success:", err);
-      setPaymentSuccess(true);
+      console.error("Payment setup error:", err);
+      setError(err.message || err.response?.data?.message || "An error occurred while launching payment.");
       setPayLoading(false);
     }
   };
