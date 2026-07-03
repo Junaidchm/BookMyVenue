@@ -26,6 +26,21 @@ import { Separator } from "@/components/ui/separator";
 import type { Venue } from "@/lib/venues/data";
 import { formatVenuePrice } from "@/lib/venues/listing";
 
+// Generate 30-minute interval time slots for selection dropdown
+const TIME_SLOTS = (() => {
+  const slots = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (const min of ["00", "30"]) {
+      const displayHour = hour % 12 || 12;
+      const ampm = hour >= 12 ? "PM" : "AM";
+      const val = `${hour.toString().padStart(2, "0")}:${min}`;
+      const label = `${displayHour}:${min} ${ampm}`;
+      slots.push({ value: val, label });
+    }
+  }
+  return slots;
+})();
+
 type VenueBookingCardProps = {
   venue: Venue;
 };
@@ -486,12 +501,18 @@ export function VenueBookingCard({ venue }: VenueBookingCardProps) {
                   <Label className="mb-1 block text-label-sm tracking-wider text-text-muted uppercase">
                     Start Time
                   </Label>
-                  <Input
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="h-auto border-0 bg-transparent p-0 text-sm font-medium text-on-surface shadow-none focus-visible:ring-0"
-                  />
+                  <Select value={startTime} onValueChange={setStartTime}>
+                    <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 text-sm font-medium text-on-surface shadow-none focus-visible:ring-0 focus:ring-0 select-none">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[200px] overflow-y-auto">
+                      {TIME_SLOTS.map((slot) => (
+                        <SelectItem key={slot.value} value={slot.value}>
+                          {slot.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex-1 p-3.5">
                   <Label className="mb-1 block text-label-sm tracking-wider text-text-muted uppercase">
