@@ -222,10 +222,9 @@ function CheckoutContent() {
   }
 
   const calculatedBasePrice = booking ? Number(booking.totalPrice) : 0;
-  const cleaningFee = 5000;
-  const platformServiceCharge = 2500;
-  const totalTax = Math.round((calculatedBasePrice + cleaningFee + platformServiceCharge) * 0.18);
-  const finalTotal = calculatedBasePrice + cleaningFee + platformServiceCharge + totalTax;
+  const serviceFee = Math.round(calculatedBasePrice * 0.05);
+  const totalTax = Math.round(calculatedBasePrice * 0.18);
+  const finalTotal = calculatedBasePrice + serviceFee + totalTax;
 
   if (timeLeft <= 0) {
     return (
@@ -505,12 +504,8 @@ function CheckoutContent() {
                     <span className="font-medium text-stone-800">{formatVenuePrice(calculatedBasePrice)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-stone-600">
-                    <span>Cleaning Buffer Fee</span>
-                    <span className="font-medium text-stone-800">{formatVenuePrice(cleaningFee)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-stone-600">
-                    <span>Platform Service Charge</span>
-                    <span className="font-medium text-stone-800">{formatVenuePrice(platformServiceCharge)}</span>
+                    <span>Service Fee (5%)</span>
+                    <span className="font-medium text-stone-800">{formatVenuePrice(serviceFee)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-stone-600">
                     <span>Tax (18% GST)</span>

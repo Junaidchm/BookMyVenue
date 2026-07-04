@@ -116,10 +116,9 @@ export function ReserveClientPage({ venue, searchParams }: ReserveClientPageProp
     subtotal = hourlyRate * hoursCount;
   }
 
-  const cleaningFee = 5000;
-  const serviceFee = 2500;
-  const gst = Math.round((subtotal + cleaningFee + serviceFee) * 0.18);
-  const total = subtotal + cleaningFee + serviceFee + gst;
+  const serviceFee = Math.round(subtotal * 0.05);
+  const gst = Math.round(subtotal * 0.18);
+  const total = subtotal + serviceFee + gst;
 
   // Format currency helper
   const formatINR = (amount: number) => {
@@ -477,24 +476,20 @@ export function ReserveClientPage({ venue, searchParams }: ReserveClientPageProp
                   </div>
                   <span className="font-medium text-gray-900">{formatINR(subtotal)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Cleaning Fee</span>
-                  <span>{formatINR(cleaningFee)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Service Fee</span>
+
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                  <span>Service Fee (5%)</span>
                   <span>{formatINR(serviceFee)}</span>
                 </div>
-                <div className="flex justify-between border-b pb-4 border-gray-100">
-                  <span>GST (18%)</span>
+
+                <div className="flex justify-between items-center text-xs text-gray-500 pb-2.5 border-b border-gray-100">
+                  <span>GST Tax (18%)</span>
                   <span>{formatINR(gst)}</span>
                 </div>
-              </div>
-
-              {/* Total price */}
-              <div className="my-6 flex justify-between items-center text-gray-900">
-                <span className="text-xl font-bold">Total (INR)</span>
-                <span className="text-xl font-bold text-orange-600">{formatINR(total)}</span>
+                <div className="flex justify-between items-center text-base font-bold text-gray-900 pt-1">
+                  <span>Total Amount</span>
+                  <span className="text-orange-600 text-lg">{formatINR(total)}</span>
+                </div>
               </div>
 
               <Button 

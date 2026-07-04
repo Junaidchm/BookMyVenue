@@ -47,8 +47,9 @@ export function BookingModal({
     }
   };
 
-  const gstTax = Math.round((total + 5000 + 2500) * 0.18);
-  const grandTotal = total + 5000 + 2500 + gstTax;
+  const serviceFee = Math.round(total * 0.05);
+  const gstTax = Math.round(total * 0.18);
+  const grandTotal = total + serviceFee + gstTax;
 
   return (
     <Dialog open={isOpen} onOpenChange={(val) => { if (!val) onClose(); }}>
@@ -65,7 +66,7 @@ export function BookingModal({
           {/* Venue Card Box */}
           <div className="col-span-2 rounded-xl bg-stone-50 p-3.5 border border-stone-200/60 flex gap-3 items-center">
             <img
-              src={venue.images.main}
+               src={venue.images.main}
               alt={venue.name}
               className="size-12 rounded-lg object-cover"
             />
@@ -104,12 +105,8 @@ export function BookingModal({
               <span>{formatVenuePrice(total)}</span>
             </div>
             <div className="flex justify-between items-center text-[10px] text-stone-500 mb-1">
-              <span>Cleaning Buffer Fee</span>
-              <span>{formatVenuePrice(5000)}</span>
-            </div>
-            <div className="flex justify-between items-center text-[10px] text-stone-500 mb-1">
-              <span>Platform Service Charge</span>
-              <span>{formatVenuePrice(2500)}</span>
+              <span>Service Fee (5%)</span>
+              <span>{formatVenuePrice(serviceFee)}</span>
             </div>
             <div className="flex justify-between items-center text-[10px] text-stone-500 mb-3 pb-2 border-b border-stone-200/50">
               <span>GST Tax (18%)</span>
