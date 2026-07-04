@@ -1,30 +1,9 @@
 import axios from "axios";
 import { toast } from "sonner";
 import { getSession } from "next-auth/react";
+import { getApiBaseUrl } from "@/lib/api/config";
 
-const getBaseURL = (): string => {
-  let publicUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-  if (!publicUrl.endsWith('/api')) {
-    publicUrl += '/api';
-  }
-
-  if (typeof window !== "undefined") {
-    return publicUrl;
-  }
-
-  try {
-    const fs = require("fs");
-    if (fs.existsSync("/.dockerenv")) {
-      return process.env.INTERNAL_API_URL || "http://api-gateway:8000/api";
-    }
-  } catch {
-    // fs package or checking not available
-  }
-
-  return publicUrl;
-};
-
-export const API_BASE_URL = getBaseURL();
+export const API_BASE_URL = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

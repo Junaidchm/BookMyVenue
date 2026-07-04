@@ -22,7 +22,10 @@ export type Venue = {
   pricePerDay: number;
   pricingType?: "PER_HOUR" | "PER_SESSION";
   basePrice?: number;
+  category?: string;
+  bufferTimeMinutes?: number;
   sessions?: {
+    id?: number;
     name: string;
     startTime: string;
     endTime: string;
@@ -40,6 +43,15 @@ export type Venue = {
   };
   amenities: VenueAmenity[];
   reviews: VenueReview[];
+  // Location
+  address?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  latitude?: number;
+  longitude?: number;
+  // Operating Schedule
+  operatingDays?: string[];
 };
 
 const IMG = {
@@ -59,6 +71,8 @@ export const VENUES: Record<string, Venue> = {
     city: "London",
     capacity: 250,
     pricePerDay: 120000,
+    pricingType: "PER_HOUR",
+    basePrice: 15000,
     rating: 4.9,
     reviewCount: 124,
     badges: ["luxury"],
@@ -90,6 +104,13 @@ export const VENUES: Record<string, Venue> = {
     city: "London",
     capacity: 150,
     pricePerDay: 95000,
+    pricingType: "PER_SESSION",
+    basePrice: 45000,
+    sessions: [
+      { id: 1, name: "Morning Session", startTime: "08:00 AM", endTime: "01:00 PM", sessionPrice: 45000 },
+      { id: 2, name: "Evening Session", startTime: "02:00 PM", endTime: "08:00 PM", sessionPrice: 55000 },
+      { id: 3, name: "Full Day Session", startTime: "08:00 AM", endTime: "10:00 PM", sessionPrice: 95000 }
+    ],
     rating: 4.8,
     reviewCount: 98,
     badges: ["featured"],

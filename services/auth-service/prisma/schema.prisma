@@ -9,13 +9,15 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
+  id           String        @id @default(uuid())
   email        String        @unique
   passwordHash String
   fullName     String
+  isKycVerified Boolean       @default(false)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   userRoles    UserRole[]
@@ -25,7 +27,7 @@ model User {
 }
 
 model Role {
-  id          Int        @id @default(autoincrement())
+  id          String     @id @default(uuid())
   name        String     @unique // "USER", "OWNER", "ADMIN"
   description String?
   userRoles   UserRole[]
@@ -34,8 +36,8 @@ model Role {
 }
 
 model UserRole {
-  userId     Int
-  roleId     Int
+  userId     String
+  roleId     String
   assignedAt DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
@@ -45,16 +47,15 @@ model UserRole {
 }
 
 model OwnerProfile {
-  id                 Int      @id @default(autoincrement())
-  userId             Int      @unique
-  phoneNumber        String?
-  businessName       String?
-  bankRoutingNumber  String?
-  bankAccountNumber  String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  phoneNumber       String?
+  businessName      String?
+  bankRoutingNumber String?
+  bankAccountNumber String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("owner_profiles")
 }
-

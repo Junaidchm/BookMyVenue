@@ -1,0 +1,33 @@
+import { Router } from 'express';
+import {
+  createBooking,
+  createPaymentOrder,
+  verifyPayment,
+  handleRazorpayWebhook,
+  handleWebhook,
+  checkAvailability,
+  getBookingById,
+  getBookings,
+  cancelBooking,
+  rescheduleBooking,
+  getVenueBookings,
+} from '../controllers/booking.controller';
+import { checkBookingRisk } from '../middlewares/risk.middleware';
+
+const router = Router();
+
+// Define the bookings route
+router.get('/', getBookings);
+router.get('/availability', checkAvailability);
+router.get('/venue/:venueId', getVenueBookings);
+router.get('/:id', getBookingById);
+router.post('/', checkBookingRisk, createBooking);
+router.post('/:id/payment/order', createPaymentOrder);
+router.post('/:id/payment/verify', verifyPayment);
+router.post('/payment/webhook', handleRazorpayWebhook);
+router.post('/webhook', handleWebhook);
+router.post('/:id/cancel', cancelBooking);
+router.delete('/:id', cancelBooking);
+router.patch('/:id/reschedule', rescheduleBooking);
+
+export const bookingRoutes = router;

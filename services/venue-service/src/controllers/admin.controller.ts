@@ -9,6 +9,23 @@ export class AdminController {
   }
 
   /**
+   * GET /admin/venues
+   * Returns all venues for admin (all statuses).
+   */
+  getAllVenues = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> => {
+    try {
+      const venues = await this.venueService.getAllVenuesForAdmin();
+      return res.status(200).json({ success: true, data: venues });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /**
    * GET /admin/venues/pending
    * Returns all venues awaiting admin review.
    */
@@ -35,8 +52,8 @@ export class AdminController {
     next: NextFunction,
   ): Promise<any> => {
     try {
-      const venueId = parseInt(req.params.id as string, 10);
-      if (isNaN(venueId)) {
+      const venueId = req.params.id as string;
+      if (!venueId) {
         return res
           .status(400)
           .json({ success: false, message: 'Invalid venue ID format.' });
@@ -63,8 +80,8 @@ export class AdminController {
     next: NextFunction,
   ): Promise<any> => {
     try {
-      const venueId = parseInt(req.params.id as string, 10);
-      if (isNaN(venueId)) {
+      const venueId = req.params.id as string;
+      if (!venueId) {
         return res
           .status(400)
           .json({ success: false, message: 'Invalid venue ID format.' });

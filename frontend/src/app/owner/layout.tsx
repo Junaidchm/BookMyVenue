@@ -33,7 +33,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
   return (
     <div className="flex min-h-screen bg-background font-sans text-text-primary antialiased">
@@ -52,16 +52,13 @@ export default function DashboardLayout({
             <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20">
               <img
                 src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"
-                alt="Sarah - Profile"
+                alt={`${user?.fullName || "Owner"} - Profile`}
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-label-md text-on-surface">Sarah</span>
+              <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "Owner"}</span>
               <span className="text-label-sm text-text-muted mt-0.5">Owner Portal</span>
-              <span className="mt-1 w-max rounded-full bg-primary-fixed px-2 py-0.5 text-[10px] font-semibold text-on-primary-fixed">
-                Premium Partner
-              </span>
             </div>
           </div>
 
@@ -163,11 +160,11 @@ export default function DashboardLayout({
             <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50">
               <img
                 src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"
-                alt="Sarah - Profile"
+                alt={`${user?.fullName || "Owner"} - Profile`}
                 className="h-9 w-9 rounded-full border border-primary-container/20 object-cover"
               />
               <div className="flex flex-col">
-                <span className="text-label-md text-on-surface font-semibold">Sarah</span>
+                <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "Owner"}</span>
                 <span className="text-label-sm text-text-muted">Owner Portal</span>
               </div>
             </div>
