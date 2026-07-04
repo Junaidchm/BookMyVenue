@@ -9,6 +9,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum VenueStatus {
@@ -29,8 +30,8 @@ enum ClosureType {
 }
 
 model Venue {
-  id                Int         @id @default(autoincrement())
-  ownerId           Int // Logical FK to Auth User ID
+  id                String      @id @default(uuid())
+  ownerId           String // Logical FK to Auth User ID
   title             String      @db.VarChar(255)
   description       String?     @db.Text
   category          String // e.g., 'auditorium', 'wedding_hall', 'cafe'
@@ -67,7 +68,7 @@ model Venue {
 
 //  Amenity Configuration Table
 model Amenity {
-  id      Int            @id @default(autoincrement())
+  id      String         @id @default(uuid())
   name    String         @unique
   iconKey String? // For frontend rendering icons
   venues  VenueAmenity[]
@@ -77,8 +78,8 @@ model Amenity {
 
 // Junction table linking Venues to Amenities
 model VenueAmenity {
-  venueId   Int
-  amenityId Int
+  venueId   String
+  amenityId String
   venue     Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
   amenity   Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
 
@@ -88,8 +89,8 @@ model VenueAmenity {
 
 // Dynamic Capacity Profiles
 model VenueCapacity {
-  id         Int     @id @default(autoincrement())
-  venueId    Int
+  id         String  @id @default(uuid())
+  venueId    String
   type       String // "SEATING", "DINING", "FLOATING"
   maxPeople  Int
   isSeparate Boolean @default(false)
@@ -100,8 +101,8 @@ model VenueCapacity {
 
 // Session-Based Pricing & Availability
 model VenueSession {
-  id           Int     @id @default(autoincrement())
-  venueId      Int
+  id           String  @id @default(uuid())
+  venueId      String
   name         String // "Morning", "Evening"
   startTime    String // "08:00 AM" or "08:00"
   endTime      String // "13:00"
@@ -113,8 +114,8 @@ model VenueSession {
 
 //  Operational Blackouts (Maintenance, Holidays)
 model VenueClosure {
-  id          Int         @id @default(autoincrement())
-  venueId     Int
+  id          String      @id @default(uuid())
+  venueId     String
   type        ClosureType @default(MAINTENANCE)
   startTime   DateTime
   endTime     DateTime
@@ -127,9 +128,9 @@ model VenueClosure {
 
 // User's Saved Venues
 model SavedVenue {
-  id        Int      @id @default(autoincrement())
-  userId    Int // Logical FK to Auth User ID
-  venueId   Int
+  id        String   @id @default(uuid())
+  userId    String // Logical FK to Auth User ID
+  venueId   String
   createdAt DateTime @default(now())
 
   venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)

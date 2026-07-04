@@ -2,12 +2,24 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { VenueCard } from "@/components/venues/venue-card";
-import { getAllVenues } from "@/lib/venues/data";
+import { getVenues } from "@/lib/venues/api";
+import { getAllVenues, type Venue } from "@/lib/venues/data";
 
-export function FeaturedVenuesSection() {
-  const featuredVenues = getAllVenues().filter((venue) =>
-    venue.badges?.includes("featured")
-  );
+export async function FeaturedVenuesSection() {
+  let featuredVenues: Venue[] = [];
+  try {
+    const venues = await getVenues();
+    featuredVenues = venues.slice(0, 4);
+  } catch (error) {
+    console.error("Failed to fetch featured venues on landing page:", error);
+  }
+
+  // Fallback to static mock data if service is down or database is empty
+  if (!featuredVenues || featuredVenues.length === 0) {
+    featuredVenues = getAllVenues()
+      .filter((venue) => venue.badges?.includes("featured"))
+      .slice(0, 4);
+  }
 
   return (
     <section className="bg-background py-16 md:py-24">

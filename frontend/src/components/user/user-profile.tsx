@@ -24,30 +24,7 @@ const DEFAULT_USER_PROFILE: UserProfileData = {
   memberSince: "2024-02-10T08:00:00.000Z",
 };
 
-const SUGGESTED_LOCATIONS = [
-  "Madhya Pradesh, India",
-  "Uttar Pradesh, India",
-  "Maharashtra, India",
-  "Kerala, India",
-  "Karnataka, India",
-  "Delhi, India",
-  "Tamil Nadu, India",
-  "Gujarat, India",
-  "Rajasthan, India",
-  "Punjab, India",
-  "Lahore, Pakistan",
-  "Karachi, Pakistan",
-  "Islamabad, Pakistan",
-  "San Francisco, CA",
-  "New York, NY",
-  "Austin, TX",
-  "Napa Valley, CA",
-  "Seattle, WA",
-  "London, United Kingdom",
-  "Kensington, London",
-  "Chelsea, London",
-  "Shoreditch, London",
-];
+
 
 // ─── Field View Component ──────────────────────────────────────────────────────
 function FieldView({ label, value, badge }: { label: string; value: string; badge?: string }) {
@@ -226,22 +203,15 @@ export function UserProfile() {
           throw new Error("Nominatim API response not OK");
         }
       } catch (error) {
-        console.warn("Failed to fetch from Nominatim, using local fallback:", error);
-        const fallback = SUGGESTED_LOCATIONS.filter((loc) =>
-          loc.toLowerCase().includes((draft.location || "").toLowerCase())
-        );
-        setApiAddressSuggestions(fallback);
+        console.error("Failed to fetch from Nominatim:", error);
+        setApiAddressSuggestions([]);
       }
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
   }, [draft.location, showAddressSuggestions]);
 
-  const addressSuggestionsToDisplay = apiAddressSuggestions.length > 0 
-    ? apiAddressSuggestions 
-    : SUGGESTED_LOCATIONS.filter((loc) =>
-        loc.toLowerCase().includes(draft.location ? draft.location.toLowerCase() : "")
-      );
+  const addressSuggestionsToDisplay = apiAddressSuggestions;
 
   // Load initial profile data
   useEffect(() => {

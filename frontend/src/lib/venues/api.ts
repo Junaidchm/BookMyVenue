@@ -188,24 +188,38 @@ export function mapApiVenueToVenue(venue: ApiVenue): Venue {
 }
 
 export async function getVenues(): Promise<Venue[]> {
-  const res = await fetch(`${getApiBaseUrl()}/venues`);
-  if (!res.ok) {
-    throw new Error("Failed to fetch venues");
-  }
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/venues`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch venues: Server returned status ${res.status} (${res.statusText})`);
+    }
 
-  const body = (await res.json()) as VenuesApiResponse;
-  return (body.data ?? []).map(mapApiVenueToVenue);
+    const body = (await res.json()) as VenuesApiResponse;
+    return (body.data ?? []).map(mapApiVenueToVenue);
+  } catch (error: any) {
+    if (error.message && error.message.includes("Failed to fetch venues")) {
+      throw error;
+    }
+    throw new Error(`Failed to fetch venues: Network error or backend service is unreachable. (${error?.message || error})`);
+  }
 }
 
 export async function getVenueById(id: string | number): Promise<Venue | undefined> {
-  const res = await fetch(`${getApiBaseUrl()}/venues/${id}`);
-  if (!res.ok) {
-    if (res.status === 404) return undefined;
-    throw new Error("Failed to fetch venue");
-  }
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/venues/${id}`);
+    if (!res.ok) {
+      if (res.status === 404) return undefined;
+      throw new Error(`Failed to fetch venue: Server returned status ${res.status} (${res.statusText})`);
+    }
 
-  const body = (await res.json()) as { success: boolean; data: ApiVenue };
-  return mapApiVenueToVenue(body.data);
+    const body = (await res.json()) as { success: boolean; data: ApiVenue };
+    return mapApiVenueToVenue(body.data);
+  } catch (error: any) {
+    if (error.message && error.message.includes("Failed to fetch venue")) {
+      throw error;
+    }
+    throw new Error(`Failed to fetch venue: Network error or backend service is unreachable. (${error?.message || error})`);
+  }
 }
 
 // ─── Venue Creation ────────────────────────────────────────────────────────

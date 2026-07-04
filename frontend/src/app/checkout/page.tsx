@@ -225,7 +225,6 @@ function CheckoutContent() {
   const serviceFee = Math.round(calculatedBasePrice * 0.05);
   const totalTax = Math.round(calculatedBasePrice * 0.18);
   const finalTotal = calculatedBasePrice + serviceFee + totalTax;
-
   if (timeLeft <= 0) {
     return (
       <div className="mx-auto max-w-lg px-6 py-16 text-center">
@@ -310,6 +309,7 @@ function CheckoutContent() {
 
     return `${formatTime(start)} - ${formatTime(end)}`;
   };
+
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-6 py-8">

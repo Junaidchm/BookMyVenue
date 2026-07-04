@@ -9,7 +9,12 @@ export class AuthController {
   register = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email, password, fullName, roles } = req.body;
-      const user = await this.authService.register(email, password, fullName, roles);
+      const user = await this.authService.register(
+        email,
+        password,
+        fullName,
+        roles,
+      );
       res.status(201).json({ success: true, data: user });
     } catch (err: any) {
       if (err.message.includes('already exists')) {
@@ -26,6 +31,7 @@ export class AuthController {
       const result = await this.authService.login(email, password);
       res.status(200).json({ success: true, data: result });
     } catch (err: any) {
+      console.error('[LOGIN ERROR]:', err);
       // Normalize error to ensure it has a string message
       const errorMessage = err instanceof Error ? err.message : String(err);
 
@@ -37,7 +43,8 @@ export class AuthController {
       } else {
         res.status(500).json({
           success: false,
-          message: 'Database connection failed. Please ensure the database is running.',
+          message:
+            'Database connection failed. Please ensure the database is running.',
         });
       }
     }
@@ -73,11 +80,18 @@ export class AuthController {
     try {
       const userIdStr = req.headers['x-user-id'] as string;
       if (!userIdStr) {
-        return res.status(401).json({ success: false, message: 'User context missing.' });
+        return res
+          .status(401)
+          .json({ success: false, message: 'User context missing.' });
       }
-      const userId = parseInt(userIdStr, 10);
+      const userId = userIdStr;
 
-      const { phoneNumber, businessName, bankRoutingNumber, bankAccountNumber } = req.body;
+      const {
+        phoneNumber,
+        businessName,
+        bankRoutingNumber,
+        bankAccountNumber,
+      } = req.body;
       const profile = await this.usersService.updateOwnerProfile(userId, {
         phoneNumber,
         businessName,
@@ -93,7 +107,9 @@ export class AuthController {
 
   logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.status(200).json({ success: true, message: 'Logged out successfully' });
+      res
+        .status(200)
+        .json({ success: true, message: 'Logged out successfully' });
     } catch (err: any) {
       next(err);
     }

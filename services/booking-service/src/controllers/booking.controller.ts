@@ -179,12 +179,16 @@ export const createPaymentOrder = async (
       key_secret: env.RAZORPAY_KEY_SECRET,
     });
 
+<<<<<<< HEAD
     const subtotal = Number(booking.totalPrice);
     const serviceFee = Math.round(subtotal * 0.05);
     const gstTax = Math.round(subtotal * 0.18);
     const grandTotal = subtotal + serviceFee + gstTax;
 
     const amountInPaise = Math.round(grandTotal * 100);
+=======
+    const amountInPaise = Math.round(Number(booking.totalPrice) * 100);
+>>>>>>> 5e6b40e0ecc1eebe71a2a836ecdb1b60d6957b86
 
     const order = await razorpay.orders.create({
       amount: amountInPaise,
@@ -664,6 +668,7 @@ export const getBookings = async (
   }
 };
 
+<<<<<<< HEAD
 export const getVenueBookings = async (
   req: Request,
   res: Response,
@@ -709,6 +714,8 @@ export const getVenueBookings = async (
   }
 };
 
+=======
+>>>>>>> 5e6b40e0ecc1eebe71a2a836ecdb1b60d6957b86
 export const cancelBooking = async (
   req: Request,
   res: Response,

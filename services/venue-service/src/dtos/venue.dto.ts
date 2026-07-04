@@ -22,7 +22,7 @@ export interface CreateVenueDto {
   pricingType: PricingType;
   bufferTimeMinutes: number;
   imageUrls: string[];
-  amenities: number[];
+  amenities: string[];
   capacities: {
     type: string;
     maxPeople: number;
@@ -54,7 +54,7 @@ export interface UpdateVenueDto {
   pricingType?: PricingType;
   bufferTimeMinutes?: number;
   imageUrls?: string[];
-  amenities?: number[];
+  amenities?: string[];
   capacities?: {
     type: string;
     maxPeople: number;

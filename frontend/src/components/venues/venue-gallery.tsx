@@ -39,7 +39,7 @@ export function VenueGallery({ venue }: VenueGalleryProps) {
       <div className="hidden h-full grid-cols-2 grid-rows-2 gap-3 md:grid">
         {[img2, img3, img4, img5].map((src, i) => (
           <div
-            key={src}
+            key={`${src}-${i}`}
             className="group relative overflow-hidden rounded-2xl"
           >
             <Image
