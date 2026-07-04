@@ -13,17 +13,17 @@ const nextConfig: NextConfig = {
         hostname: "lh3.googleusercontent.com",
       },
       {
-        // Allow avatar images served from auth-service CDN / storage
-        protocol: "https",
-        hostname: "*.bookmyvenue.com",
-      },
-      {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+      },
+      {
+        // Allow avatar images served from auth-service CDN / storage
+        protocol: "https",
+        hostname: "*.bookmyvenue.com",
       },
     ],
   },

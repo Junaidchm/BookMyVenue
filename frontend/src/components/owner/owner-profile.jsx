@@ -25,30 +25,7 @@ const DEFAULT_OWNER_PROFILE = {
   memberSince: "2024-01-15T08:00:00.000Z",
 };
 
-const SUGGESTED_LOCATIONS = [
-  "Madhya Pradesh, India",
-  "Uttar Pradesh, India",
-  "Maharashtra, India",
-  "Kerala, India",
-  "Karnataka, India",
-  "Delhi, India",
-  "Tamil Nadu, India",
-  "Gujarat, India",
-  "Rajasthan, India",
-  "Punjab, India",
-  "Lahore, Pakistan",
-  "Karachi, Pakistan",
-  "Islamabad, Pakistan",
-  "San Francisco, CA",
-  "New York, NY",
-  "Austin, TX",
-  "Napa Valley, CA",
-  "Seattle, WA",
-  "London, United Kingdom",
-  "Kensington, London",
-  "Chelsea, London",
-  "Shoreditch, London",
-];
+
 
 export function OwnerProfile() {
   const { signOut } = useAuth();
@@ -79,7 +56,7 @@ export function OwnerProfile() {
     const delayDebounceFn = setTimeout(async () => {
       try {
         const response = await fetch(
-          `/api/location/search?q=${encodeURIComponent(draft.address || "")}`
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(draft.address || "")}&format=json&limit=5`
         );
         if (response.ok) {
           const data = await response.json();
@@ -89,22 +66,15 @@ export function OwnerProfile() {
           throw new Error("Nominatim API response not OK");
         }
       } catch (error) {
-        console.warn("Failed to fetch from Nominatim, using local fallback:", error);
-        const fallback = SUGGESTED_LOCATIONS.filter((loc) =>
-          loc.toLowerCase().includes((draft.address || "").toLowerCase())
-        );
-        setApiAddressSuggestions(fallback);
+        console.error("Failed to fetch from Nominatim:", error);
+        setApiAddressSuggestions([]);
       }
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
   }, [draft.address, showAddressSuggestions]);
 
-  const addressSuggestionsToDisplay = apiAddressSuggestions.length > 0 
-    ? apiAddressSuggestions 
-    : SUGGESTED_LOCATIONS.filter((loc) =>
-        loc.toLowerCase().includes(draft.address ? draft.address.toLowerCase() : "")
-      );
+  const addressSuggestionsToDisplay = apiAddressSuggestions;
 
   // Load initial profile data
   useEffect(() => {

@@ -20,9 +20,9 @@ export const validate = (schema: ZodSchema) => {
       // Replace req objects with verified type-casted objects
 
       req.body = parsed.body;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
       req.query = parsed.query as any;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
       req.params = parsed.params as any;
       next();
     } catch (error: unknown) {

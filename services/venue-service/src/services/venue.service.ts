@@ -30,7 +30,7 @@ export class VenueService {
   /**
    * Retrieve a single venue by its ID.
    */
-  async getVenueById(id: number) {
+  async getVenueById(id: string) {
     const venue = await prisma.venue.findUnique({
       where: { id },
       include: {
@@ -79,7 +79,7 @@ export class VenueService {
   /**
    * Approve a pending venue by setting its status to APPROVED.
    */
-  async approveVenue(id: number) {
+  async approveVenue(id: string) {
     return prisma.venue.update({
       where: { id },
       data: { status: 'APPROVED' },
@@ -89,7 +89,7 @@ export class VenueService {
   /**
    * Reject a pending venue by setting its status to REJECTED.
    */
-  async rejectVenue(id: number) {
+  async rejectVenue(id: string) {
     return prisma.venue.update({
       where: { id },
       data: { status: 'REJECTED' },
@@ -100,7 +100,7 @@ export class VenueService {
    * Creates a new venue and its related records (capacities, sessions, amenities)
    * in a single atomic transaction.
    */
-  async createVenue(ownerId: number, data: CreateVenueDto) {
+  async createVenue(ownerId: string, data: CreateVenueDto) {
     const {
       title,
       description,
@@ -183,7 +183,7 @@ export class VenueService {
     });
   }
 
-  async getVenuesByOwner(ownerId: number) {
+  async getVenuesByOwner(ownerId: string) {
     return await prisma.venue.findMany({
       where: { ownerId },
       include: {
@@ -197,7 +197,7 @@ export class VenueService {
     });
   }
 
-  async updateVenue(id: number, ownerId: number, data: UpdateVenueDto) {
+  async updateVenue(id: string, ownerId: string, data: UpdateVenueDto) {
     const venue = await prisma.venue.findUnique({
       where: { id },
     });
@@ -307,7 +307,8 @@ export class VenueService {
           latitude: latitude !== undefined ? latitude : undefined,
           longitude: longitude !== undefined ? longitude : undefined,
           // Operating Schedule
-          operatingDays: operatingDays !== undefined ? operatingDays : undefined,
+          operatingDays:
+            operatingDays !== undefined ? operatingDays : undefined,
           status: 'PENDING',
         },
         include: {
@@ -327,7 +328,7 @@ export class VenueService {
     return { status: 'SUCCESS', data: updatedVenue };
   }
 
-  async deleteVenue(id: number, ownerId: number) {
+  async deleteVenue(id: string, ownerId: string) {
     const venue = await prisma.venue.findUnique({
       where: { id },
     });
@@ -348,8 +349,8 @@ export class VenueService {
   }
 
   async createClosure(
-    venueId: number,
-    ownerId: number,
+    venueId: string,
+    ownerId: string,
     data: CreateClosureDto,
   ) {
     const venue = await prisma.venue.findUnique({
@@ -388,7 +389,7 @@ export class VenueService {
     return { status: 'SUCCESS', data: closure };
   }
 
-  async getClosures(venueId: number, ownerId: number) {
+  async getClosures(venueId: string, ownerId: string) {
     const venue = await prisma.venue.findUnique({
       where: { id: venueId },
     });
@@ -409,7 +410,7 @@ export class VenueService {
     return { status: 'SUCCESS', data: closures };
   }
 
-  async deleteClosure(venueId: number, closureId: number, ownerId: number) {
+  async deleteClosure(venueId: string, closureId: string, ownerId: string) {
     const venue = await prisma.venue.findUnique({
       where: { id: venueId },
     });
@@ -438,9 +439,9 @@ export class VenueService {
   }
 
   async updateClosure(
-    venueId: number,
-    closureId: number,
-    ownerId: number,
+    venueId: string,
+    closureId: string,
+    ownerId: string,
     data: UpdateClosureDto,
   ) {
     const venue = await prisma.venue.findUnique({
@@ -496,7 +497,7 @@ export class VenueService {
 
   // ─── Saved Venues Methods ─────────────────────────────────────────────────
 
-  async saveVenue(userId: number, venueId: number) {
+  async saveVenue(userId: string, venueId: string) {
     const venue = await prisma.venue.findUnique({
       where: { id: venueId },
     });
@@ -522,7 +523,7 @@ export class VenueService {
     }
   }
 
-  async unsaveVenue(userId: number, venueId: number) {
+  async unsaveVenue(userId: string, venueId: string) {
     try {
       await prisma.savedVenue.delete({
         where: {
@@ -542,7 +543,7 @@ export class VenueService {
     }
   }
 
-  async getSavedVenues(userId: number) {
+  async getSavedVenues(userId: string) {
     const savedVenues = await prisma.savedVenue.findMany({
       where: {
         userId,
@@ -558,12 +559,12 @@ export class VenueService {
             },
             capacities: true,
             sessions: true,
-          }
+          },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    return { status: 'SUCCESS', data: savedVenues.map(sv => sv.venue) };
+    return { status: 'SUCCESS', data: savedVenues.map((sv) => sv.venue) };
   }
 }

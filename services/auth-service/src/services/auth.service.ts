@@ -3,10 +3,12 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 
 export interface JwtPayload {
-  sub: number;
+  sub: string;
   email: string;
   fullName: string;
   roles: string[];
+  isKycVerified: boolean;
+  accountCreatedAt: string;
 }
 
 import { env } from '../config/env';
@@ -45,7 +47,10 @@ export class AuthService {
     }
 
     // Verify password
-    const isPasswordValid = await this.comparePassword(password, user.passwordHash);
+    const isPasswordValid = await this.comparePassword(
+      password,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
       throw new Error('Invalid email or password.');
     }
@@ -53,15 +58,19 @@ export class AuthService {
     // Extract exact roles
     const roles = user.userRoles.map((ur) => ur.role.name);
 
-    // Mint stateless JWT containing ID (sub) and roles
+    // Mint stateless JWT containing ID (sub), roles, and custom claims for zero-latency risk engine
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       fullName: user.fullName,
       roles: roles,
+      isKycVerified: user.isKycVerified,
+      accountCreatedAt: user.createdAt.toISOString(),
     };
 
-    const token = jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN } as jwt.SignOptions);
+    const token = jwt.sign(payload, env.JWT_SECRET, {
+      expiresIn: env.JWT_EXPIRES_IN,
+    } as jwt.SignOptions);
 
     return {
       access_token: token,
@@ -89,7 +98,10 @@ export class AuthService {
     return bcrypt.hash(password, saltRounds);
   }
 
-  private async comparePassword(password: string, hash: string): Promise<boolean> {
+  private async comparePassword(
+    password: string,
+    hash: string,
+  ): Promise<boolean> {
     return bcrypt.compare(password, hash);
   }
 }
