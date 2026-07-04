@@ -74,15 +74,14 @@ export async function middleware(req: NextRequest) {
 
   return NextResponse.next();
 }
-
 export const config = {
   matcher: [
     "/dashboard",
     "/dashboard/:path*",
-    "/owner",
-    "/owner/:path*",
-    "/user",
-    "/user/:path*",
+    "/owner",           
+    "/owner/:path*",    
+    "/user",            
+    "/user/:path*",     
     "/bookings",
     "/bookings/:path*",
     "/admin",

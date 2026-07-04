@@ -59,7 +59,6 @@ export default function AdminLayout({
           </h1>
         </div>
 
-        {/* Admin Profile */}
         <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50 mb-8 mx-2">
           <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20">
             <img

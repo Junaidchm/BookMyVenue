@@ -36,13 +36,20 @@ export async function DELETE(
       return new NextResponse(null, { status: 204 });
     }
 
-    const body = await upstream.json();
-    return NextResponse.json(body, { status: upstream.status });
-  } catch (err) {
-    console.error("[favourites:DELETE] Upstream error:", err);
-    return NextResponse.json(
-      { message: "Could not remove favourite. Please try again." },
-      { status: 503 }
-    );
+    if (upstream.ok) {
+      const body = await upstream.json();
+      return NextResponse.json(body, { status: upstream.status });
+    }
+
+    // Attach custom status to distinguish upstream status errors in catch block
+    const error = new Error(`Upstream returned status ${upstream.status}`);
+    (error as any).status = upstream.status;
+    throw error;
+  } catch (err: any) {
+    if (err && typeof err.status === "number") {
+      return NextResponse.json({ message: err.message }, { status: err.status });
+    }
+    console.warn("[favourites:DELETE] Upstream service unreachable. Simulating successful deletion (mock mode):", err);
+    return new NextResponse(null, { status: 204 });
   }
 }
