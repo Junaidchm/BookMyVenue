@@ -221,6 +221,12 @@ function CheckoutContent() {
     );
   }
 
+  const calculatedBasePrice = booking ? Number(booking.totalPrice) : 0;
+  const cleaningFee = 5000;
+  const platformServiceCharge = 2500;
+  const totalTax = Math.round((calculatedBasePrice + cleaningFee + platformServiceCharge) * 0.18);
+  const finalTotal = calculatedBasePrice + cleaningFee + platformServiceCharge + totalTax;
+
   if (timeLeft <= 0) {
     return (
       <div className="mx-auto max-w-lg px-6 py-16 text-center">
@@ -258,7 +264,7 @@ function CheckoutContent() {
             </div>
             <div className="flex justify-between">
               <span className="text-text-muted">Total Amount Paid:</span>
-              <span className="font-bold text-on-surface">{formatVenuePrice(Number(booking.totalPrice))}</span>
+              <span className="font-bold text-on-surface">{formatVenuePrice(finalTotal)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-text-muted">Risk-Adjusted Refund Eligibility:</span>
@@ -305,11 +311,6 @@ function CheckoutContent() {
 
     return `${formatTime(start)} - ${formatTime(end)}`;
   };
-
-  const calculatedBasePrice = venue?.pricingType === "PER_SESSION" ? Number(booking.totalPrice) : (venue?.basePrice || 0);
-  const totalTax = Number(booking.totalPrice) * 0.18; // 18% GST
-  const serviceFee = Number(booking.totalPrice) * 0.05; // 5% Service Fee
-  const finalTotal = Number(booking.totalPrice) + totalTax + serviceFee;
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-6 py-8">
@@ -500,12 +501,16 @@ function CheckoutContent() {
                 {/* Final Cost Summary */}
                 <div className="flex flex-col gap-2.5">
                   <div className="flex justify-between text-sm text-stone-600">
-                    <span>Base Rent ({venue.pricingType === "PER_SESSION" ? "Session" : "Hourly Selection"})</span>
+                    <span>Base Rent ({venue.pricingType === "PER_SESSION" ? "Session" : "Selection"})</span>
                     <span className="font-medium text-stone-800">{formatVenuePrice(calculatedBasePrice)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-stone-600">
-                    <span>Service Fee (5%)</span>
-                    <span className="font-medium text-stone-800">{formatVenuePrice(serviceFee)}</span>
+                    <span>Cleaning Buffer Fee</span>
+                    <span className="font-medium text-stone-800">{formatVenuePrice(cleaningFee)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-stone-600">
+                    <span>Platform Service Charge</span>
+                    <span className="font-medium text-stone-800">{formatVenuePrice(platformServiceCharge)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-stone-600">
                     <span>Tax (18% GST)</span>

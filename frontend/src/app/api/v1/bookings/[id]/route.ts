@@ -34,7 +34,7 @@ export async function DELETE(
     const { id } = await params;
 
     const upstream = await fetch(
-      `${BOOKING_SERVICE_URL}/api/v1/bookings/${id}`,
+      `${BOOKING_SERVICE_URL}/bookings/${id}`,
       {
         method: "DELETE",
         headers: getForwardHeaders(req),

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Link from "next/link";
 import { SkeletonCard, EmptyState } from "../ui/Skeletons";
 import { removeFavourite } from "../services/profileService";
 
@@ -109,9 +110,9 @@ export default function FavouritesSection({ favourites, loading, onFavouriteRemo
             title="No saved venues yet"
             description="Explore premium venues and add them to your wishlist."
             action={
-              <a href="/venues" className="btn btn--primary btn--sm" id="link-browse-fav">
+              <Link href="/venues" className="btn btn--primary btn--sm" id="link-browse-fav">
                 Explore Venues
-              </a>
+              </Link>
             }
           />
         ) : (

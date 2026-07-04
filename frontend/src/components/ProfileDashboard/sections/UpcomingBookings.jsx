@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import StatusBadge from "../ui/StatusBadge";
 import { SkeletonBookingRow, EmptyState } from "../ui/Skeletons";
 
@@ -104,13 +105,13 @@ export default function UpcomingBookings({ bookings, loading, onViewDetails }) {
             title="No upcoming bookings"
             description="Your next adventure starts with finding the perfect venue."
             action={
-              <a
+              <Link
                 href="/venues"
                 className="btn btn--primary btn--sm"
                 id="link-browse-venues-upcoming"
               >
                 Browse Venues
-              </a>
+              </Link>
             }
           />
         ) : (
