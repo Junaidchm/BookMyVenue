@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Calendar, History, Search } from "lucide-react";
 import { redirect } from "next/navigation";
 
-import { PastBookingItem } from "@/components/user/past-booking-item";
-import { UpcomingBookingCard } from "@/components/user/upcoming-booking-card";
+import { PastBookingItem } from "@/components/user/user-profile-past-booking-item";
+import { UpcomingBookingCard } from "@/components/user/user-profile-upcoming-booking-card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -37,6 +37,31 @@ export default function UserLayout({
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { signOut, user } = useAuth();
+  const [avatar, setAvatar] = useState(USER_PROFILE.avatar);
+  const [fullName, setFullName] = useState(user?.fullName || "User");
+
+  useEffect(() => {
+    const updateProfileData = () => {
+      const stored = localStorage.getItem("user_profile_data");
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          if (data.avatar) {
+            setAvatar(data.avatar);
+          }
+          if (data.name) {
+            setFullName(data.name);
+          }
+        } catch (err) {}
+      } else if (user?.fullName) {
+        setFullName(user.fullName);
+      }
+    };
+
+    updateProfileData();
+    window.addEventListener("user-profile-updated", updateProfileData);
+    return () => window.removeEventListener("user-profile-updated", updateProfileData);
+  }, [user?.fullName]);
 
   const isActive = (href: string) => {
     if (href === "/user") return pathname === "/user";
@@ -59,13 +84,13 @@ export default function UserLayout({
           <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50">
             <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20">
               <img
-                src={USER_PROFILE.avatar}
+                src={avatar}
                 alt={`${user?.fullName || "User"} - Profile`}
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "User"}</span>
+              <span className="text-label-md text-on-surface font-semibold">{fullName}</span>
               <span className="text-label-sm text-text-muted mt-0.5">User Portal</span>
             </div>
           </div>
@@ -176,12 +201,12 @@ export default function UserLayout({
             {/* Profile */}
             <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50">
               <img
-                src={USER_PROFILE.avatar}
+                src={avatar}
                 alt={`${user?.fullName || "User"} - Profile`}
                 className="h-9 w-9 rounded-full border border-primary-container/20 object-cover"
               />
               <div className="flex flex-col">
-                <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "User"}</span>
+                <span className="text-label-md text-on-surface font-semibold">{fullName}</span>
                 <span className="text-label-sm text-text-muted">User Portal</span>
               </div>
             </div>

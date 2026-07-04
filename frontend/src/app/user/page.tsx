@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 import { DASHBOARD_STATS, UPCOMING_BOOKINGS, SAVED_VENUES, RECENT_ACTIVITY } from "@/lib/user/data";
-import { DashboardBookingCard } from "@/components/user/dashboard-booking-card";
+import { DashboardBookingCard } from "@/components/user/user-profile-dashboard-booking-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
