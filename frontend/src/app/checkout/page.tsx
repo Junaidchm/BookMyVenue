@@ -221,6 +221,11 @@ function CheckoutContent() {
     );
   }
 
+  const calculatedBasePrice = booking ? Number(booking.totalPrice) : 0;
+  const serviceFee = Math.round(calculatedBasePrice * 0.05);
+  const totalTax = Math.round(calculatedBasePrice * 0.18);
+  const finalTotal = calculatedBasePrice + serviceFee + totalTax;
+
   if (timeLeft <= 0) {
     return (
       <div className="mx-auto max-w-lg px-6 py-16 text-center">
@@ -258,7 +263,7 @@ function CheckoutContent() {
             </div>
             <div className="flex justify-between">
               <span className="text-text-muted">Total Amount Paid:</span>
-              <span className="font-bold text-on-surface">{formatVenuePrice(Number(booking.totalPrice))}</span>
+              <span className="font-bold text-on-surface">{formatVenuePrice(finalTotal)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-text-muted">Risk-Adjusted Refund Eligibility:</span>
@@ -305,11 +310,6 @@ function CheckoutContent() {
 
     return `${formatTime(start)} - ${formatTime(end)}`;
   };
-
-  const calculatedBasePrice = venue?.pricingType === "PER_SESSION" ? Number(booking.totalPrice) : (venue?.basePrice || 0);
-  const totalTax = Number(booking.totalPrice) * 0.18; // 18% GST
-  const serviceFee = Number(booking.totalPrice) * 0.05; // 5% Service Fee
-  const finalTotal = Number(booking.totalPrice) + totalTax + serviceFee;
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-6 py-8">
@@ -466,10 +466,19 @@ function CheckoutContent() {
                     <div className="flex items-start gap-3 text-sm text-stone-800">
                       <Clock className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-semibold">Selected Hours</p>
-                        <p className="text-xs text-text-muted">
-                          {formatTimeSlot(booking.startTime, booking.endTime)}
+                        <p className="font-semibold">
+                          {booking.type === "SESSION" ? "Selected Session" : "Selected Hours"}
                         </p>
+                        <div className="text-xs text-text-muted font-medium">
+                          {booking.type === "SESSION" && booking.sessionName ? (
+                            <div>
+                              <strong className="text-stone-800 block text-xs mb-0.5">{booking.sessionName}</strong>
+                              {formatTimeSlot(booking.startTime, booking.endTime)}
+                            </div>
+                          ) : (
+                            formatTimeSlot(booking.startTime, booking.endTime)
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -491,7 +500,7 @@ function CheckoutContent() {
                 {/* Final Cost Summary */}
                 <div className="flex flex-col gap-2.5">
                   <div className="flex justify-between text-sm text-stone-600">
-                    <span>Base Rent ({venue.pricingType === "PER_SESSION" ? "Session" : "Hourly Selection"})</span>
+                    <span>Base Rent ({venue.pricingType === "PER_SESSION" ? "Session" : "Selection"})</span>
                     <span className="font-medium text-stone-800">{formatVenuePrice(calculatedBasePrice)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-stone-600">

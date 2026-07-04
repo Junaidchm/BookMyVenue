@@ -81,8 +81,6 @@ export const config = {
     "/dashboard/:path*",
     "/owner",
     "/owner/:path*",
-    "/user",
-    "/user/:path*",
     "/bookings",
     "/bookings/:path*",
     "/admin",

@@ -179,7 +179,12 @@ export const createPaymentOrder = async (
       key_secret: env.RAZORPAY_KEY_SECRET,
     });
 
-    const amountInPaise = Math.round(Number(booking.totalPrice) * 100);
+    const subtotal = Number(booking.totalPrice);
+    const serviceFee = Math.round(subtotal * 0.05);
+    const gstTax = Math.round(subtotal * 0.18);
+    const grandTotal = subtotal + serviceFee + gstTax;
+
+    const amountInPaise = Math.round(grandTotal * 100);
 
     const order = await razorpay.orders.create({
       amount: amountInPaise,
@@ -656,6 +661,51 @@ export const getBookings = async (
     return res
       .status(500)
       .json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+export const getVenueBookings = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { venueId } = req.params;
+    if (!venueId) {
+      return res.status(400).json({ success: false, message: 'Missing venueId parameter' });
+    }
+
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const parsedVenueId = parseInt(venueId) || Number(venueId);
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        venueId: parsedVenueId,
+        OR: [
+          { status: 'CONFIRMED' },
+          {
+            status: 'PENDING_PAYMENT',
+            createdAt: { gte: tenMinutesAgo },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        startTime: true,
+        endTime: true,
+        bookingDate: true,
+        type: true,
+        venueSessionId: true,
+        sessionName: true,
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: bookings,
+    });
+  } catch (error) {
+    console.error('Error fetching venue bookings:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 };
 
