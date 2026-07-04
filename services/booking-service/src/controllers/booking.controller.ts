@@ -179,7 +179,12 @@ export const createPaymentOrder = async (
       key_secret: env.RAZORPAY_KEY_SECRET,
     });
 
-    const amountInPaise = Math.round(Number(booking.totalPrice) * 100);
+    const subtotal = Number(booking.totalPrice);
+    const serviceFee = Math.round(subtotal * 0.05);
+    const gstTax = Math.round(subtotal * 0.18);
+    const grandTotal = subtotal + serviceFee + gstTax;
+
+    const amountInPaise = Math.round(grandTotal * 100);
 
     const order = await razorpay.orders.create({
       amount: amountInPaise,
