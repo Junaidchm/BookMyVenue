@@ -8,22 +8,9 @@ let pool: Pool | undefined;
 
 const databaseUrl = env.DATABASE_URL;
 
-if (
-  databaseUrl.startsWith('postgresql://') ||
-  databaseUrl.startsWith('postgres://')
-) {
-  pool = new Pool({ connectionString: databaseUrl });
-  const adapter = new PrismaPg(pool);
-  prisma = new PrismaClient({ adapter });
-} else {
-  prisma = new PrismaClient({
-    datasources: {
-      db: {
-        url: databaseUrl,
-      },
-    },
-  });
-}
+pool = new Pool({ connectionString: databaseUrl });
+const adapter = new PrismaPg(pool);
+prisma = new PrismaClient({ adapter });
 
 export { prisma };
 
