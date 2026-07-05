@@ -44,11 +44,9 @@ export function PastBookingItem({ booking }: PastBookingItemProps) {
             variant="outline"
             size="sm"
             className="rounded-full border-border-subtle text-on-surface hover:bg-surface-container-low"
-            asChild
+            disabled
           >
-            <Link href={`#`}>
-              View Receipt
-            </Link>
+            View Receipt
           </Button>
         </div>
       </CardContent>

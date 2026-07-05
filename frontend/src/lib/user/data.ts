@@ -20,7 +20,7 @@ export const USER_NAV_BOTTOM = [
   { href: "/login", label: "Log Out", icon: "log-out" as const },
 ] as const;
 
-export type BookingStatus = "CONFIRMED" | "PENDING_PAYMENT" | "CANCELLED" | "FAILED" | "COMPLETED";
+export type BookingStatus = "CONFIRMED" | "PENDING_PAYMENT" | "CANCELLED" | "FAILED";
 
 export type UpcomingBooking = {
   id: string;
@@ -49,7 +49,6 @@ export const STATUS_LABELS: Record<BookingStatus, string> = {
   PENDING_PAYMENT: "Pending Payment",
   CANCELLED: "Cancelled",
   FAILED: "Failed",
-  COMPLETED: "Completed",
 };
 
 

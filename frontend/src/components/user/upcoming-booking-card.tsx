@@ -14,7 +14,6 @@ const STATUS_DOT: Record<UpcomingBooking["status"], string> = {
   PENDING_PAYMENT: "bg-amber-500",
   CANCELLED: "bg-red-500",
   FAILED: "bg-red-500",
-  COMPLETED: "bg-emerald-500",
 };
 
 type UpcomingBookingCardProps = {
@@ -74,11 +73,9 @@ export function UpcomingBookingCard({ booking }: UpcomingBookingCardProps) {
           <Button
             className="w-full md:w-auto gap-2 rounded-full border-border-subtle text-on-surface hover:bg-surface-container-low"
             variant="outline"
-            asChild
+            disabled
           >
-            <Link href={`#`} aria-label={`View receipt for ${booking.venue}`}>
-              View Receipt
-            </Link>
+            View Receipt
           </Button>
         </div>
       </CardContent>

@@ -34,12 +34,12 @@ export default function UserDashboardPage() {
 
   const { recentVenues } = useRecentlyViewed();
 
-  const { data: bookingsResponse, isLoading: bookingsLoading } = useQuery({
+  const { data: bookingsResponse, isLoading: bookingsLoading, error: bookingsError } = useQuery({
     queryKey: ["bookings"],
     queryFn: () => bookingService.getBookings(),
   });
 
-  const { data: venues, isLoading: venuesLoading } = useQuery(venuesQueryOptions());
+  const { data: venues, isLoading: venuesLoading, error: venuesError } = useQuery(venuesQueryOptions());
 
   const isLoading = bookingsLoading || venuesLoading;
   const backendBookings = bookingsResponse?.data || [];
@@ -57,7 +57,7 @@ export default function UserDashboardPage() {
       const startTime = new Date(b.startTime);
       const isPast = startTime < new Date();
 
-      if (b.status !== "COMPLETED" && b.status !== "CANCELLED" && b.status !== "FAILED" && !isPast) {
+      if (b.status !== "CANCELLED" && b.status !== "FAILED" && !isPast) {
         formattedUpcoming.push({
           id: b.id,
           reference: `#BKG-${b.id.substring(0, 6).toUpperCase()}`,
@@ -84,7 +84,7 @@ export default function UserDashboardPage() {
             Dashboard Overview
           </h1>
           <p className="text-text-muted text-body-md">
-            You have {formattedUpcoming.length} upcoming bookings this month.
+            You have {formattedUpcoming.length} upcoming bookings.
           </p>
         </header>
 
@@ -130,6 +130,10 @@ export default function UserDashboardPage() {
             {isLoading ? (
               <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-border-subtle">
                 <Loader2 className="size-8 animate-spin text-primary-container" />
+              </div>
+            ) : bookingsError || venuesError ? (
+              <div className="flex h-40 flex-col items-center justify-center rounded-xl border border-dashed border-border-subtle gap-4">
+                <p className="text-body-md text-red-500">Failed to load bookings.</p>
               </div>
             ) : displayUpcoming.length > 0 ? (
               <div className="flex flex-col gap-4">

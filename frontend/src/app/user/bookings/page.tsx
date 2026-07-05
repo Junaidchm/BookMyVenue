@@ -32,7 +32,7 @@ export default function MyBookingsPage() {
     queryFn: () => bookingService.getBookings(),
   });
 
-  const { data: venues, isLoading: venuesLoading } = useQuery(venuesQueryOptions());
+  const { data: venues, isLoading: venuesLoading, error: venuesError } = useQuery(venuesQueryOptions());
 
   const isLoading = bookingsLoading || venuesLoading;
 
@@ -49,7 +49,7 @@ export default function MyBookingsPage() {
       const startTime = new Date(b.startTime);
       const isPast = startTime < new Date();
 
-      if (b.status === "COMPLETED" || b.status === "CANCELLED" || b.status === "FAILED" || isPast) {
+      if (b.status === "CANCELLED" || b.status === "FAILED" || isPast) {
         formattedPast.push({
           id: b.id,
           venue: venue.name,
@@ -102,7 +102,7 @@ export default function MyBookingsPage() {
             <Loader2 className="size-8 animate-spin text-primary-container" />
             <p className="text-body-md text-text-muted">Loading your bookings...</p>
           </div>
-        ) : bookingsError ? (
+        ) : bookingsError || venuesError ? (
           <div className="flex h-40 flex-col items-center justify-center gap-4">
             <p className="text-body-md text-red-500">Failed to load bookings.</p>
           </div>
