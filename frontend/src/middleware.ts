@@ -13,7 +13,7 @@ export async function middleware(req: NextRequest) {
   if (token && (pathname === "/login" || pathname === "/signup")) {
     const roles = token.roles || [];
     if (roles.includes("ADMIN")) {
-      return NextResponse.redirect(new URL("/admin/approvals", req.url));
+      return NextResponse.redirect(new URL("/admin", req.url));
     }
     if (roles.includes("OWNER")) {
       return NextResponse.redirect(new URL("/owner", req.url));
@@ -28,7 +28,7 @@ export async function middleware(req: NextRequest) {
     }
     const roles = token.roles || [];
     if (roles.includes("ADMIN")) {
-      return NextResponse.redirect(new URL("/admin/approvals", req.url));
+      return NextResponse.redirect(new URL("/admin", req.url));
     }
     if (roles.includes("OWNER")) {
       return NextResponse.redirect(new URL("/owner", req.url));
