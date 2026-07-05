@@ -8,22 +8,15 @@ let pool: Pool | undefined;
 
 const databaseUrl = env.DATABASE_URL;
 
-if (
-  databaseUrl.startsWith('postgresql://') ||
-  databaseUrl.startsWith('postgres://')
-) {
-  pool = new Pool({ connectionString: databaseUrl });
-  const adapter = new PrismaPg(pool);
-  prisma = new PrismaClient({ adapter });
-} else {
-  prisma = new PrismaClient({
-    datasources: {
-      db: {
-        url: databaseUrl,
-      },
-    },
-  });
-}
+const needsSsl = databaseUrl.includes('sslmode=require');
+const cleanUrl = databaseUrl.replace(/[?&]sslmode=require/g, '');
+
+pool = new Pool({
+  connectionString: cleanUrl,
+  ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+});
+const adapter = new PrismaPg(pool);
+prisma = new PrismaClient({ adapter });
 
 export { prisma };
 
@@ -39,3 +32,4 @@ export async function disconnectDb() {
   }
   console.log('Venue DB disconnected.');
 }
+

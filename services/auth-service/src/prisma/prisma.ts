@@ -8,7 +8,13 @@ let pool: Pool | undefined;
 
 const databaseUrl = env.DATABASE_URL;
 
-pool = new Pool({ connectionString: databaseUrl });
+const needsSsl = databaseUrl.includes('sslmode=require');
+const cleanUrl = databaseUrl.replace(/[?&]sslmode=require/g, '');
+
+pool = new Pool({
+  connectionString: cleanUrl,
+  ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+});
 const adapter = new PrismaPg(pool);
 prisma = new PrismaClient({ adapter });
 
