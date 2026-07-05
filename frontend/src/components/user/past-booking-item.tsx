@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,21 +39,14 @@ export function PastBookingItem({ booking }: PastBookingItemProps) {
             {booking.dateLocation}
           </p>
         </div>
-
         <div className="mt-2 flex w-full justify-end gap-2 md:mt-0 md:w-auto">
           <Button
             variant="outline"
             size="sm"
-            className="rounded-full border-primary-container text-primary-container hover:bg-primary-container/10"
-          >
-            Leave Review
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
             className="rounded-full border-border-subtle text-on-surface hover:bg-surface-container-low"
+            disabled
           >
-            Book Again
+            View Receipt
           </Button>
         </div>
       </CardContent>

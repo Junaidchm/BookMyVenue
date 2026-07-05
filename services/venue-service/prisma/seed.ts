@@ -10,7 +10,13 @@ if (isDocker && connectionString) {
   connectionString = connectionString.replace('@localhost:', '@bmv_db:');
 }
 
-const pool = new Pool({ connectionString });
+const needsSsl = connectionString?.includes('sslmode=require');
+const cleanUrl = connectionString?.replace(/[?&]sslmode=require/g, '');
+
+const pool = new Pool({
+  connectionString: cleanUrl,
+  ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+});
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 const AMENITIES = [
