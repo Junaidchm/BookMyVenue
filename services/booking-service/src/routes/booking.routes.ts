@@ -10,6 +10,8 @@ import {
   getBookings,
   cancelBooking,
   rescheduleBooking,
+  getOwnerBookings,
+  getOwnerStats,
 } from '../controllers/booking.controller';
 import { checkBookingRisk } from '../middlewares/risk.middleware';
 
@@ -18,6 +20,8 @@ const router = Router();
 // Define the bookings route
 router.get('/', getBookings);
 router.get('/availability', checkAvailability);
+router.get('/owner', getOwnerBookings);
+router.get('/owner/stats', getOwnerStats);
 router.get('/:id', getBookingById);
 router.post('/', checkBookingRisk, createBooking);
 router.post('/:id/payment/order', createPaymentOrder);

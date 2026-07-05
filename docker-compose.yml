@@ -44,6 +44,8 @@ services:
     build: ./services/venue-service
     env_file:
       - ./services/venue-service/.env
+    ports:
+      - "5001:5001"
     depends_on:
       - bmv_db
     networks:

@@ -91,6 +91,22 @@ export const bookingService = {
     const response = await apiClient.post(`/bookings/${bookingId}/payment/verify`, payload);
     return response.data;
   },
+
+  /**
+   * Fetch all bookings for venues owned by the current owner
+   */
+  getOwnerBookings: async () => {
+    const response = await apiClient.get("/bookings/owner");
+    return response.data;
+  },
+
+  /**
+   * Fetch dashboard statistics for the current owner
+   */
+  getOwnerStats: async () => {
+    const response = await apiClient.get("/bookings/owner/stats");
+    return response.data;
+  },
 };
 
 export default bookingService;

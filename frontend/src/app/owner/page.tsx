@@ -2,6 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import bookingService from "@/services/booking.service";
+import { formatVenuePrice } from "@/lib/venues/listing";
 import {
   Search,
   Bell,
@@ -49,57 +52,66 @@ const initialBookings = [
   },
 ];
 
-// Mock upcoming events data
-const upcomingEvents = [
-  {
-    id: 1,
-    title: "Wedding Reception",
-    venue: "The Glasshouse",
-    time: "4:00 PM",
-    month: "OCT",
-    day: "24",
-    isPrimary: true,
-  },
-  {
-    id: 2,
-    title: "TechCorp Retreat",
-    venue: "Industrial Loft",
-    time: "9:00 AM",
-    month: "NOV",
-    day: "02",
-    isPrimary: false,
-  },
-  {
-    id: 3,
-    title: "Sarah's 30th Birthday",
-    venue: "The Glasshouse",
-    time: "7:00 PM",
-    month: "NOV",
-    day: "15",
-    isPrimary: false,
-  },
-];
+
 
 export default function OverviewPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [bookings, setBookings] = useState(initialBookings);
   const [notificationsCount, setNotificationsCount] = useState(3);
   const [showPromoAlert, setShowPromoAlert] = useState(false);
 
-  // Filter bookings based on search query
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    if (query.trim() === "") {
-      setBookings(initialBookings);
-    } else {
-      const filtered = initialBookings.filter(
-        (b) =>
-          b.venueName.toLowerCase().includes(query.toLowerCase()) ||
-          b.guestName.toLowerCase().includes(query.toLowerCase())
+  // ─── TanStack Query Integration ───
+  const { data: statsData, isLoading: isLoadingStats } = useQuery({
+    queryKey: ["owner", "stats"],
+    queryFn: () => bookingService.getOwnerStats(),
+  });
+  const stats = statsData?.data;
+
+  const { data: bookingsData, isLoading: isLoadingBookings, isError: isErrorBookings } = useQuery({
+    queryKey: ["owner", "bookings"],
+    queryFn: () => bookingService.getOwnerBookings(),
+  });
+  const recentBookings = bookingsData?.data ?? [];
+
+  // Filter bookings based on search query locally
+  const filteredBookings = recentBookings
+    .filter((b: any) => {
+      if (!searchQuery.trim()) return true;
+      return (
+        b.venueName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.guestName?.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setBookings(filtered);
-    }
+    })
+    .slice(0, 5);
+
+  // Filter and sort for confirmed upcoming events dynamically
+  const now = new Date();
+  const upcomingEvents = recentBookings
+    .filter((b: any) => {
+      return b.status === "CONFIRMED" && new Date(b.endTime) >= now;
+    })
+    .sort((a: any, b: any) => {
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    })
+    .slice(0, 3)
+    .map((b: any, index: number) => {
+      const startDate = new Date(b.startTime);
+      const startMonthStr = startDate.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+      const startDayStr = startDate.toLocaleDateString("en-US", { day: "numeric" });
+      const timeStr = startDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+      return {
+        id: b.id,
+        title: b.guestName ? `${b.guestName}'s Event` : "Customer Booking",
+        venue: b.venueName,
+        time: timeStr,
+        month: startMonthStr,
+        day: startDayStr,
+        isPrimary: index === 0,
+      };
+    });
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -196,7 +208,9 @@ export default function OverviewPage() {
             </div>
           </div>
           <div className="mt-4">
-            <span className="text-3xl font-bold tracking-tight text-on-surface">$42,500</span>
+            <span className="text-3xl font-bold tracking-tight text-on-surface">
+              {isLoadingStats ? "..." : formatVenuePrice(stats?.totalRevenue ?? 0)}
+            </span>
             <div className="mt-3.5 flex items-center gap-2">
               <span className="inline-flex items-center gap-0.5 rounded-full bg-[#fcf2ed] px-2.5 py-1 text-[11px] font-bold text-primary-container">
                 +12.5%
@@ -215,7 +229,9 @@ export default function OverviewPage() {
             </div>
           </div>
           <div className="mt-4">
-            <span className="text-3xl font-bold tracking-tight text-on-surface">24</span>
+            <span className="text-3xl font-bold tracking-tight text-on-surface">
+              {isLoadingStats ? "..." : (stats?.activeCount ?? 0)}
+            </span>
             <div className="mt-3.5 flex items-center gap-2">
               <span className="inline-flex items-center gap-0.5 rounded-full bg-[#fcf2ed] px-2.5 py-1 text-[11px] font-bold text-primary-container">
                 +3
@@ -257,7 +273,9 @@ export default function OverviewPage() {
             </div>
           </div>
           <div className="mt-4">
-            <span className="text-3xl font-bold tracking-tight text-on-surface">7</span>
+            <span className="text-3xl font-bold tracking-tight text-on-surface">
+              {isLoadingStats ? "..." : (stats?.pendingCount ?? 0)}
+            </span>
             <div className="mt-3.5">
               <Link
                 href="/owner/venues"
@@ -296,46 +314,73 @@ export default function OverviewPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle/40">
-                {bookings.length > 0 ? (
-                  bookings.map((booking) => (
-                    <tr key={booking.id} className="group/row">
-                      <td className="py-4 pr-3">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={booking.image}
-                            alt={booking.venueName}
-                            className="h-11 w-11 rounded-lg object-cover border border-border-subtle shadow-sm transition-transform duration-200 group-hover/row:scale-105"
-                          />
-                          <div className="flex flex-col">
-                            <span className="text-label-md font-semibold text-on-surface">
-                              {booking.venueName}
-                            </span>
-                            <span className="text-label-sm text-text-muted mt-0.5">
-                              {booking.guestName}
-                            </span>
+                {isLoadingBookings ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-text-muted">
+                      Loading recent bookings...
+                    </td>
+                  </tr>
+                ) : isErrorBookings ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-red-500">
+                      Failed to load recent bookings.
+                    </td>
+                  </tr>
+                ) : filteredBookings.length > 0 ? (
+                  filteredBookings.map((booking: any) => {
+                    const statusText =
+                      booking.status === "CONFIRMED"
+                        ? "Confirmed"
+                        : booking.status === "PENDING_PAYMENT"
+                        ? "Pending"
+                        : booking.status;
+
+                    return (
+                      <tr key={booking.id} className="group/row">
+                        <td className="py-4 pr-3">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=150&auto=format&fit=crop&q=80"
+                              alt={booking.venueName}
+                              className="h-11 w-11 rounded-lg object-cover border border-border-subtle shadow-sm transition-transform duration-200 group-hover/row:scale-105"
+                            />
+                            <div className="flex flex-col">
+                              <span className="text-label-md font-semibold text-on-surface">
+                                {booking.venueName}
+                              </span>
+                              <span className="text-label-sm text-text-muted mt-0.5">
+                                {booking.guestName}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-4 pr-3 text-text-muted font-medium">
-                        {booking.date}
-                      </td>
-                      <td className="py-4 pr-3">
-                        <span
-                          className={cn(
-                            "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold",
-                            booking.status === "Confirmed"
-                              ? "bg-sky-50 text-sky-700"
-                              : "bg-orange-50 text-orange-700"
-                          )}
-                        >
-                          {booking.status}
-                        </span>
-                      </td>
-                      <td className="py-4 text-right font-semibold text-on-surface">
-                        {booking.amount}
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="py-4 pr-3 text-text-muted font-medium">
+                          {new Date(booking.bookingDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </td>
+                        <td className="py-4 pr-3">
+                          <span
+                            className={cn(
+                              "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold",
+                              booking.status === "CONFIRMED"
+                                ? "bg-sky-50 text-sky-700"
+                                : booking.status === "PENDING_PAYMENT"
+                                ? "bg-orange-50 text-orange-700"
+                                : "bg-red-50 text-red-700"
+                            )}
+                          >
+                            {statusText}
+                          </span>
+                        </td>
+                        <td className="py-4 text-right font-semibold text-on-surface">
+                          {formatVenuePrice(Number(booking.totalPrice))}
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={4} className="py-8 text-center text-text-muted">
@@ -363,36 +408,44 @@ export default function OverviewPage() {
 
             {/* List of Events */}
             <div className="space-y-5">
-              {upcomingEvents.map((event) => (
-                <div key={event.id} className="flex items-center gap-4 group/event">
-                  {/* Styled Date Block */}
-                  <div
-                    className={cn(
-                      "flex h-[60px] w-[60px] shrink-0 flex-col items-center justify-center rounded-2xl shadow-sm transition-all duration-200 group-hover/event:-translate-y-0.5",
-                      event.isPrimary
-                        ? "bg-primary-container text-white"
-                        : "bg-surface-container-high text-primary-container border border-border-subtle/50"
-                    )}
-                  >
-                    <span className="text-[10px] font-bold tracking-wider uppercase leading-none opacity-90">
-                      {event.month}
-                    </span>
-                    <span className="text-lg font-bold mt-1 leading-none">
-                      {event.day}
-                    </span>
-                  </div>
+              {isLoadingBookings ? (
+                <div className="text-body-md text-text-muted">Loading events...</div>
+              ) : isErrorBookings ? (
+                <div className="text-body-md text-red-500">Failed to load events.</div>
+              ) : upcomingEvents.length > 0 ? (
+                upcomingEvents.map((event: any) => (
+                  <div key={event.id} className="flex items-center gap-4 group/event">
+                    {/* Styled Date Block */}
+                    <div
+                      className={cn(
+                        "flex h-[60px] w-[60px] shrink-0 flex-col items-center justify-center rounded-2xl shadow-sm transition-all duration-200 group-hover/event:-translate-y-0.5",
+                        event.isPrimary
+                          ? "bg-primary-container text-white"
+                          : "bg-surface-container-high text-primary-container border border-border-subtle/50"
+                      )}
+                    >
+                      <span className="text-[10px] font-bold tracking-wider uppercase leading-none opacity-90">
+                        {event.month}
+                      </span>
+                      <span className="text-lg font-bold mt-1 leading-none">
+                        {event.day}
+                      </span>
+                    </div>
 
-                  {/* Event details */}
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-label-md font-bold text-on-surface truncate group-hover/event:text-primary-container transition-colors">
-                      {event.title}
-                    </span>
-                    <span className="text-label-sm text-text-muted mt-1 truncate">
-                      {event.venue} &bull; {event.time}
-                    </span>
+                    {/* Event details */}
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-label-md font-bold text-on-surface truncate group-hover/event:text-primary-container transition-colors">
+                        {event.title}
+                      </span>
+                      <span className="text-label-sm text-text-muted mt-1 truncate">
+                        {event.venue} &bull; {event.time}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="text-body-md text-text-muted">No upcoming events scheduled.</div>
+              )}
             </div>
           </div>
 
