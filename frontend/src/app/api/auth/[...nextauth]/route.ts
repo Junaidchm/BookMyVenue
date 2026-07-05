@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { authService } from "@/services/auth.service";
@@ -69,6 +70,10 @@ const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET || "super-secret-default-key-for-dev",
 };
+=======
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/auth-options";
+>>>>>>> 821dd2f36a3aae1a74b9c704c7c326f9edd9c637
 
 const handler = NextAuth(authOptions);
 

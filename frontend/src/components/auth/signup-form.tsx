@@ -181,9 +181,15 @@ export function SignupForm() {
     try {
       await authService.register({
         fullName: fd.get("name") as string,
+<<<<<<< HEAD
         email: fd.get("email") as string,
         password: fd.get("password") as string,
         roles: [role],
+=======
+        email,
+        password,
+        roles: ["USER"],
+>>>>>>> 821dd2f36a3aae1a74b9c704c7c326f9edd9c637
       });
 
       // Auto-login after successful registration

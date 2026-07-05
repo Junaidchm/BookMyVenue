@@ -123,6 +123,40 @@ export class AuthService {
     };
   }
 
+  /**
+   * Handles Google OAuth login: finds existing user or creates a new one.
+   */
+  async googleLogin(email: string, fullName: string, roles: string[] = ['USER']) {
+    let user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      // Auto-create user from Google profile (no password)
+      user = await this.usersService.createOAuthUser(email, fullName, 'google', roles);
+    }
+
+    const userRoles = user.userRoles.map((ur: any) => ur.role.name);
+
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      roles: userRoles,
+    };
+
+    const token = jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN } as jwt.SignOptions);
+
+    return {
+      access_token: token,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        roles: userRoles,
+        ownerProfile: user.ownerProfile,
+      },
+    };
+  }
+
   verifyToken(token: string): JwtPayload {
     try {
       const decoded = jwt.verify(token, env.JWT_SECRET);
