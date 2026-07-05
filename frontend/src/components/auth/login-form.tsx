@@ -124,6 +124,7 @@ export function LoginForm() {
 
         <button
           type="button"
+          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
           className="flex w-full items-center justify-center gap-3 rounded-full border border-border-subtle bg-white py-3.5 transition-all duration-200 hover:bg-stone-50 active:scale-[0.98]"
         >
           <GoogleIcon />

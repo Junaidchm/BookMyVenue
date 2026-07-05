@@ -114,4 +114,28 @@ export class AuthController {
       next(err);
     }
   };
+
+  googleLogin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email, fullName, roles } = req.body;
+      if (!email || !fullName) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email and fullName are required.',
+        });
+      }
+      const result = await this.authService.googleLogin(
+        email,
+        fullName,
+        roles || ['USER'],
+      );
+      res.status(200).json({ success: true, data: result });
+    } catch (err: any) {
+      if (err.message.includes('already exists')) {
+        res.status(409).json({ success: false, message: err.message });
+      } else {
+        next(err);
+      }
+    }
+  };
 }
