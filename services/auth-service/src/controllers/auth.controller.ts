@@ -138,4 +138,23 @@ export class AuthController {
       }
     }
   };
+
+  /**
+   * POST /auth/google/check
+   * Checks whether a Google-authenticated email already has an account.
+   * Used by the Next.js jwt callback to decide whether to show the
+   * role-select interstitial (new user) or sign in directly (returning user).
+   */
+  checkGoogleUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ success: false, message: 'Email is required.' });
+      }
+      const user = await this.usersService.findByEmail(email);
+      res.status(200).json({ success: true, exists: !!user });
+    } catch (err: any) {
+      next(err);
+    }
+  };
 }

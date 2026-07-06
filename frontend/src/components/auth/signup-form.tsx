@@ -293,7 +293,7 @@ export function SignupForm() {
       {/* Google */}
       <button
         type="button"
-        onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+        onClick={() => signIn("google", { callbackUrl: "/auth/google/role-select" })}
         className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-stone-200 bg-white py-2.5 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 active:scale-[0.98]"
       >
         <GoogleIcon />
