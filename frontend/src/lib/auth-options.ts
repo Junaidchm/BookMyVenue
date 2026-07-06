@@ -67,25 +67,26 @@ export const authOptions: NextAuthOptions = {
       // ── Google OAuth sign-in ──────────────────────────────────────────────
       if (account?.provider === "google" && user) {
         try {
-          // Step 1: Check if this Google account already has a backend account
-          const checkRes = await fetch(`${BACKEND_URL}/auth/google/check`, {
+          // Step 1: Probe the existing /auth/google endpoint with checkOnly:true.
+          // This avoids needing a separate route and works with any backend state.
+          const probeRes = await fetch(`${BACKEND_URL}/auth/google`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: user.email }),
+            body: JSON.stringify({ email: user.email, checkOnly: true }),
           });
 
-          if (checkRes.ok) {
-            const checkData = await checkRes.json();
+          if (probeRes.ok) {
+            const probeData = await probeRes.json();
 
-            if (checkData.exists) {
-              // ── Returning user: sign them in directly, skip interstitial ──
+            if (probeData.exists) {
+              // ── Returning user: sign them in immediately, skip interstitial ──
               const loginRes = await fetch(`${BACKEND_URL}/auth/google`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   email: user.email,
                   fullName: user.name,
-                  roles: ["USER"], // backend ignores this for existing users
+                  roles: ["USER"], // backend uses the user's stored roles
                 }),
               });
               const loginData = await loginRes.json();
@@ -99,19 +100,18 @@ export const authOptions: NextAuthOptions = {
               return token;
             }
 
-            // ── New user (exists = false): needs role selection ──
+            // ── New user (exists = false): send to role-select interstitial ──
             token.googlePending = true;
             token.googleEmail = user.email ?? undefined;
             token.googleName = user.name ?? undefined;
             return token;
           }
-        } catch {
-          // Check endpoint unavailable (e.g. backend not yet restarted)
+        } catch (error) {
+          console.error("Google OAuth probe failed:", error);
         }
 
-        // ── Fallback: check endpoint unreachable → call /auth/google directly ──
-        // This preserves the old safe behaviour for returning users and
-        // creates new accounts with the default USER role as a safe fallback.
+        // ── Fallback: backend unreachable — sign in without role selection ──
+        console.warn("Google OAuth: falling back to direct sign-in");
         try {
           const fallbackRes = await fetch(`${BACKEND_URL}/auth/google`, {
             method: "POST",
@@ -129,8 +129,8 @@ export const authOptions: NextAuthOptions = {
             token.accessToken = fallbackData.data.access_token;
             token.ownerProfile = fallbackData.data.user.ownerProfile;
           }
-        } catch (error) {
-          console.error("Google OAuth backend call failed:", error);
+        } catch (err) {
+          console.error("Google OAuth backend call failed:", err);
         }
         return token;
       }

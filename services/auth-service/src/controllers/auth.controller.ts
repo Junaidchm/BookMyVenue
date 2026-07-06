@@ -117,7 +117,17 @@ export class AuthController {
 
   googleLogin = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email, fullName, roles } = req.body;
+      const { email, fullName, roles, checkOnly } = req.body;
+
+      // ── checkOnly mode: just probe whether the account exists ──
+      if (checkOnly === true) {
+        if (!email) {
+          return res.status(400).json({ success: false, message: 'Email is required.' });
+        }
+        const existing = await this.usersService.findByEmail(email);
+        return res.status(200).json({ success: true, exists: !!existing });
+      }
+
       if (!email || !fullName) {
         return res.status(400).json({
           success: false,
