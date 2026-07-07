@@ -195,9 +195,11 @@ export default function UsersPage() {
   }, [users, activeTab, searchQuery, sortField, sortDirection]);
 
   const totalPages = Math.max(1, Math.ceil(processedUsers.length / ITEMS_PER_PAGE));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+  
   const paginatedUsers = processedUsers.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (validCurrentPage - 1) * ITEMS_PER_PAGE,
+    validCurrentPage * ITEMS_PER_PAGE
   );
 
   // Counts
@@ -582,8 +584,8 @@ export default function UsersPage() {
             {processedUsers.length > 0 && (
               <div className="flex items-center justify-between px-6 py-4 border-t border-border-subtle">
                 <div className="text-sm text-text-muted font-medium">
-                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
-                  {Math.min(currentPage * ITEMS_PER_PAGE, processedUsers.length)} of{" "}
+                  Showing {(validCurrentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+                  {Math.min(validCurrentPage * ITEMS_PER_PAGE, processedUsers.length)} of{" "}
                   {processedUsers.length} {processedUsers.length === 1 ? "entry" : "entries"}
                 </div>
                 <div className="flex items-center gap-1">
@@ -591,7 +593,7 @@ export default function UsersPage() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 rounded-md text-text-muted hover:text-on-surface"
-                    disabled={currentPage === 1}
+                    disabled={validCurrentPage === 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     aria-label="Previous page"
                   >
@@ -601,9 +603,9 @@ export default function UsersPage() {
                     <Button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      variant={currentPage === page ? "default" : "ghost"}
+                      variant={validCurrentPage === page ? "default" : "ghost"}
                       className={`h-8 w-8 rounded-md p-0 text-sm font-medium ${
-                        currentPage === page
+                        validCurrentPage === page
                           ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                           : "text-on-surface-variant hover:bg-surface-container-low"
                       }`}
@@ -616,7 +618,7 @@ export default function UsersPage() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 rounded-md text-on-surface-variant hover:bg-surface-container-low"
-                    disabled={currentPage === totalPages}
+                    disabled={validCurrentPage >= totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     aria-label="Next page"
                   >
