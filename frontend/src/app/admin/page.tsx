@@ -190,20 +190,12 @@ export default function AdminDashboard() {
             className="pl-10 bg-surface-container-lowest border-border-subtle focus-visible:ring-ring rounded-full h-10"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            className="relative p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors duration-200"
-            aria-label="Notifications"
-          >
-            {pendingApprovalsCount > 0 && (
-                <span className="absolute top-1.5 right-2 w-2 h-2 bg-primary-container rounded-full border-2 border-surface animate-pulse" />
-            )}
-          </button>
-          <button
-            className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors duration-200"
-            aria-label="Settings"
-          >
-          </button>
+        <div className="flex items-center gap-3">
+          <Link href="/venues">
+            <Button className="h-10 text-sm font-medium bg-orange-500 hover:bg-orange-600 text-white transition-colors hidden sm:flex border-0 shadow-sm">
+              View all venues
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -214,10 +206,6 @@ export default function AdminDashboard() {
           <p className="text-text-muted text-label-md">{formattedDate}</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex items-center gap-2 bg-surface h-10 border-border-subtle hover:bg-surface-container-low transition-colors">
-            <Filter className="w-4 h-4" />
-            Filters
-          </Button>
           <Button 
             variant="outline" 
             className="flex items-center gap-2 bg-surface h-10 border-border-subtle hover:bg-surface-container-low transition-colors"
