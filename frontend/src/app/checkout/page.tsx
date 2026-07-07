@@ -45,6 +45,7 @@ function CheckoutContent() {
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [guestName, setGuestName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   // Sync user context name
   useEffect(() => {
@@ -175,6 +176,7 @@ function CheckoutContent() {
         prefill: {
           name: user?.fullName || "",
           email: user?.email || "",
+          contact: phoneNumber,
         },
         theme: {
           color: "#0F172A", // Slate Dark Theme
@@ -359,6 +361,7 @@ function CheckoutContent() {
                         value={guestName}
                         onChange={(e) => setGuestName(e.target.value)}
                         required
+                        disabled
                         placeholder="John Doe"
                         className="mt-1.5 rounded-xl border-stone-200 focus-visible:ring-primary"
                       />
@@ -373,6 +376,18 @@ function CheckoutContent() {
                         className="mt-1.5 rounded-xl bg-stone-50 border-stone-200 text-stone-500 cursor-not-allowed"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      required
+                      placeholder="+91 98765 43210"
+                      className="mt-1.5 rounded-xl border-stone-200 focus-visible:ring-primary"
+                    />
                   </div>
                 </div>
 
