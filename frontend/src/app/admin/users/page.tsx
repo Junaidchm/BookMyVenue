@@ -200,7 +200,11 @@ export default function UsersPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Counts for tabs
+  // Counts
+  const now = Date.now();
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+  const newSignups24H = users.filter((u) => (now - u.joinTimestamp) <= ONE_DAY).length;
+  const activeUsersCount = users.filter((u) => u.status === "active").length;
   const flaggedCount = users.filter((u) => u.isReported).length;
 
   const tabs: { key: TabKey; label: string; count?: number }[] = [
@@ -262,10 +266,10 @@ export default function UsersPage() {
               </div>
             </div>
             <div className="flex items-baseline gap-3">
-              <div className="text-4xl font-bold text-on-surface">142</div>
+              <div className="text-4xl font-bold text-on-surface">{isLoading ? "—" : newSignups24H}</div>
               <Badge variant="secondary" className="bg-status-success-bg text-status-success-text hover:bg-status-success-bg border-none px-2 py-0.5 flex gap-1 items-center font-medium rounded text-xs">
                 <TrendingUp className="w-3 h-3" />
-                12%
+                Recent
               </Badge>
             </div>
           </CardContent>
@@ -274,14 +278,14 @@ export default function UsersPage() {
         <Card className="border-border-subtle shadow-elevation-card bg-surface overflow-hidden rounded-xl group hover:shadow-elevation-card-hover transition-shadow duration-300">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-4">
-              <span className="text-xs font-semibold text-text-muted tracking-wider uppercase">Active Sessions</span>
+              <span className="text-xs font-semibold text-text-muted tracking-wider uppercase">Active Users</span>
               <div className="w-9 h-9 rounded-lg bg-tertiary/15 flex items-center justify-center">
-                <Monitor className="w-4.5 h-4.5 text-tertiary" />
+                <UserPlus className="w-4.5 h-4.5 text-tertiary" />
               </div>
             </div>
             <div className="flex items-baseline gap-3">
-              <div className="text-4xl font-bold text-on-surface">1,894</div>
-              <span className="text-sm text-text-muted font-medium">Currently online</span>
+              <div className="text-4xl font-bold text-on-surface">{isLoading ? "—" : activeUsersCount}</div>
+              <span className="text-sm text-text-muted font-medium">In good standing</span>
             </div>
           </CardContent>
         </Card>
