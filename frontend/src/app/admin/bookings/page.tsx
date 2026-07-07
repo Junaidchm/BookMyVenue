@@ -339,10 +339,10 @@ export default function BookingsPage() {
                       <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Booking ID</span>
                     </TableHead>
                     <TableHead className="py-4 w-[12%]">
-                      <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Venue ID</span>
+                      <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Venue Name</span>
                     </TableHead>
                     <TableHead className="py-4 w-[12%]">
-                      <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">User ID</span>
+                      <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">User Name</span>
                     </TableHead>
                     <TableHead className="py-4 w-[13%]">
                       <button
@@ -420,10 +420,10 @@ export default function BookingsPage() {
                           </span>
                         </TableCell>
                         <TableCell className="py-4">
-                          <span className="text-sm font-mono text-text-muted">{truncateId(booking.venueId)}</span>
+                          <span className="text-sm font-semibold text-text-muted">{booking.venueName || truncateId(booking.venueId)}</span>
                         </TableCell>
                         <TableCell className="py-4">
-                          <span className="text-sm font-mono text-text-muted">{truncateId(booking.userId)}</span>
+                          <span className="text-sm font-semibold text-text-muted">{booking.userName || truncateId(booking.userId)}</span>
                         </TableCell>
                         <TableCell className="py-4">
                           <span className="text-sm text-on-surface font-medium">{formatDate(booking.bookingDate)}</span>
@@ -544,12 +544,12 @@ export default function BookingsPage() {
                   <span className="font-mono text-on-surface font-medium break-all text-xs">{viewBooking.id}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs text-text-muted uppercase tracking-wider font-semibold">Venue ID</span>
-                  <span className="font-mono text-on-surface font-medium break-all text-xs">{viewBooking.venueId}</span>
+                  <span className="text-xs text-text-muted uppercase tracking-wider font-semibold">Venue Name</span>
+                  <span className="font-semibold text-on-surface break-all text-sm">{viewBooking.venueName || viewBooking.venueId}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs text-text-muted uppercase tracking-wider font-semibold">User ID</span>
-                  <span className="font-mono text-on-surface font-medium break-all text-xs">{viewBooking.userId}</span>
+                  <span className="text-xs text-text-muted uppercase tracking-wider font-semibold">User Name</span>
+                  <span className="font-semibold text-on-surface break-all text-sm">{viewBooking.userName || viewBooking.userId}</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs text-text-muted uppercase tracking-wider font-semibold">Booking Type</span>

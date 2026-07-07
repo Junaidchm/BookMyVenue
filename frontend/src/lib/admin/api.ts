@@ -200,6 +200,8 @@ export type AdminBooking = {
   paymentMetadata: any;
   createdAt: string;
   updatedAt: string;
+  userName?: string;
+  venueName?: string;
 };
 
 type AdminBookingsResponse = {

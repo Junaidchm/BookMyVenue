@@ -5,6 +5,7 @@ import { RiskScoringService } from '../services/risk-scoring.service';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { env } from '../config/env';
+import axios from 'axios';
 
 // Helper to run serializable transaction with retries
 const runSerializableTransaction = async <T>(
@@ -914,7 +915,46 @@ export const getAllBookingsAdmin = async (
       orderBy: { createdAt: 'desc' },
     });
 
-    const bookingsData = bookings.map(({ riskScore: _, ...b }) => b);
+    // Backend Enrichment: Fetch users and venues from internal services
+    const [usersRes, venuesRes] = await Promise.all([
+      axios
+        .get(`${env.AUTH_SERVICE_URL}/admin/users`, {
+          headers: {
+            'x-user-roles': userRoles,
+            'x-user-id': req.headers['x-user-id'],
+          },
+        })
+        .catch((err) => {
+          console.error('Failed to fetch internal users for admin bookings:', err.message);
+          return null;
+        }),
+      axios
+        .get(`${env.VENUE_SERVICE_URL}/admin/venues`, {
+          headers: {
+            'x-user-roles': userRoles,
+            'x-user-id': req.headers['x-user-id'],
+          },
+        })
+        .catch((err) => {
+          console.error('Failed to fetch internal venues for admin bookings:', err.message);
+          return null;
+        }),
+    ]);
+
+    const users = usersRes?.data?.data || [];
+    const venues = venuesRes?.data?.data || [];
+
+    const bookingsData = bookings.map(({ riskScore: _, ...b }) => {
+      const user = users.find((u: any) => u.id.toString() === b.userId);
+      const venue = venues.find((v: any) => v.id.toString() === b.venueId);
+      
+      return {
+        ...b,
+        userName: user?.fullName || b.userId,
+        venueName: venue?.title || b.venueId,
+      };
+    });
+
     return res.status(200).json({
       success: true,
       data: bookingsData,
