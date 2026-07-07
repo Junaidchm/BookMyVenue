@@ -119,6 +119,45 @@ export default function AdminDashboard() {
 
   const activeUsersCount = users.length;
 
+  const handleExportCSV = () => {
+    if (!bookings.length) return;
+
+    // Headers
+    const headers = ["Booking ID", "Date", "Venue", "User", "Status", "Amount"];
+    
+    // Rows
+    const rows = bookings.map((b) => {
+      const venue = venues.find(v => v.id.toString() === b.venueId);
+      const user = users.find(u => u.id.toString() === b.userId);
+      
+      const venueName = venue?.title || b.venueId;
+      const userName = user?.fullName || b.userId;
+      const date = new Date(b.createdAt).toLocaleDateString("en-US");
+      
+      // Escape strings containing commas
+      const escape = (str: string) => `"${String(str).replace(/"/g, '""')}"`;
+      
+      return [
+        b.id,
+        date,
+        escape(venueName),
+        escape(userName),
+        b.status,
+        b.totalPrice
+      ].join(",");
+    });
+
+    const csvContent = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `bmv_bookings_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -156,7 +195,6 @@ export default function AdminDashboard() {
             className="relative p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors duration-200"
             aria-label="Notifications"
           >
-            <Bell className="w-5 h-5" />
             {pendingApprovalsCount > 0 && (
                 <span className="absolute top-1.5 right-2 w-2 h-2 bg-primary-container rounded-full border-2 border-surface animate-pulse" />
             )}
@@ -165,7 +203,6 @@ export default function AdminDashboard() {
             className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors duration-200"
             aria-label="Settings"
           >
-            <Settings className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -181,7 +218,11 @@ export default function AdminDashboard() {
             <Filter className="w-4 h-4" />
             Filters
           </Button>
-          <Button variant="outline" className="flex items-center gap-2 bg-surface h-10 border-border-subtle hover:bg-surface-container-low transition-colors">
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2 bg-surface h-10 border-border-subtle hover:bg-surface-container-low transition-colors"
+            onClick={handleExportCSV}
+          >
             <Download className="w-4 h-4" />
             Export
           </Button>
