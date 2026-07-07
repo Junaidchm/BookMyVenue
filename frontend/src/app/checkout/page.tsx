@@ -273,9 +273,6 @@ function CheckoutContent() {
           <Button asChild className="rounded-full bg-primary py-3 px-6 text-white hover:bg-orange-650">
             <Link href="/user/bookings">View My Bookings</Link>
           </Button>
-          <Button asChild variant="outline" className="rounded-full py-3 px-6 border-stone-200 text-stone-700 hover:bg-stone-50">
-            <Link href="/venues">Find More Venues</Link>
-          </Button>
         </div>
       </div>
     );
@@ -377,7 +374,7 @@ function CheckoutContent() {
                       />
                     </div>
                   </div>
-                  <div>
+                  <div className="mt-4">
                     <Label htmlFor="phoneNumber">Phone Number</Label>
                     <Input
                       id="phoneNumber"
