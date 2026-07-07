@@ -894,3 +894,35 @@ export const rescheduleBooking = async (
       .json({ success: false, message: 'Internal Server Error' });
   }
 };
+
+export const getAllBookingsAdmin = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const userRoles = (req.headers['x-user-roles'] as string) || '';
+    const roles = userRoles.split(',').map((r) => r.trim());
+
+    if (!roles.includes('ADMIN')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Admin access required',
+      });
+    }
+
+    const bookings = await prisma.booking.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const bookingsData = bookings.map(({ riskScore: _, ...b }) => b);
+    return res.status(200).json({
+      success: true,
+      data: bookingsData,
+    });
+  } catch (error) {
+    console.error('Error fetching all bookings for admin:', error);
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
+  }
+};

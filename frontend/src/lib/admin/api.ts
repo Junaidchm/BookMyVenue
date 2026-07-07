@@ -181,3 +181,51 @@ export async function getUsers(): Promise<AdminUser[]> {
   return body.data ?? [];
 }
 
+// ─── Admin Bookings ──────────────────────────────────────────────────────────
+
+export type AdminBooking = {
+  id: string;
+  venueId: string;
+  userId: string;
+  type: "HOURLY" | "SESSION";
+  venueSessionId: string | null;
+  sessionName: string | null;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  totalPrice: string;
+  status: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED" | "FAILED";
+  refundPercentage: string;
+  paymentId: string | null;
+  paymentMetadata: any;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type AdminBookingsResponse = {
+  success: boolean;
+  data: AdminBooking[];
+};
+
+/**
+ * Fetch all bookings for the admin dashboard.
+ * Requires the caller to be authenticated as ADMIN.
+ */
+export async function getAllAdminBookings(): Promise<AdminBooking[]> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${getApiBaseUrl()}/admin/bookings`, {
+    credentials: "include",
+    cache: "no-store",
+    headers,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { message?: string }).message ?? "Failed to fetch admin bookings"
+    );
+  }
+
+  const body = (await res.json()) as AdminBookingsResponse;
+  return body.data ?? [];
+}
