@@ -4,8 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   Search,
-  Bell,
-  Settings as GearIcon,
   Plus,
   Megaphone,
   TrendingUp,
@@ -25,8 +23,6 @@ import { useOwnerDashboard } from "@/lib/owner/queries";
 
 export default function OverviewPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [notificationsCount, setNotificationsCount] = useState(3);
-  const [showPromoAlert, setShowPromoAlert] = useState(false);
 
   // 1. Fetch Owner's Venues
   const { data: venues } = useQuery(myVenuesQueryOptions());
@@ -102,27 +98,6 @@ export default function OverviewPage() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3.5 self-end sm:self-auto">
-          {/* Notification Button */}
-          <button
-            onClick={() => setNotificationsCount(0)}
-            className="relative rounded-full bg-white p-3 border border-border-subtle hover:bg-stone-50 transition-colors shadow-sm"
-            aria-label="Notifications"
-          >
-            <Bell className="h-5 w-5 text-on-surface" />
-            {notificationsCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
-                {notificationsCount}
-              </span>
-            )}
-          </button>
-
-          {/* Settings Icon */}
-          <button
-            className="rounded-full bg-white p-3 border border-border-subtle hover:bg-stone-50 transition-colors shadow-sm"
-            aria-label="Dashboard settings"
-          >
-            <GearIcon className="h-5 w-5 text-on-surface" />
-          </button>
 
           {/* + Add Venue Button */}
           <Link
