@@ -15,7 +15,8 @@ datasource db {
 model User {
   id           String        @id @default(uuid())
   email        String        @unique
-  passwordHash String
+  passwordHash String?
+  authProvider String        @default("local") // "local" | "google"
   fullName     String
   isKycVerified Boolean       @default(false)
   createdAt    DateTime      @default(now())

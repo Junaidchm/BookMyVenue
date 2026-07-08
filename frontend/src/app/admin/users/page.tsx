@@ -49,141 +49,6 @@ type UserData = {
   status: "active" | "suspended";
 };
 
-const allUsers: UserData[] = [
-  {
-    id: 1,
-    name: "Sarah Jenkins",
-    email: "sarah.j@example.com",
-    role: "Venue Owner",
-    joinDate: "Oct 12, 2023",
-    joinTimestamp: new Date("2023-10-12").getTime(),
-    activityMain: "3 Venues",
-    activitySub: "142 Total Bookings",
-    image: "https://i.pravatar.cc/150?u=sarah",
-    isReported: false,
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Marcus K.",
-    email: "marcus.k@email.com",
-    role: "Venue Booker",
-    joinDate: "Jan 05, 2024",
-    joinTimestamp: new Date("2024-01-05").getTime(),
-    activityMain: "12 Bookings",
-    activitySub: "Last active 2h ago",
-    image: "https://i.pravatar.cc/150?u=marcus",
-    isReported: false,
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "David Miller",
-    email: "david.m88@test.com",
-    role: "Venue Booker",
-    joinDate: "Nov 22, 2023",
-    joinTimestamp: new Date("2023-11-22").getTime(),
-    activityMain: "2 Cancellations",
-    activitySub: "Reported by Owner",
-    activitySubColor: "text-error",
-    image: "https://i.pravatar.cc/150?u=david",
-    isReported: true,
-    status: "active",
-  },
-  {
-    id: 4,
-    name: "Elena Rodriguez",
-    email: "elena.r@example.com",
-    role: "Venue Owner",
-    joinDate: "Mar 18, 2023",
-    joinTimestamp: new Date("2023-03-18").getTime(),
-    activityMain: "5 Venues",
-    activitySub: "289 Total Bookings",
-    image: "https://i.pravatar.cc/150?u=elena",
-    isReported: false,
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "James Chen",
-    email: "james.chen@email.com",
-    role: "Venue Booker",
-    joinDate: "Aug 30, 2023",
-    joinTimestamp: new Date("2023-08-30").getTime(),
-    activityMain: "7 Bookings",
-    activitySub: "Last active 1d ago",
-    image: "https://i.pravatar.cc/150?u=james",
-    isReported: false,
-    status: "active",
-  },
-  {
-    id: 6,
-    name: "Priya Sharma",
-    email: "priya.s@test.com",
-    role: "Venue Booker",
-    joinDate: "Dec 01, 2023",
-    joinTimestamp: new Date("2023-12-01").getTime(),
-    activityMain: "4 Cancellations",
-    activitySub: "Reported by 2 Owners",
-    activitySubColor: "text-error",
-    image: "https://i.pravatar.cc/150?u=priya",
-    isReported: true,
-    status: "active",
-  },
-  {
-    id: 7,
-    name: "Tom Hughes",
-    email: "tom.h@example.com",
-    role: "Venue Owner",
-    joinDate: "Feb 14, 2024",
-    joinTimestamp: new Date("2024-02-14").getTime(),
-    activityMain: "1 Venue",
-    activitySub: "18 Total Bookings",
-    image: "https://i.pravatar.cc/150?u=tom",
-    isReported: false,
-    status: "active",
-  },
-  {
-    id: 8,
-    name: "Anna Kowalski",
-    email: "anna.k@email.com",
-    role: "Venue Booker",
-    joinDate: "Jul 09, 2023",
-    joinTimestamp: new Date("2023-07-09").getTime(),
-    activityMain: "22 Bookings",
-    activitySub: "Last active 5m ago",
-    image: "https://i.pravatar.cc/150?u=anna",
-    isReported: false,
-    status: "active",
-  },
-  {
-    id: 9,
-    name: "Michael Rivera",
-    email: "mike.r@test.com",
-    role: "Venue Booker",
-    joinDate: "Sep 15, 2023",
-    joinTimestamp: new Date("2023-09-15").getTime(),
-    activityMain: "3 Cancellations",
-    activitySub: "Flagged for review",
-    activitySubColor: "text-error",
-    image: "https://i.pravatar.cc/150?u=michael",
-    isReported: true,
-    status: "suspended",
-  },
-  {
-    id: 10,
-    name: "Sophie Turner",
-    email: "sophie.t@example.com",
-    role: "Venue Owner",
-    joinDate: "Apr 22, 2024",
-    joinTimestamp: new Date("2024-04-22").getTime(),
-    activityMain: "2 Venues",
-    activitySub: "56 Total Bookings",
-    image: "https://i.pravatar.cc/150?u=sophie",
-    isReported: false,
-    status: "active",
-  },
-];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -197,7 +62,7 @@ const ITEMS_PER_PAGE = 5;
 
 export default function UsersPage() {
   // State
-  const [users, setUsers] = useState<UserData[]>(allUsers);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -227,7 +92,7 @@ export default function UsersPage() {
           joinTimestamp: new Date(u.createdAt).getTime(),
           activityMain: "-",
           activitySub: isOwner && u.ownerProfile?.businessName ? `Business: ${u.ownerProfile.businessName}` : "Active",
-          image: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.fullName)}&background=random`,
+          image: "",
           isReported: false,
           status: "active",
         };
@@ -330,12 +195,18 @@ export default function UsersPage() {
   }, [users, activeTab, searchQuery, sortField, sortDirection]);
 
   const totalPages = Math.max(1, Math.ceil(processedUsers.length / ITEMS_PER_PAGE));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+  
   const paginatedUsers = processedUsers.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (validCurrentPage - 1) * ITEMS_PER_PAGE,
+    validCurrentPage * ITEMS_PER_PAGE
   );
 
-  // Counts for tabs
+  // Counts
+  const now = Date.now();
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+  const newSignups24H = users.filter((u) => (now - u.joinTimestamp) <= ONE_DAY).length;
+  const activeUsersCount = users.filter((u) => u.status === "active").length;
   const flaggedCount = users.filter((u) => u.isReported).length;
 
   const tabs: { key: TabKey; label: string; count?: number }[] = [
@@ -397,10 +268,10 @@ export default function UsersPage() {
               </div>
             </div>
             <div className="flex items-baseline gap-3">
-              <div className="text-4xl font-bold text-on-surface">142</div>
+              <div className="text-4xl font-bold text-on-surface">{isLoading ? "—" : newSignups24H}</div>
               <Badge variant="secondary" className="bg-status-success-bg text-status-success-text hover:bg-status-success-bg border-none px-2 py-0.5 flex gap-1 items-center font-medium rounded text-xs">
                 <TrendingUp className="w-3 h-3" />
-                12%
+                Recent
               </Badge>
             </div>
           </CardContent>
@@ -409,14 +280,14 @@ export default function UsersPage() {
         <Card className="border-border-subtle shadow-elevation-card bg-surface overflow-hidden rounded-xl group hover:shadow-elevation-card-hover transition-shadow duration-300">
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-4">
-              <span className="text-xs font-semibold text-text-muted tracking-wider uppercase">Active Sessions</span>
+              <span className="text-xs font-semibold text-text-muted tracking-wider uppercase">Active Users</span>
               <div className="w-9 h-9 rounded-lg bg-tertiary/15 flex items-center justify-center">
-                <Monitor className="w-4.5 h-4.5 text-tertiary" />
+                <UserPlus className="w-4.5 h-4.5 text-tertiary" />
               </div>
             </div>
             <div className="flex items-baseline gap-3">
-              <div className="text-4xl font-bold text-on-surface">1,894</div>
-              <span className="text-sm text-text-muted font-medium">Currently online</span>
+              <div className="text-4xl font-bold text-on-surface">{isLoading ? "—" : activeUsersCount}</div>
+              <span className="text-sm text-text-muted font-medium">In good standing</span>
             </div>
           </CardContent>
         </Card>
@@ -713,8 +584,8 @@ export default function UsersPage() {
             {processedUsers.length > 0 && (
               <div className="flex items-center justify-between px-6 py-4 border-t border-border-subtle">
                 <div className="text-sm text-text-muted font-medium">
-                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
-                  {Math.min(currentPage * ITEMS_PER_PAGE, processedUsers.length)} of{" "}
+                  Showing {(validCurrentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+                  {Math.min(validCurrentPage * ITEMS_PER_PAGE, processedUsers.length)} of{" "}
                   {processedUsers.length} {processedUsers.length === 1 ? "entry" : "entries"}
                 </div>
                 <div className="flex items-center gap-1">
@@ -722,7 +593,7 @@ export default function UsersPage() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 rounded-md text-text-muted hover:text-on-surface"
-                    disabled={currentPage === 1}
+                    disabled={validCurrentPage === 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     aria-label="Previous page"
                   >
@@ -732,9 +603,9 @@ export default function UsersPage() {
                     <Button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      variant={currentPage === page ? "default" : "ghost"}
+                      variant={validCurrentPage === page ? "default" : "ghost"}
                       className={`h-8 w-8 rounded-md p-0 text-sm font-medium ${
-                        currentPage === page
+                        validCurrentPage === page
                           ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                           : "text-on-surface-variant hover:bg-surface-container-low"
                       }`}
@@ -747,7 +618,7 @@ export default function UsersPage() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 rounded-md text-on-surface-variant hover:bg-surface-container-low"
-                    disabled={currentPage === totalPages}
+                    disabled={validCurrentPage >= totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     aria-label="Next page"
                   >

@@ -1,14 +1,17 @@
 "use client";
 
-import { Eye, EyeOff, Loader2, AlertCircle, Shield } from "lucide-react";
+import { Eye, EyeOff, Loader2, AlertCircle, Shield, Search, Building } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 import { AuthForm } from "@/components/auth/auth-form";
 import { GoogleIcon } from "@/components/auth/auth-split-layout";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/auth.service";
+
+type AccountRole = "USER" | "OWNER";
 
 /* ── Clean minimal input field ── */
 function Field({
@@ -65,6 +68,70 @@ function Field({
   );
 }
 
+/* ── Role selector toggle ── */
+function RoleSelector({
+  role,
+  onChange,
+}: {
+  role: AccountRole;
+  onChange: (role: AccountRole) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <span className="block text-[13px] font-medium text-stone-700">
+        I want to
+      </span>
+      <div className="relative flex rounded-lg border border-stone-200 bg-stone-50 p-1">
+        {/* Sliding pill background */}
+        <div
+          className={cn(
+            "absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-md bg-brand shadow-sm",
+            "transition-all duration-300 ease-in-out",
+            role === "USER" ? "left-1" : "left-[calc(50%+0.25rem)]"
+          )}
+        />
+
+        {/* Venue Booker option */}
+        <button
+          type="button"
+          onClick={() => onChange("USER")}
+          className={cn(
+            "relative z-10 flex flex-1 items-center justify-center gap-2 rounded-md py-2.5 text-[13px] font-semibold",
+            "transition-colors duration-300",
+            role === "USER"
+              ? "text-white"
+              : "text-stone-500 hover:text-stone-700"
+          )}
+        >
+          <Search className="size-3.5" />
+          Book Venues
+        </button>
+
+        {/* Venue Owner option */}
+        <button
+          type="button"
+          onClick={() => onChange("OWNER")}
+          className={cn(
+            "relative z-10 flex flex-1 items-center justify-center gap-2 rounded-md py-2.5 text-[13px] font-semibold",
+            "transition-colors duration-300",
+            role === "OWNER"
+              ? "text-white"
+              : "text-stone-500 hover:text-stone-700"
+          )}
+        >
+          <Building className="size-3.5" />
+          List Venues
+        </button>
+      </div>
+      <p className="text-[11px] text-stone-400">
+        {role === "USER"
+          ? "Search and book venues for your events."
+          : "List your venues and manage bookings."}
+      </p>
+    </div>
+  );
+}
+
 /* ── Password strength ── */
 function getStrength(pwd: string) {
   if (!pwd) return { score: 0, label: "", color: "" };
@@ -99,6 +166,7 @@ export function SignupForm() {
   const [showPwd, setShowPwd] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [role, setRole] = useState<AccountRole>("USER");
 
   const strength = getStrength(password);
 
@@ -113,7 +181,7 @@ export function SignupForm() {
         fullName: fd.get("name") as string,
         email: fd.get("email") as string,
         password: fd.get("password") as string,
-        roles: ["USER"],
+        roles: [role],
       });
       router.push("/login?registered=true");
     } catch (err: any) {
@@ -142,6 +210,9 @@ export function SignupForm() {
           </div>
         </div>
       )}
+
+      {/* Role selector */}
+      <RoleSelector role={role} onChange={setRole} />
 
       {/* Fields */}
       <Field id="name" label="Full name" placeholder="Jane Doe" autoComplete="name" required />
@@ -222,6 +293,7 @@ export function SignupForm() {
       {/* Google */}
       <button
         type="button"
+        onClick={() => signIn("google", { callbackUrl: "/auth/google/role-select" })}
         className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-stone-200 bg-white py-2.5 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 active:scale-[0.98]"
       >
         <GoogleIcon />

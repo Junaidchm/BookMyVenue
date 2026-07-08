@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import { env } from '../config/env';
 import { AuthClient } from '../services/auth-client';
 import { VenueClient } from '../services/venue-client';
+import axios from 'axios';
 
 // Helper to run serializable transaction with retries
 const runSerializableTransaction = async <T>(
@@ -1033,6 +1034,80 @@ export const getOwnerStats = async (
     });
   } catch (error: any) {
     console.error('Error fetching owner stats:', error);
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+export const getAllBookingsAdmin = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const userRoles = (req.headers['x-user-roles'] as string) || '';
+    const roles = userRoles.split(',').map((r) => r.trim());
+
+    if (!roles.includes('ADMIN')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Admin access required',
+      });
+    }
+
+    const bookings = await prisma.booking.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Backend Enrichment: Fetch users and venues from internal services
+    const [usersRes, venuesRes] = await Promise.all([
+      axios
+        .get(`${env.AUTH_SERVICE_URL}/admin/users`, {
+          headers: {
+            'x-user-roles': userRoles,
+            'x-user-id': req.headers['x-user-id'],
+          },
+          timeout: 5000,
+        })
+        .catch((err) => {
+          console.error('Failed to fetch internal users for admin bookings:', err.message);
+          return null;
+        }),
+      axios
+        .get(`${env.VENUE_SERVICE_URL}/admin/venues`, {
+          headers: {
+            'x-user-roles': userRoles,
+            'x-user-id': req.headers['x-user-id'],
+          },
+          timeout: 5000,
+        })
+        .catch((err) => {
+          console.error('Failed to fetch internal venues for admin bookings:', err.message);
+          return null;
+        }),
+    ]);
+
+    const users = usersRes?.data?.data || [];
+    const venues = venuesRes?.data?.data || [];
+
+    const bookingsData = bookings.map((booking: any) => {
+      const { riskScore, paymentMetadata, ...b } = booking;
+      const user = users.find((u: any) => u.id.toString() === b.userId);
+      const venue = venues.find((v: any) => v.id.toString() === b.venueId);
+      
+      return {
+        ...b,
+        userName: user?.fullName || b.userId,
+        venueName: venue?.title || b.venueId,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: bookingsData,
+    });
+  } catch (error) {
+    console.error('Error fetching all bookings for admin:', error);
     return res
       .status(500)
       .json({ success: false, message: 'Internal Server Error' });
