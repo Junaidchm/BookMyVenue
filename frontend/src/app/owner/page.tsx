@@ -23,6 +23,7 @@ import { useOwnerDashboard } from "@/lib/owner/queries";
 
 export default function OverviewPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [showPromoAlert, setShowPromoAlert] = useState(false);
 
   // 1. Fetch Owner's Venues
   const { data: venues } = useQuery(myVenuesQueryOptions());
