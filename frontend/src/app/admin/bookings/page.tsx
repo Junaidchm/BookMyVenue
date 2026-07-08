@@ -120,14 +120,16 @@ export default function BookingsPage() {
     else if (activeTab === "cancelled") result = result.filter((b) => b.status === "CANCELLED");
     else if (activeTab === "failed") result = result.filter((b) => b.status === "FAILED");
 
-    // Search by booking ID
+    // Search by booking ID, venue name, or user name
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
         (b) =>
           b.id.toLowerCase().includes(q) ||
           b.venueId.toLowerCase().includes(q) ||
-          b.userId.toLowerCase().includes(q)
+          b.userId.toLowerCase().includes(q) ||
+          (b.venueName && b.venueName.toLowerCase().includes(q)) ||
+          (b.userName && b.userName.toLowerCase().includes(q))
       );
     }
 

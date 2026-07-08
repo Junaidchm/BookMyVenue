@@ -923,6 +923,7 @@ export const getAllBookingsAdmin = async (
             'x-user-roles': userRoles,
             'x-user-id': req.headers['x-user-id'],
           },
+          timeout: 5000,
         })
         .catch((err) => {
           console.error('Failed to fetch internal users for admin bookings:', err.message);
@@ -934,6 +935,7 @@ export const getAllBookingsAdmin = async (
             'x-user-roles': userRoles,
             'x-user-id': req.headers['x-user-id'],
           },
+          timeout: 5000,
         })
         .catch((err) => {
           console.error('Failed to fetch internal venues for admin bookings:', err.message);
@@ -944,7 +946,8 @@ export const getAllBookingsAdmin = async (
     const users = usersRes?.data?.data || [];
     const venues = venuesRes?.data?.data || [];
 
-    const bookingsData = bookings.map(({ riskScore: _, ...b }) => {
+    const bookingsData = bookings.map((booking: any) => {
+      const { riskScore, paymentMetadata, ...b } = booking;
       const user = users.find((u: any) => u.id.toString() === b.userId);
       const venue = venues.find((v: any) => v.id.toString() === b.venueId);
       
