@@ -16,7 +16,14 @@ import {
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/session-provider";
 
-const navItems = [
+interface NavItem {
+  label: string;
+  href: string;
+  icon: any;
+  comingSoon?: boolean;
+}
+
+const navItems: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Approvals", href: "/admin/approvals", icon: CheckSquare },
   { label: "Bookings", href: "/admin/bookings", icon: Calendar },
