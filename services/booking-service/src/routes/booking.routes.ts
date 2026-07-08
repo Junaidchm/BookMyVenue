@@ -11,6 +11,7 @@ import {
   cancelBooking,
   rescheduleBooking,
   getAllBookingsAdmin,
+  getOwnerDashboard,
 } from '../controllers/booking.controller';
 import { checkBookingRisk } from '../middlewares/risk.middleware';
 
@@ -20,6 +21,7 @@ const router = Router();
 router.get('/', getBookings);
 router.get('/availability', checkAvailability);
 router.get('/admin', getAllBookingsAdmin);
+router.get('/owner/dashboard', getOwnerDashboard);
 router.get('/:id', getBookingById);
 router.post('/', checkBookingRisk, createBooking);
 router.post('/:id/payment/order', createPaymentOrder);

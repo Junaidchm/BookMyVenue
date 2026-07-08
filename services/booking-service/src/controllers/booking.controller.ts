@@ -660,6 +660,70 @@ export const getBookings = async (
   }
 };
 
+export const getOwnerDashboard = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const venueIdsQuery = req.query.venueIds as string;
+    if (!venueIdsQuery) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing venueIds parameter',
+      });
+    }
+
+    const venueIds = venueIdsQuery.split(',');
+
+    // Fetch all bookings for the given venues
+    const allBookings = await prisma.booking.findMany({
+      where: { venueId: { in: venueIds } },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    let totalRevenue = 0;
+    let activeBookings = 0;
+    let pendingInquiries = 0;
+
+    allBookings.forEach((b) => {
+      if (b.status === 'CONFIRMED') {
+        totalRevenue += Number(b.totalPrice);
+        activeBookings += 1;
+      } else if (b.status === 'PENDING_PAYMENT') {
+        pendingInquiries += 1;
+      }
+    });
+
+    // Recent bookings (last 5 created)
+    const recentBookings = allBookings.slice(0, 5);
+
+    // Upcoming events (next 5 confirmed bookings based on startTime)
+    const now = new Date();
+    const upcomingEvents = [...allBookings]
+      .filter((b) => b.status === 'CONFIRMED' && new Date(b.startTime) >= now)
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+      .slice(0, 5);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalRevenue,
+        activeBookings,
+        pendingInquiries,
+        recentBookings,
+        upcomingEvents,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error fetching owner dashboard:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch owner dashboard data',
+    });
+  }
+};
+
+
 export const cancelBooking = async (
   req: Request,
   res: Response,
