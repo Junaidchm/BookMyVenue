@@ -20,8 +20,10 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { myVenuesQueryOptions } from "@/lib/venues/queries";
 import { useOwnerDashboard } from "@/lib/owner/queries";
+import { useAuth } from "@/components/auth/session-provider";
 
 export default function OverviewPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [showPromoAlert, setShowPromoAlert] = useState(false);
 
@@ -115,7 +117,7 @@ export default function OverviewPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between pt-2">
         <div>
           <h1 className="text-4xl font-bold tracking-tight text-on-surface md:text-5xl">
-            Welcome back, Sarah
+            Welcome back, {user?.fullName ? user.fullName.split(" ")[0] : "Owner"}
           </h1>
           <p className="mt-2 text-body-md text-text-muted">
             Here&apos;s what&apos;s happening with your venues today.
