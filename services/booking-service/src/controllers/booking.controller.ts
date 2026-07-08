@@ -723,6 +723,42 @@ export const getOwnerDashboard = async (
   }
 };
 
+export const getOwnerBookings = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const venueIdsQuery = req.query.venueIds as string;
+    if (!venueIdsQuery) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing venueIds parameter',
+      });
+    }
+
+    const venueIds = venueIdsQuery.split(',');
+
+    const bookings = await prisma.booking.findMany({
+      where: { venueId: { in: venueIds } },
+      orderBy: { startTime: 'asc' },
+    });
+
+    const bookingsData = bookings.map(({ riskScore: _, ...b }) => b);
+
+    return res.status(200).json({
+      success: true,
+      data: bookingsData,
+    });
+  } catch (error: any) {
+    console.error('Error fetching owner bookings:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch owner bookings',
+    });
+  }
+};
+
+
 
 export const cancelBooking = async (
   req: Request,

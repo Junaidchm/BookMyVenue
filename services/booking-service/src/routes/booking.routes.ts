@@ -12,6 +12,7 @@ import {
   rescheduleBooking,
   getAllBookingsAdmin,
   getOwnerDashboard,
+  getOwnerBookings,
 } from '../controllers/booking.controller';
 import { checkBookingRisk } from '../middlewares/risk.middleware';
 
@@ -22,6 +23,7 @@ router.get('/', getBookings);
 router.get('/availability', checkAvailability);
 router.get('/admin', getAllBookingsAdmin);
 router.get('/owner/dashboard', getOwnerDashboard);
+router.get('/owner/bookings', getOwnerBookings);
 router.get('/:id', getBookingById);
 router.post('/', checkBookingRisk, createBooking);
 router.post('/:id/payment/order', createPaymentOrder);

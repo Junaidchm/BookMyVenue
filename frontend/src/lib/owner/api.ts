@@ -62,3 +62,30 @@ export async function getOwnerDashboardData(venueIds: string[]): Promise<OwnerDa
   const data = await response.json();
   return data.data;
 }
+
+export async function getOwnerBookings(venueIds: string[]): Promise<DashboardBooking[]> {
+  if (venueIds.length === 0) {
+    return [];
+  }
+
+  const baseUrl = getApiBaseUrl();
+  const headers = await getAuthHeaders();
+
+  const response = await fetch(
+    `${baseUrl}/bookings/owner/bookings?venueIds=${venueIds.join(",")}`,
+    {
+      headers: {
+        ...headers,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch owner bookings");
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+

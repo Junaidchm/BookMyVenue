@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Building2,
   Calendar,
-  BarChart3,
   Wallet,
   Settings,
   LogOut,
@@ -23,7 +22,6 @@ const navigationItems = [
   { name: "Overview", href: "/owner", icon: LayoutDashboard },
   { name: "My Venues", href: "/owner/venues", icon: Building2 },
   { name: "Calendar", href: "/owner/calendar", icon: Calendar },
-  { name: "Analytics", href: "/owner/analytics", icon: BarChart3 },
 ];
 
 export default function DashboardLayout({
