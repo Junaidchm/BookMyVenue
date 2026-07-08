@@ -204,6 +204,19 @@ export async function getVenues(): Promise<Venue[]> {
   }
 }
 
+export async function getAmenities(): Promise<{ id: string; name: string; iconKey: string | null }[]> {
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/venues/amenities`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch amenities: Server returned status ${res.status}`);
+    }
+    const body = await res.json();
+    return body.data ?? [];
+  } catch (error: any) {
+    throw new Error(`Failed to fetch amenities: ${error?.message || error}`);
+  }
+}
+
 export async function getVenueById(id: string | number): Promise<Venue | undefined> {
   try {
     const res = await fetch(`${getApiBaseUrl()}/venues/${id}`);

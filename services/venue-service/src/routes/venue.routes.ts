@@ -16,6 +16,7 @@ const controller = new VenueController();
 
 router.post('/', requireOwner, validate(createVenueSchema), controller.create);
 router.get('/', controller.getAllVenues);
+router.get('/amenities', controller.getAllAmenities);
 router.get('/my-venues', requireOwner, controller.getMyVenues);
 router.get('/saved', requireAuth, controller.getSavedVenues);
 router.post('/:id/save', requireAuth, controller.saveVenue);

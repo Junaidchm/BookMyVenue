@@ -32,6 +32,22 @@ export class VenueController {
   };
 
   /**
+   * GET /venues/amenities
+   * Returns all amenities available.
+   */
+  getAllAmenities = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const amenities = await this.venueService.getAllAmenities();
+      res.status(200).json({
+        success: true,
+        data: amenities,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /**
    * GET /venues/:id
    * Returns a specific venue by ID.
    */
