@@ -535,8 +535,8 @@ export default function VenuesPage() {
             {processedVenues.length > 0 && (
               <div className="flex items-center justify-between px-6 py-4 border-t border-border-subtle">
                 <div className="text-sm text-text-muted font-medium">
-                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
-                  {Math.min(currentPage * ITEMS_PER_PAGE, processedVenues.length)} of{" "}
+                  Showing {(validCurrentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+                  {Math.min(validCurrentPage * ITEMS_PER_PAGE, processedVenues.length)} of{" "}
                   {processedVenues.length} {processedVenues.length === 1 ? "entry" : "entries"}
                 </div>
                 <div className="flex items-center gap-1">
@@ -544,7 +544,7 @@ export default function VenuesPage() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 rounded-md text-text-muted hover:text-on-surface"
-                    disabled={currentPage === 1}
+                    disabled={validCurrentPage === 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     aria-label="Previous page"
                   >
@@ -554,13 +554,13 @@ export default function VenuesPage() {
                     <Button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      variant={currentPage === page ? "default" : "ghost"}
+                      variant={validCurrentPage === page ? "default" : "ghost"}
                       className={`h-8 w-8 rounded-md p-0 text-sm font-medium ${
-                        currentPage === page
+                        validCurrentPage === page
                           ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                           : "text-on-surface-variant hover:bg-surface-container-low"
                       }`}
-                      aria-current={currentPage === page ? "page" : undefined}
+                      aria-current={validCurrentPage === page ? "page" : undefined}
                     >
                       {page}
                     </Button>
@@ -569,7 +569,7 @@ export default function VenuesPage() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 rounded-md text-on-surface-variant hover:bg-surface-container-low"
-                    disabled={currentPage === totalPages}
+                    disabled={validCurrentPage >= totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     aria-label="Next page"
                   >

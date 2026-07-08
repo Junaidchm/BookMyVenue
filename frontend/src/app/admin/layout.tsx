@@ -19,7 +19,7 @@ import { useAuth } from "@/components/auth/session-provider";
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Approvals", href: "/admin/approvals", icon: CheckSquare },
-  { label: "Bookings", href: "/admin/bookings", icon: Calendar, comingSoon: true },
+  { label: "Bookings", href: "/admin/bookings", icon: Calendar },
   { label: "Users", href: "/admin/users", icon: Users },
   { label: "Venues", href: "/admin/venues", icon: MapPin },
 ];
