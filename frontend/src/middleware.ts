@@ -18,7 +18,7 @@ export async function middleware(req: NextRequest) {
     if (roles.includes("OWNER")) {
       return NextResponse.redirect(new URL("/owner", req.url));
     }
-    return NextResponse.redirect(new URL("/user", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   // 2. Redirect /dashboard to the role-specific dashboard
@@ -72,6 +72,13 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // 7. Protect /profile routes
+  if (pathname.startsWith("/profile")) {
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
@@ -89,5 +96,7 @@ export const config = {
     "/admin/:path*",
     "/login",
     "/signup",
+    "/profile",
+    "/profile/:path*",
   ],
 };

@@ -53,10 +53,10 @@ const CATEGORIES = [
 ] as const;
 
 const AMENITIES = [
-  { id: 1, name: "Wifi", icon: Wifi },
-  { id: 2, name: "AC", icon: Wind },
-  { id: 3, name: "Projector", icon: Monitor },
-  { id: 4, name: "Parking", icon: Car },
+  { id: "5a711424-6d9b-402a-9e73-0570b435ff20", name: "Wifi", icon: Wifi },
+  { id: "3fa5b4b1-8e0a-4a2c-bb9b-b0b3d11b369c", name: "AC", icon: Wind },
+  { id: "6fe2b2c3-4d4a-4e2b-bb3b-f6a8e8055621", name: "Projector", icon: Monitor },
+  { id: "462dfd25-9a8c-4bf2-9e8c-f0502b4d45d9", name: "Parking", icon: Car },
 ] as const;
 
 const CAPACITY_TYPES = ["Seating", "Dining", "Floating", "Standing", "Theatre"] as const;
@@ -83,7 +83,7 @@ type FormData = {
   basePrice: string;
   pricingType: "PER_HOUR" | "PER_SESSION";
   bufferTimeMinutes: string;
-  amenities: number[];
+  amenities: string[];
   capacities: CapacityEntry[];
   sessions: SessionEntry[];
   imageUrls: string[];
@@ -184,13 +184,13 @@ export default function EditVenuePage() {
           ? venue.amenities
               .map((a) => {
                 const name = a.label.toLowerCase();
-                if (name.includes("wifi")) return 1;
-                if (name.includes("ac") || name.includes("conditioning")) return 2;
-                if (name.includes("projector") || name.includes("av") || name.includes("equipment")) return 3;
-                if (name.includes("parking")) return 4;
-                return 0;
+                if (name.includes("wifi")) return "5a711424-6d9b-402a-9e73-0570b435ff20";
+                if (name.includes("ac") || name.includes("conditioning")) return "3fa5b4b1-8e0a-4a2c-bb9b-b0b3d11b369c";
+                if (name.includes("projector") || name.includes("av") || name.includes("equipment")) return "6fe2b2c3-4d4a-4e2b-bb3b-f6a8e8055621";
+                if (name.includes("parking")) return "462dfd25-9a8c-4bf2-9e8c-f0502b4d45d9";
+                return "";
               })
-              .filter((val) => val !== 0)
+              .filter((val) => val !== "")
           : [],
         capacities: venue.capacity
           ? [{ type: "Seating", maxPeople: String(venue.capacity), isSeparate: false }]
@@ -320,7 +320,7 @@ export default function EditVenuePage() {
   };
 
   // ── Amenities ──
-  const toggleAmenity = (id: number) => {
+  const toggleAmenity = (id: string) => {
     setForm((prev) => ({
       ...prev,
       amenities: prev.amenities.includes(id)
@@ -894,7 +894,7 @@ function StepCapacityAmenities({
   addCapacity: () => void;
   removeCapacity: (i: number) => void;
   updateCapacity: (i: number, field: keyof CapacityEntry, value: string | boolean) => void;
-  toggleAmenity: (id: number) => void;
+  toggleAmenity: (id: string) => void;
 }) {
   return (
     <div className="space-y-8 animate-fade-in">

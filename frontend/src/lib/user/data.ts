@@ -12,7 +12,6 @@ export const USER_NAV = [
     icon: "calendar" as const,
   },
   { href: "/user/saved", label: "Saved Venues", icon: "heart" as const },
-  { href: "/user/settings", label: "Settings", icon: "settings" as const },
 ] as const;
 
 export const USER_NAV_BOTTOM = [

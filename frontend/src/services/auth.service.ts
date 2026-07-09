@@ -34,6 +34,14 @@ export const authService = {
   },
 
   /**
+   * Fetch current user profile details
+   */
+  getProfile: async () => {
+    const response = await apiClient.get("/auth/profile");
+    return response.data;
+  },
+
+  /**
    * Logout user session on backend
    */
   logout: async () => {

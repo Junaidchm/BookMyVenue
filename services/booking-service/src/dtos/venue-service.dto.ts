@@ -1,6 +1,6 @@
 export interface VenueSession {
-  id: number;
-  venueId: number;
+  id: string;
+  venueId: string;
   name: string;
   startTime: string;
   endTime: string;
@@ -8,8 +8,8 @@ export interface VenueSession {
 }
 
 export interface Venue {
-  id: number;
-  ownerId: number;
+  id: string;
+  ownerId: string;
   title: string;
   description: string | null;
   category: string;
@@ -22,8 +22,8 @@ export interface Venue {
 }
 
 export interface VenueClosure {
-  id: number;
-  venueId: number;
+  id: string;
+  venueId: string;
   type: 'MAINTENANCE' | 'HOLIDAY' | 'PRIVATE_EVENT';
   startTime: string;
   endTime: string;

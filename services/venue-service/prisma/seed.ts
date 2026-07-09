@@ -20,12 +20,12 @@ const pool = new Pool({
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 const AMENITIES = [
-  { name: 'WiFi', iconKey: 'wifi' },
-  { name: 'Parking', iconKey: 'parking' },
-  { name: 'Catering', iconKey: 'catering' },
-  { name: 'AV Equipment', iconKey: 'av' },
-  { name: 'Outdoor Space', iconKey: 'outdoor' },
-  { name: 'Air Conditioning', iconKey: 'ac' },
+  { id: '5a711424-6d9b-402a-9e73-0570b435ff20', name: 'WiFi', iconKey: 'wifi' },
+  { id: '462dfd25-9a8c-4bf2-9e8c-f0502b4d45d9', name: 'Parking', iconKey: 'parking' },
+  { id: '7c3ba2b1-1234-4567-890a-bcdef1234567', name: 'Catering', iconKey: 'catering' },
+  { id: '6fe2b2c3-4d4a-4e2b-bb3b-f6a8e8055621', name: 'AV Equipment', iconKey: 'av' },
+  { id: '8d4ca3c2-2345-5678-901b-cdef01234568', name: 'Outdoor Space', iconKey: 'outdoor' },
+  { id: '3fa5b4b1-8e0a-4a2c-bb9b-b0b3d11b369c', name: 'Air Conditioning', iconKey: 'ac' },
 ] as const;
 
 const VENUES = [

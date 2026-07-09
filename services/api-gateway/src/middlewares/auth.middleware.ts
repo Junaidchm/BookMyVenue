@@ -26,6 +26,7 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
       }
     } catch (err) {
       tokenError = err;
+      console.error('[API GATEWAY AUTH ERROR]:', err);
     }
   }
 

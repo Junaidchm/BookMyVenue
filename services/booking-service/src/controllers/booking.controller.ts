@@ -5,6 +5,8 @@ import { RiskScoringService } from '../services/risk-scoring.service';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { env } from '../config/env';
+import { AuthClient } from '../services/auth-client';
+import { VenueClient } from '../services/venue-client';
 import axios from 'axios';
 
 // Helper to run serializable transaction with retries
@@ -691,8 +693,32 @@ export const cancelBooking = async (
         .json({ success: false, message: 'Booking not found' });
     }
 
-    // Authorization Check: User must own the booking
-    if (booking.userId !== userId) {
+    // Authorization Check: Guest, Admin, or Venue Owner
+    const userRolesStr = req.headers['x-user-roles'] as string || '';
+    const userRoles = userRolesStr.split(',');
+
+    let isAuthorized = false;
+
+    // 1. Guest cancelling their own booking
+    if (booking.userId === userId) {
+      isAuthorized = true;
+    }
+
+    // 2. Admin cancelling any booking
+    if (userRoles.includes('ADMIN')) {
+      isAuthorized = true;
+    }
+
+    // 3. Owner cancelling a booking for their own venue
+    if (userRoles.includes('OWNER')) {
+      const ownerVenues = await VenueClient.getVenuesByOwner(userId);
+      const ownedVenueIds = ownerVenues ? ownerVenues.map((v) => v.id) : [];
+      if (ownedVenueIds.includes(booking.venueId)) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
       return res.status(403).json({
         success: false,
         message: 'Forbidden: You do not have permission to cancel this booking',
@@ -890,6 +916,148 @@ export const rescheduleBooking = async (
       });
     }
     console.error('Error rescheduling booking:', error);
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+export const getOwnerBookings = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const ownerId = req.headers['x-user-id'] as string;
+    const userRoles = req.headers['x-user-roles'] as string;
+
+    if (!ownerId) {
+      return res
+        .status(401)
+        .json({ success: false, message: 'Unauthorized: Owner ID is missing' });
+    }
+
+    if (!userRoles || !userRoles.split(',').includes('OWNER')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Owner role required',
+      });
+    }
+
+    // 1. Get owner's venues from venue-service
+    const venues = await VenueClient.getVenuesByOwner(ownerId);
+    if (!venues || venues.length === 0) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+
+    const venueIds = venues.map((v) => v.id);
+    const venueMap = new Map(venues.map((v) => [v.id, v.title]));
+
+    // 2. Query booking database for bookings matching those venue IDs
+    const bookings = await prisma.booking.findMany({
+      where: {
+        venueId: { in: venueIds },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // 3. Resolve user details for each booking
+    const enrichedBookings = await Promise.all(
+      bookings.map(async (booking) => {
+        const userProfile = await AuthClient.getUser(booking.userId);
+        return {
+          ...booking,
+          venueName: venueMap.get(booking.venueId) || 'Unknown Venue',
+          guestName: userProfile?.fullName || 'Deleted User',
+          guestEmail: userProfile?.email || 'N/A',
+        };
+      }),
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: enrichedBookings,
+    });
+  } catch (error: any) {
+    console.error('Error fetching owner bookings:', error);
+    return res
+      .status(500)
+      .json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+export const getOwnerStats = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const ownerId = req.headers['x-user-id'] as string;
+    const userRoles = req.headers['x-user-roles'] as string;
+
+    if (!ownerId) {
+      return res
+        .status(401)
+        .json({ success: false, message: 'Unauthorized: Owner ID is missing' });
+    }
+
+    if (!userRoles || !userRoles.split(',').includes('OWNER')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Owner role required',
+      });
+    }
+
+    // 1. Get owner's venues
+    const venues = await VenueClient.getVenuesByOwner(ownerId);
+    if (!venues || venues.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          totalRevenue: 0,
+          activeCount: 0,
+          pendingCount: 0,
+          totalCount: 0,
+        },
+      });
+    }
+
+    const venueIds = venues.map((v) => v.id);
+
+    // 2. Query all bookings matching those venues
+    const bookings = await prisma.booking.findMany({
+      where: {
+        venueId: { in: venueIds },
+      },
+    });
+
+    // 3. Calculate statistics
+    let totalRevenue = 0;
+    let activeCount = 0;
+    let pendingCount = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (const booking of bookings) {
+      if (booking.status === 'CONFIRMED') {
+        totalRevenue += Number(booking.totalPrice);
+        if (new Date(booking.bookingDate) >= today) {
+          activeCount++;
+        }
+      } else if (booking.status === 'PENDING_PAYMENT') {
+        pendingCount++;
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalRevenue,
+        activeCount,
+        pendingCount,
+        totalCount: bookings.length,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error fetching owner stats:', error);
     return res
       .status(500)
       .json({ success: false, message: 'Internal Server Error' });

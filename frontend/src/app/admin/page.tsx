@@ -307,7 +307,7 @@ export default function AdminDashboard() {
                     tickFormatter={(value) => `₹${value > 1000 ? (value/1000).toFixed(0) + 'k' : value}`}
                   />
                   <Tooltip
-                    formatter={(value: number) => [formatCurrency(value), "Revenue"]}
+                    formatter={(value: any) => [formatCurrency(Number(value || 0)), "Revenue"]}
                     contentStyle={{
                       borderRadius: '8px',
                       border: '1px solid var(--border-subtle)',

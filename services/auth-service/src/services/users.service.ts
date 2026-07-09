@@ -166,4 +166,57 @@ export class UsersService {
       },
     });
   }
+
+  async becomeOwner(
+    userId: string,
+    profileData: {
+      phoneNumber?: string;
+      businessName?: string;
+      bankRoutingNumber?: string;
+      bankAccountNumber?: string;
+    },
+  ) {
+    return prisma.$transaction(async (tx) => {
+      // 1. Upsert owner profile
+      const profile = await tx.ownerProfile.upsert({
+        where: { userId },
+        update: profileData,
+        create: {
+          userId,
+          ...profileData,
+        },
+      });
+
+      // 2. Find or create OWNER role
+      const ownerRole = await tx.role.upsert({
+        where: { name: 'OWNER' },
+        update: {},
+        create: {
+          name: 'OWNER',
+          description: 'OWNER role',
+        },
+      });
+
+      // 3. Link user to OWNER role if not already linked
+      const existingUserRole = await tx.userRole.findUnique({
+        where: {
+          userId_roleId: {
+            userId,
+            roleId: ownerRole.id,
+          },
+        },
+      });
+
+      if (!existingUserRole) {
+        await tx.userRole.create({
+          data: {
+            userId,
+            roleId: ownerRole.id,
+          },
+        });
+      }
+
+      return profile;
+    });
+  }
 }

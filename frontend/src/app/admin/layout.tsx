@@ -16,7 +16,14 @@ import {
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/session-provider";
 
-const navItems = [
+interface NavItem {
+  label: string;
+  href: string;
+  icon: any;
+  comingSoon?: boolean;
+}
+
+const navItems: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Approvals", href: "/admin/approvals", icon: CheckSquare },
   { label: "Bookings", href: "/admin/bookings", icon: Calendar },
@@ -61,12 +68,15 @@ export default function AdminLayout({
 
         {/* Admin Profile */}
         <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50 mb-8 mx-2">
-          <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20">
-            <img
-              src="https://i.pravatar.cc/40?img=3"
-              alt={`${user?.fullName || "Admin"} - Profile`}
-              className="h-full w-full object-cover"
-            />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm border border-primary/20">
+            {user?.fullName
+              ? user.fullName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)
+              : "A"}
           </div>
           <div className="flex flex-col">
             <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "Admin"}</span>

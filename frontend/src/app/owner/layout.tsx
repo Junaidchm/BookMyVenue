@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Building2,
-  Calendar,
   BarChart3,
   Wallet,
   Settings,
@@ -14,6 +13,8 @@ import {
   Menu,
   X,
   Sparkles,
+  ClipboardList,
+  ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/session-provider";
@@ -22,7 +23,7 @@ import { useAuth } from "@/components/auth/session-provider";
 const navigationItems = [
   { name: "Overview", href: "/owner", icon: LayoutDashboard },
   { name: "My Venues", href: "/owner/venues", icon: Building2 },
-  { name: "Calendar", href: "/owner/calendar", icon: Calendar },
+  { name: "Bookings", href: "/owner/bookings", icon: ClipboardList },
   { name: "Analytics", href: "/owner/analytics", icon: BarChart3 },
 ];
 
@@ -49,12 +50,15 @@ export default function DashboardLayout({
 
           {/* Profile Card */}
           <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50">
-            <div className="relative h-10 w-10 overflow-hidden rounded-full border border-primary-container/20">
-              <img
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"
-                alt={`${user?.fullName || "Owner"} - Profile`}
-                className="h-full w-full object-cover"
-              />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm border border-primary/20">
+              {user?.fullName
+                ? user.fullName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)
+                : "O"}
             </div>
             <div className="flex flex-col">
               <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "Owner"}</span>
@@ -89,6 +93,13 @@ export default function DashboardLayout({
         <div className="flex flex-col gap-5">
           {/* Settings & Logout */}
           <div className="flex flex-col gap-1 border-t border-border-subtle pt-4">
+            <Link
+              href="/"
+              className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-label-md transition-all duration-200 text-text-muted hover:bg-surface-container-low hover:text-on-surface"
+            >
+              <ArrowLeft className="h-5 w-5 shrink-0" />
+              <span>Switch to User View</span>
+            </Link>
             <Link
               href="/owner/settings"
               className={cn(
@@ -158,11 +169,16 @@ export default function DashboardLayout({
 
             {/* Profile */}
             <div className="flex items-center gap-3 rounded-2xl bg-surface-container-low p-3.5 border border-border-subtle/50">
-              <img
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80"
-                alt={`${user?.fullName || "Owner"} - Profile`}
-                className="h-9 w-9 rounded-full border border-primary-container/20 object-cover"
-              />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm border border-primary/20">
+                {user?.fullName
+                  ? user.fullName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)
+                  : "O"}
+              </div>
               <div className="flex flex-col">
                 <span className="text-label-md text-on-surface font-semibold">{user?.fullName || "Owner"}</span>
                 <span className="text-label-sm text-text-muted">Owner Portal</span>
@@ -194,6 +210,14 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex flex-col gap-4 border-t border-border-subtle pt-4">
+            <Link
+              href="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-label-md text-text-muted hover:bg-surface-container-low hover:text-on-surface"
+            >
+              <ArrowLeft className="h-5 w-5 shrink-0" />
+              <span>Switch to User View</span>
+            </Link>
             <Link
               href="/owner/settings"
               onClick={() => setIsMobileMenuOpen(false)}

@@ -8,6 +8,14 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth/session-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const NAV_LINKS = [
   { href: "/venues", label: "Explore Venues" },
@@ -18,8 +26,17 @@ const NAV_LINKS = [
 
 export function SiteNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { isLoading, isAuthenticated, signOut } = useAuth();
+  const { isLoading, isAuthenticated, signOut, user } = useAuth();
   const pathname = usePathname();
+
+  const initials = user?.fullName
+    ? user.fullName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "U";
 
   return (
     <>
@@ -67,14 +84,66 @@ export function SiteNavbar() {
           {/* Right: Actions */}
           <div className="hidden items-center gap-4 md:flex">
             {isAuthenticated ? (
-              <>
-                <Button asChild variant="ghost" size="default" className="rounded-xl font-semibold hover:bg-white/60 transition-all duration-200">
-                  <Link href="/dashboard">Dashboard</Link>
-                </Button>
-                <Button onClick={() => signOut()} variant="default" size="default" className="bg-primary text-white hover:bg-orange-600 rounded-xl font-semibold px-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                  Sign Out
-                </Button>
-              </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 rounded-full focus:outline-hidden group cursor-pointer">
+                    <div className="flex size-9 items-center justify-center rounded-full bg-primary text-white font-bold text-sm shadow-sm transition-transform duration-200 group-hover:scale-105">
+                      {initials}
+                    </div>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56 bg-white border border-stone-200/80 rounded-2xl p-2 shadow-lg z-50"
+                >
+                  <div className="px-3 py-2 flex flex-col">
+                    <span className="text-sm font-semibold text-stone-900 truncate">
+                      {user?.fullName}
+                    </span>
+                    <span className="text-xs text-stone-500 mt-0.5 truncate">
+                      {user?.email}
+                    </span>
+                  </div>
+                  <DropdownMenuSeparator className="my-1 bg-stone-100" />
+                  
+                  {user?.roles?.includes("ADMIN") && (
+                    <DropdownMenuItem asChild className="rounded-xl px-3 py-2 text-sm text-stone-700 hover:bg-stone-50 hover:text-stone-900 cursor-pointer">
+                      <Link href="/admin">Admin Portal</Link>
+                    </DropdownMenuItem>
+                  )}
+                  {user?.roles?.includes("OWNER") && (
+                    <DropdownMenuItem asChild className="rounded-xl px-3 py-2 text-sm text-stone-700 hover:bg-stone-50 hover:text-stone-900 cursor-pointer">
+                      <Link href="/owner">Owner Dashboard</Link>
+                    </DropdownMenuItem>
+                  )}
+                  {!user?.roles?.includes("OWNER") && (
+                    <DropdownMenuItem asChild className="rounded-xl px-3 py-2 text-sm text-primary font-semibold hover:bg-orange-50 hover:text-orange-700 cursor-pointer">
+                      <Link href="/host/onboarding">Become a Host</Link>
+                    </DropdownMenuItem>
+                  )}
+
+                   <DropdownMenuSeparator className="my-1 bg-stone-100" />
+                  
+                  <DropdownMenuItem asChild className="rounded-xl px-3 py-2 text-sm text-stone-700 hover:bg-stone-50 hover:text-stone-900 cursor-pointer">
+                    <Link href="/user">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="rounded-xl px-3 py-2 text-sm text-stone-700 hover:bg-stone-50 hover:text-stone-900 cursor-pointer">
+                    <Link href="/user/bookings">My Bookings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="rounded-xl px-3 py-2 text-sm text-stone-700 hover:bg-stone-50 hover:text-stone-900 cursor-pointer">
+                    <Link href="/user/saved">Saved Venues</Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator className="my-1 bg-stone-100" />
+                  
+                  <DropdownMenuItem
+                    onClick={() => signOut()}
+                    className="rounded-xl px-3 py-2 text-sm text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer"
+                  >
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : isLoading ? (
               <div className="h-8 w-20 animate-pulse rounded-xl bg-stone-100" />
             ) : (
@@ -144,20 +213,46 @@ export function SiteNavbar() {
           ))}
         </ul>
 
-        <div className="mt-auto flex flex-col gap-3 pt-8">
+        <div className="mt-auto flex flex-col gap-2 pt-8">
           {isAuthenticated ? (
             <>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
-                  Dashboard
-                </Link>
+              <div className="px-4 py-2 flex flex-col border-b border-stone-100 mb-2">
+                <span className="text-sm font-semibold text-stone-900 truncate">{user?.fullName}</span>
+                <span className="text-xs text-stone-500 truncate">{user?.email}</span>
+              </div>
+              
+              {user?.roles?.includes("ADMIN") && (
+                <Button asChild variant="ghost" className="justify-start w-full text-stone-700">
+                  <Link href="/admin" onClick={() => setMobileOpen(false)}>Admin Portal</Link>
+                </Button>
+              )}
+              {user?.roles?.includes("OWNER") && (
+                <Button asChild variant="ghost" className="justify-start w-full text-stone-700">
+                  <Link href="/owner" onClick={() => setMobileOpen(false)}>Owner Portal</Link>
+                </Button>
+              )}
+              {!user?.roles?.includes("OWNER") && (
+                <Button asChild variant="ghost" className="justify-start w-full text-primary font-semibold hover:bg-orange-50 hover:text-orange-700">
+                  <Link href="/host/onboarding" onClick={() => setMobileOpen(false)}>Become a Host</Link>
+                </Button>
+              )}
+
+              <Button asChild variant="ghost" className="justify-start w-full text-stone-700">
+                <Link href="/user" onClick={() => setMobileOpen(false)}>Dashboard</Link>
               </Button>
+              <Button asChild variant="ghost" className="justify-start w-full text-stone-700">
+                <Link href="/user/bookings" onClick={() => setMobileOpen(false)}>My Bookings</Link>
+              </Button>
+              <Button asChild variant="ghost" className="justify-start w-full text-stone-700">
+                <Link href="/user/saved" onClick={() => setMobileOpen(false)}>Saved Venues</Link>
+              </Button>
+              
               <Button
                 onClick={() => {
                   setMobileOpen(false);
                   signOut();
                 }}
-                className="w-full bg-stone-950 text-white hover:bg-stone-850"
+                className="w-full bg-red-600 text-white hover:bg-red-700 mt-2"
               >
                 Sign Out
               </Button>
