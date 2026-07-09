@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 
 import {
   AuthDivider,
@@ -42,7 +42,16 @@ export function LoginForm() {
         return;
       }
 
-      router.push("/dashboard");
+      const session = await getSession();
+      const roles = session?.user?.roles || [];
+
+      if (roles.includes("ADMIN")) {
+        router.push("/admin");
+      } else if (roles.includes("OWNER")) {
+        router.push("/owner");
+      } else {
+        router.push("/");
+      }
       router.refresh();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to sign in";

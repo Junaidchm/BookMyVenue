@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import bookingService from "@/services/booking.service";
 import { formatVenuePrice } from "@/lib/venues/listing";
+import { useAuth } from "@/components/auth/session-provider";
 import {
   Search,
   Bell,
@@ -21,40 +22,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Mock bookings data
-const initialBookings = [
-  {
-    id: 1,
-    venueName: "The Glasshouse",
-    guestName: "Michael & Emma",
-    date: "Oct 24, 2024",
-    status: "Confirmed",
-    amount: "$4,500",
-    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: 2,
-    venueName: "Industrial Loft",
-    guestName: "TechCorp Retreat",
-    date: "Nov 02, 2024",
-    status: "Pending",
-    amount: "$2,800",
-    image: "https://images.unsplash.com/photo-1505236858219-8359eb29e3a9?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: 3,
-    venueName: "The Glasshouse",
-    guestName: "Sarah's 30th",
-    date: "Nov 15, 2024",
-    status: "Confirmed",
-    amount: "$1,200",
-    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=150&auto=format&fit=crop&q=80",
-  },
-];
-
 
 
 export default function OverviewPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationsCount, setNotificationsCount] = useState(3);
   const [showPromoAlert, setShowPromoAlert] = useState(false);
@@ -171,7 +142,7 @@ export default function OverviewPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between pt-2">
         <div>
           <h1 className="text-4xl font-bold tracking-tight text-on-surface md:text-5xl">
-            Welcome back, Sarah
+            Welcome back, {user?.fullName?.split(" ")[0] || "Owner"}
           </h1>
           <p className="mt-2 text-body-md text-text-muted">
             Here&apos;s what&apos;s happening with your venues today.
@@ -296,7 +267,7 @@ export default function OverviewPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-on-surface">Recent Bookings</h2>
             <Link
-              href="/owner/venues"
+              href="/owner/bookings"
               className="text-label-sm font-semibold text-primary-container hover:underline"
             >
               View All
@@ -449,15 +420,7 @@ export default function OverviewPage() {
             </div>
           </div>
 
-          {/* Outline action button */}
-          <div className="mt-8">
-            <Link
-              href="/owner/calendar"
-              className="flex w-full items-center justify-center rounded-full border border-border-subtle py-3 text-label-md font-bold text-on-surface hover:bg-stone-50 active:scale-[0.98] transition-all duration-200"
-            >
-              Open Full Calendar
-            </Link>
-          </div>
+
         </div>
       </div>
 

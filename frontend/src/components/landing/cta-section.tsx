@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { CheckCircle2, Sparkles } from "lucide-react";
+import { useAuth } from "@/components/auth/session-provider";
 
 const HOST_PERKS = [
   "Free listing — no upfront costs",
@@ -9,6 +12,17 @@ const HOST_PERKS = [
 ];
 
 export function CtaSection() {
+  const { isAuthenticated, user } = useAuth();
+
+  let hostHref = "/signup";
+  if (isAuthenticated) {
+    if (user?.roles?.includes("OWNER")) {
+      hostHref = "/owner";
+    } else {
+      hostHref = "/host/onboarding";
+    }
+  }
+
   return (
     <section id="about" className="bg-background py-16 md:py-24">
       <div className="mx-auto max-w-max px-margin-mobile md:px-margin-desktop">
@@ -35,7 +49,7 @@ export function CtaSection() {
 
               <div className="mt-8 flex flex-wrap justify-center gap-4 md:justify-start">
                 <Link
-                  href="/signup"
+                  href={hostHref}
                   className="rounded-full bg-primary-container px-7 py-3.5 text-label-md text-white shadow-lg shadow-primary-container/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
                 >
                   Become a Host

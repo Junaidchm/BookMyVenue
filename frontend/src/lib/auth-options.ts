@@ -11,8 +11,8 @@ const BACKEND_URL =
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID || "dummy-google-client-id",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "dummy-google-client-secret",
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -52,15 +52,44 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, account, trigger, session }) {
-      // ── Handle session update from /api/auth/google-finalize ──────────────
-      if (trigger === "update" && session?.finalizedGoogle) {
-        token.googlePending = false;
-        token.googleEmail = undefined;
-        token.googleName = undefined;
-        token.id = session.finalizedGoogle.id;
-        token.roles = session.finalizedGoogle.roles;
-        token.accessToken = session.finalizedGoogle.accessToken;
-        token.ownerProfile = session.finalizedGoogle.ownerProfile;
+      // ── Handle session update ─────────────────────────────────────────────
+      if (trigger === "update") {
+        if (session?.finalizedGoogle) {
+          token.googlePending = false;
+          token.googleEmail = undefined;
+          token.googleName = undefined;
+          token.id = session.finalizedGoogle.id;
+          token.roles = session.finalizedGoogle.roles;
+          token.accessToken = session.finalizedGoogle.accessToken;
+          token.ownerProfile = session.finalizedGoogle.ownerProfile;
+        } else {
+          try {
+            const res = await fetch(`${BACKEND_URL}/auth/profile`, {
+              method: "GET",
+              headers: {
+                "x-user-id": token.id as string,
+                "x-user-roles": ((token.roles as string[]) || []).join(","),
+                "Authorization": `Bearer ${token.accessToken}`,
+              }
+            });
+            if (res.ok) {
+              const resData = await res.json();
+              console.log("[NEXTAUTH UPDATE] Status OK, resData:", resData);
+              if (resData.success && resData.data) {
+                token.roles = resData.data.roles;
+                token.ownerProfile = resData.data.ownerProfile;
+                if (resData.data.access_token) {
+                  token.accessToken = resData.data.access_token;
+                  console.log("[NEXTAUTH UPDATE] Successfully sync-ed fresh token. Roles:", resData.data.roles);
+                }
+              }
+            } else {
+              console.error("[NEXTAUTH UPDATE] Fetch profile status error:", res.status);
+            }
+          } catch (err) {
+            console.error("Failed to sync fresh token details on update trigger:", err);
+          }
+        }
         return token;
       }
 

@@ -23,8 +23,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${plusJakarta.variable} ${outfit.variable}`}
+      suppressHydrationWarning
     >
-      <body>
+      <body suppressHydrationWarning>
         <QueryProvider>
           <AuthProvider>{children}</AuthProvider>
         </QueryProvider>

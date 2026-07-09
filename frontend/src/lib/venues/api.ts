@@ -232,7 +232,7 @@ export type CreateVenuePayload = {
   pricingType: "PER_HOUR" | "PER_SESSION";
   bufferTimeMinutes: number;
   imageUrls: string[];
-  amenities: number[];
+  amenities: string[];
   capacities: {
     type: string;
     maxPeople: number;

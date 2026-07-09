@@ -693,8 +693,32 @@ export const cancelBooking = async (
         .json({ success: false, message: 'Booking not found' });
     }
 
-    // Authorization Check: User must own the booking
-    if (booking.userId !== userId) {
+    // Authorization Check: Guest, Admin, or Venue Owner
+    const userRolesStr = req.headers['x-user-roles'] as string || '';
+    const userRoles = userRolesStr.split(',');
+
+    let isAuthorized = false;
+
+    // 1. Guest cancelling their own booking
+    if (booking.userId === userId) {
+      isAuthorized = true;
+    }
+
+    // 2. Admin cancelling any booking
+    if (userRoles.includes('ADMIN')) {
+      isAuthorized = true;
+    }
+
+    // 3. Owner cancelling a booking for their own venue
+    if (userRoles.includes('OWNER')) {
+      const ownerVenues = await VenueClient.getVenuesByOwner(userId);
+      const ownedVenueIds = ownerVenues ? ownerVenues.map((v) => v.id) : [];
+      if (ownedVenueIds.includes(booking.venueId)) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
       return res.status(403).json({
         success: false,
         message: 'Forbidden: You do not have permission to cancel this booking',
