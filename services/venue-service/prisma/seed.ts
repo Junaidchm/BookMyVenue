@@ -105,7 +105,7 @@ const VENUES = [
     imageUrls: [
       'https://lh3.googleusercontent.com/aida-public/AB6AXuBibvpo-lF8BCRfgGCk6QbyBK1H9VujIS7MJM6FzIGe2v9neX8ko3K0eDG2X2fqLZfemRdhGoJ3iCbnd7e6SfwkerPRUD6LWM7zrkSVz5YlXd_fvnKriXmcZPunqiBQUiNJlf2wr85dyBVSg5sJD6HCJuirg4XQqBtx8BTv-qg-q41Ga7xYrWrLMk2m5iy7arkADM_teNqza84cqckpWvqtFhrS__7zSz0Vuzbc_Lo4yAz7aZ8rHSFH05ffeQbWrlCx0XON9THwiqGk',
     ],
-    amenityNames: ['WiFi', 'AV Equipment'],
+    amenityNames: ['WiFi', 'Projector', 'Audio System'],
     capacities: [{ type: 'FLOATING', maxPeople: 50 }],
     sessions: [
       { name: 'Half Day', startTime: '09:00', endTime: '13:00', sessionPrice: 500 },
@@ -158,7 +158,7 @@ const VENUES = [
     imageUrls: [
       'https://images.unsplash.com/photo-1519167758481-83f29da8c2f3?w=800',
     ],
-    amenityNames: ['WiFi', 'Parking', 'Catering', 'AV Equipment', 'Air Conditioning'],
+    amenityNames: ['WiFi', 'Parking', 'Catering', 'Projector', 'Audio System', 'Air Conditioning'],
     capacities: [
       { type: 'SEATING', maxPeople: 250 },
       { type: 'DINING', maxPeople: 200 },

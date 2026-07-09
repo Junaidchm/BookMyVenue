@@ -1101,7 +1101,7 @@ function StepCapacityAmenities({
   removeCapacity: (i: number) => void;
   updateCapacity: (i: number, field: keyof CapacityEntry, value: string | boolean) => void;
   toggleAmenity: (id: string) => void;
-  amenitiesOptions: { id: string; name: string; iconKey?: string }[];
+  amenitiesOptions: { id: string; name: string; iconKey: string | null }[];
 }) {
   return (
     <div className="space-y-8 animate-fade-in">

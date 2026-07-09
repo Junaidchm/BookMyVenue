@@ -213,6 +213,10 @@ export async function getAmenities(): Promise<{ id: string; name: string; iconKe
     const body = await res.json();
     return body.data ?? [];
   } catch (error: any) {
+    // Preserve original error message if it already has the context
+    if (error?.message?.includes('Failed to fetch amenities')) {
+      throw error;
+    }
     throw new Error(`Failed to fetch amenities: ${error?.message || error}`);
   }
 }

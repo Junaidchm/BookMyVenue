@@ -93,15 +93,18 @@ export default function CalendarPage() {
             ))}
 
             {monthDays.map((dayNum) => {
-              const dateStr = new Date(
+              // Use local date parts to avoid UTC timezone shifts
+              const dayDate = new Date(
                 currentDate.getFullYear(),
                 currentDate.getMonth(),
                 dayNum
-              ).toISOString().split("T")[0];
+              );
+              const dateStr = `${dayDate.getFullYear()}-${String(dayDate.getMonth() + 1).padStart(2, '0')}-${String(dayDate.getDate()).padStart(2, '0')}`;
 
               // Find bookings that overlap with this date
               const dayBookings = (bookings || []).filter((b) => {
-                const bDateStr = new Date(b.bookingDate).toISOString().split("T")[0];
+                const bookingDate = new Date(b.bookingDate);
+                const bDateStr = `${bookingDate.getFullYear()}-${String(bookingDate.getMonth() + 1).padStart(2, '0')}-${String(bookingDate.getDate()).padStart(2, '0')}`;
                 return bDateStr === dateStr && b.status === "CONFIRMED";
               });
 

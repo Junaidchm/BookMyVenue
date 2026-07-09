@@ -15,6 +15,7 @@ import {
   getOwnerBookings,
 } from '../controllers/booking.controller';
 import { checkBookingRisk } from '../middlewares/risk.middleware';
+import { requireOwner } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -22,8 +23,8 @@ const router = Router();
 router.get('/', getBookings);
 router.get('/availability', checkAvailability);
 router.get('/admin', getAllBookingsAdmin);
-router.get('/owner/dashboard', getOwnerDashboard);
-router.get('/owner/bookings', getOwnerBookings);
+router.get('/owner/dashboard', requireOwner, getOwnerDashboard);
+router.get('/owner/bookings', requireOwner, getOwnerBookings);
 router.get('/:id', getBookingById);
 router.post('/', checkBookingRisk, createBooking);
 router.post('/:id/payment/order', createPaymentOrder);

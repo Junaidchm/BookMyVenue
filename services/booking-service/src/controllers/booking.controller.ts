@@ -665,17 +665,53 @@ export const getOwnerDashboard = async (
   res: Response,
 ): Promise<any> => {
   try {
-    const venueIdsQuery = req.query.venueIds as string;
-    if (!venueIdsQuery) {
-      return res.status(400).json({
+    // Extract authenticated owner's user ID
+    const ownerUserId = req.headers['x-user-id'] as string;
+    if (!ownerUserId) {
+      return res.status(401).json({
         success: false,
-        message: 'Missing venueIds parameter',
+        message: 'Unauthorized: User ID is missing',
       });
     }
 
-    const venueIds = venueIdsQuery.split(',');
+    // Fetch venues owned by this owner from venue-service
+    let ownedVenues: any[] = [];
+    try {
+      const venuesRes = await axios.get(`${env.VENUE_SERVICE_URL}/venues/my-venues`, {
+        headers: {
+          'x-user-id': ownerUserId,
+          'x-user-roles': req.headers['x-user-roles'] || '',
+        },
+        timeout: 5000,
+      });
+      ownedVenues = venuesRes.data?.data || [];
+    } catch (err: any) {
+      console.error('Failed to fetch owned venues for dashboard:', err.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch venue ownership data',
+      });
+    }
 
-    // Fetch all bookings for the given venues
+    const ownedVenueIds = ownedVenues.map((v: any) => String(v.id));
+
+    // If venueIds are provided as a filter, validate they're all owned by this owner
+    const venueIdsQuery = req.query.venueIds as string | undefined;
+    let venueIds = ownedVenueIds;
+    if (venueIdsQuery) {
+      const requestedIds = venueIdsQuery.split(',');
+      // Ensure all requested IDs are in the owned set
+      const unauthorized = requestedIds.filter((id) => !ownedVenueIds.includes(id));
+      if (unauthorized.length > 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not own one or more of the requested venues',
+        });
+      }
+      venueIds = requestedIds;
+    }
+
+    // Fetch all bookings for the owned venues
     const allBookings = await prisma.booking.findMany({
       where: { venueId: { in: venueIds } },
       orderBy: { createdAt: 'desc' },
@@ -728,15 +764,51 @@ export const getOwnerBookings = async (
   res: Response,
 ): Promise<any> => {
   try {
-    const venueIdsQuery = req.query.venueIds as string;
-    if (!venueIdsQuery) {
-      return res.status(400).json({
+    // Extract authenticated owner's user ID
+    const ownerUserId = req.headers['x-user-id'] as string;
+    if (!ownerUserId) {
+      return res.status(401).json({
         success: false,
-        message: 'Missing venueIds parameter',
+        message: 'Unauthorized: User ID is missing',
       });
     }
 
-    const venueIds = venueIdsQuery.split(',');
+    // Fetch venues owned by this owner from venue-service
+    let ownedVenues: any[] = [];
+    try {
+      const venuesRes = await axios.get(`${env.VENUE_SERVICE_URL}/venues/my-venues`, {
+        headers: {
+          'x-user-id': ownerUserId,
+          'x-user-roles': req.headers['x-user-roles'] || '',
+        },
+        timeout: 5000,
+      });
+      ownedVenues = venuesRes.data?.data || [];
+    } catch (err: any) {
+      console.error('Failed to fetch owned venues for bookings:', err.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch venue ownership data',
+      });
+    }
+
+    const ownedVenueIds = ownedVenues.map((v: any) => String(v.id));
+
+    // If venueIds are provided as a filter, validate they're all owned by this owner
+    const venueIdsQuery = req.query.venueIds as string | undefined;
+    let venueIds = ownedVenueIds;
+    if (venueIdsQuery) {
+      const requestedIds = venueIdsQuery.split(',');
+      // Ensure all requested IDs are in the owned set
+      const unauthorized = requestedIds.filter((id) => !ownedVenueIds.includes(id));
+      if (unauthorized.length > 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not own one or more of the requested venues',
+        });
+      }
+      venueIds = requestedIds;
+    }
 
     const bookings = await prisma.booking.findMany({
       where: { venueId: { in: venueIds } },

@@ -20,33 +20,94 @@ const pool = new Pool({
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 async function main() {
-  // 1. Delete AV Equipment
-  await prisma.amenity.deleteMany({
-    where: { name: 'AV Equipment' }
-  });
+  // 1. Find the AV Equipment amenity ID (if it exists)
+  const avEquipment = await prisma.amenity.findFirst({ where: { name: 'AV Equipment' } });
 
-  // 2. Add Projector
-  const projector = await prisma.amenity.findFirst({ where: { name: 'Projector' } });
-  if (!projector) {
-    await prisma.amenity.create({ data: { name: 'Projector', iconKey: 'projector' } });
+  if (avEquipment) {
+    // 2. Add Projector (if not exists)
+    let projector = await prisma.amenity.findFirst({ where: { name: 'Projector' } });
+    if (!projector) {
+      projector = await prisma.amenity.create({ data: { name: 'Projector', iconKey: 'projector' } });
+    }
+
+    // 3. Add Audio System (if not exists)
+    let audio = await prisma.amenity.findFirst({ where: { name: 'Audio System' } });
+    if (!audio) {
+      audio = await prisma.amenity.create({ data: { name: 'Audio System', iconKey: 'audio' } });
+    }
+
+    // 4. Migrate VenueAmenity records from AV Equipment to Projector and Audio System
+    // Get all venues with AV Equipment
+    const venuesWithAV = await prisma.venueAmenity.findMany({
+      where: { amenityId: avEquipment.id },
+      select: { venueId: true },
+    });
+
+    for (const { venueId } of venuesWithAV) {
+      // Add Projector (if not already present)
+      const existingProjector = await prisma.venueAmenity.findUnique({
+        where: {
+          venueId_amenityId: {
+            venueId,
+            amenityId: projector.id,
+          },
+        },
+      });
+      if (!existingProjector) {
+        await prisma.venueAmenity.create({
+          data: {
+            venueId,
+            amenityId: projector.id,
+          },
+        });
+      }
+
+      // Add Audio System (if not already present)
+      const existingAudio = await prisma.venueAmenity.findUnique({
+        where: {
+          venueId_amenityId: {
+            venueId,
+            amenityId: audio.id,
+          },
+        },
+      });
+      if (!existingAudio) {
+        await prisma.venueAmenity.create({
+          data: {
+            venueId,
+            amenityId: audio.id,
+          },
+        });
+      }
+    }
+
+    // 5. Now safe to delete AV Equipment (VenueAmenity records cascade on delete)
+    await prisma.amenity.deleteMany({
+      where: { name: 'AV Equipment' }
+    });
+  } else {
+    // AV Equipment doesn't exist, just ensure Projector and Audio System exist
+    const projector = await prisma.amenity.findFirst({ where: { name: 'Projector' } });
+    if (!projector) {
+      await prisma.amenity.create({ data: { name: 'Projector', iconKey: 'projector' } });
+    }
+
+    const audio = await prisma.amenity.findFirst({ where: { name: 'Audio System' } });
+    if (!audio) {
+      await prisma.amenity.create({ data: { name: 'Audio System', iconKey: 'audio' } });
+    }
   }
 
-  // 3. Add Audio System
-  const audio = await prisma.amenity.findFirst({ where: { name: 'Audio System' } });
-  if (!audio) {
-    await prisma.amenity.create({ data: { name: 'Audio System', iconKey: 'audio' } });
-  }
-
-  // 4. Update Catering iconKey
+  // Update Catering iconKey
   await prisma.amenity.updateMany({
     where: { name: 'Catering' },
     data: { iconKey: 'utensils' }
   });
 
-  // 5. Update Outdoor Space iconKey
+  // Update Outdoor Space iconKey to match seed.ts
   await prisma.amenity.updateMany({
     where: { name: 'Outdoor Space' },
-    data: { iconKey: 'tree' }
+    data: { iconKey: 'treePine' }
   });
 
   console.log("Done updating amenities.");

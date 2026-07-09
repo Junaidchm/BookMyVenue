@@ -28,11 +28,11 @@ export default function OverviewPage() {
   const [showPromoAlert, setShowPromoAlert] = useState(false);
 
   // 1. Fetch Owner's Venues
-  const { data: venues } = useQuery(myVenuesQueryOptions());
+  const { data: venues, isLoading: isLoadingVenues, isError: isVenuesError } = useQuery(myVenuesQueryOptions());
   const venueIds = venues?.map((v) => String(v.id)) || [];
 
   // 2. Fetch Dashboard Data
-  const { data: dashboardData, isLoading } = useOwnerDashboard(venueIds);
+  const { data: dashboardData, isLoading: isLoadingDashboard, isError: isDashboardError } = useOwnerDashboard(venueIds);
 
   const venueMap =
     venues?.reduce((acc, v) => {
@@ -73,10 +73,23 @@ export default function OverviewPage() {
     setSearchQuery(e.target.value);
   };
 
-  if (isLoading) {
+  // Show loading state when either query is loading
+  if (isLoadingVenues || isLoadingDashboard) {
     return (
       <div className="flex h-64 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-container" />
+      </div>
+    );
+  }
+
+  // Show error state when either query fails
+  if (isVenuesError || isDashboardError) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-center">
+          <p className="text-body-md text-red-600 font-semibold">Failed to load dashboard data</p>
+          <p className="text-label-sm text-text-muted mt-2">Please try refreshing the page</p>
+        </div>
       </div>
     );
   }
