@@ -228,7 +228,7 @@ export function SiteNavbar() {
               )}
               {user?.roles?.includes("OWNER") && (
                 <Button asChild variant="ghost" className="justify-start w-full text-stone-700">
-                  <Link href="/owner" onClick={() => setMobileOpen(false)}>Owner Portal</Link>
+                  <Link href="/owner" onClick={() => setMobileOpen(false)}>Owner Dashboard</Link>
                 </Button>
               )}
               {!user?.roles?.includes("OWNER") && (
