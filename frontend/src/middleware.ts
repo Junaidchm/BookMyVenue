@@ -18,7 +18,7 @@ export async function middleware(req: NextRequest) {
     if (roles.includes("OWNER")) {
       return NextResponse.redirect(new URL("/owner", req.url));
     }
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/user", req.url));
   }
 
   // 2. Redirect /dashboard to the role-specific dashboard
