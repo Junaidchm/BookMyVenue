@@ -50,7 +50,7 @@ export function LoginForm() {
       } else if (roles.includes("OWNER")) {
         router.push("/owner");
       } else {
-        router.push("/");
+        router.push("/user");
       }
       router.refresh();
     } catch (err: unknown) {

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/session-provider";
-import { USER_NAV, USER_NAV_BOTTOM, USER_PROFILE } from "@/lib/user/data";
+import { USER_NAV, USER_NAV_BOTTOM } from "@/lib/user/data";
 import { SiteNavbar } from "@/components/layout/site-navbar";
 
 const ICONS: Record<string, LucideIcon> = {
