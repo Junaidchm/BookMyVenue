@@ -4,8 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   Search,
-  Bell,
-  Settings as GearIcon,
   Plus,
   Megaphone,
   TrendingUp,
@@ -15,92 +13,86 @@ import {
   MoreHorizontal,
   ChevronRight,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Mock bookings data
-const initialBookings = [
-  {
-    id: 1,
-    venueName: "The Glasshouse",
-    guestName: "Michael & Emma",
-    date: "Oct 24, 2024",
-    status: "Confirmed",
-    amount: "$4,500",
-    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: 2,
-    venueName: "Industrial Loft",
-    guestName: "TechCorp Retreat",
-    date: "Nov 02, 2024",
-    status: "Pending",
-    amount: "$2,800",
-    image: "https://images.unsplash.com/photo-1505236858219-8359eb29e3a9?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: 3,
-    venueName: "The Glasshouse",
-    guestName: "Sarah's 30th",
-    date: "Nov 15, 2024",
-    status: "Confirmed",
-    amount: "$1,200",
-    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=150&auto=format&fit=crop&q=80",
-  },
-];
-
-// Mock upcoming events data
-const upcomingEvents = [
-  {
-    id: 1,
-    title: "Wedding Reception",
-    venue: "The Glasshouse",
-    time: "4:00 PM",
-    month: "OCT",
-    day: "24",
-    isPrimary: true,
-  },
-  {
-    id: 2,
-    title: "TechCorp Retreat",
-    venue: "Industrial Loft",
-    time: "9:00 AM",
-    month: "NOV",
-    day: "02",
-    isPrimary: false,
-  },
-  {
-    id: 3,
-    title: "Sarah's 30th Birthday",
-    venue: "The Glasshouse",
-    time: "7:00 PM",
-    month: "NOV",
-    day: "15",
-    isPrimary: false,
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { myVenuesQueryOptions } from "@/lib/venues/queries";
+import { useOwnerDashboard } from "@/lib/owner/queries";
+import { useAuth } from "@/components/auth/session-provider";
 
 export default function OverviewPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [bookings, setBookings] = useState(initialBookings);
-  const [notificationsCount, setNotificationsCount] = useState(3);
   const [showPromoAlert, setShowPromoAlert] = useState(false);
 
-  // Filter bookings based on search query
+  // 1. Fetch Owner's Venues
+  const { data: venues, isLoading: isLoadingVenues, isError: isVenuesError } = useQuery(myVenuesQueryOptions());
+  const venueIds = venues?.map((v) => String(v.id)) || [];
+
+  // 2. Fetch Dashboard Data
+  const { data: dashboardData, isLoading: isLoadingDashboard, isError: isDashboardError } = useOwnerDashboard(venueIds);
+
+  const venueMap =
+    venues?.reduce((acc, v) => {
+      acc[v.id] = v.title;
+      return acc;
+    }, {} as Record<string, string>) || {};
+
+  const resolvedBookings = (dashboardData?.recentBookings || []).map((b) => ({
+    id: b.id,
+    venueName: venueMap[b.venueId] || "Unknown Venue",
+    guestName: "Guest User", // Using placeholder since we don't fetch user names currently
+    date: new Date(b.bookingDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    status: b.status,
+    amount: `₹${Number(b.totalPrice).toLocaleString()}`,
+    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=150&auto=format&fit=crop&q=80",
+  }));
+
+  const filteredBookings = resolvedBookings.filter(
+    (b) =>
+      b.venueName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.guestName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const resolvedUpcomingEvents = (dashboardData?.upcomingEvents || []).map((b, index) => {
+    const d = new Date(b.startTime);
+    return {
+      id: b.id,
+      title: "Confirmed Booking",
+      venue: venueMap[b.venueId] || "Unknown Venue",
+      time: d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      month: d.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
+      day: d.toLocaleDateString("en-US", { day: "2-digit" }),
+      isPrimary: index === 0,
+    };
+  });
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    if (query.trim() === "") {
-      setBookings(initialBookings);
-    } else {
-      const filtered = initialBookings.filter(
-        (b) =>
-          b.venueName.toLowerCase().includes(query.toLowerCase()) ||
-          b.guestName.toLowerCase().includes(query.toLowerCase())
-      );
-      setBookings(filtered);
-    }
+    setSearchQuery(e.target.value);
   };
+
+  // Show loading state when either query is loading
+  if (isLoadingVenues || isLoadingDashboard) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-container" />
+      </div>
+    );
+  }
+
+  // Show error state when either query fails
+  if (isVenuesError || isDashboardError) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-center">
+          <p className="text-body-md text-red-600 font-semibold">Failed to load dashboard data</p>
+          <p className="text-label-sm text-text-muted mt-2">Please try refreshing the page</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -122,27 +114,6 @@ export default function OverviewPage() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3.5 self-end sm:self-auto">
-          {/* Notification Button */}
-          <button
-            onClick={() => setNotificationsCount(0)}
-            className="relative rounded-full bg-white p-3 border border-border-subtle hover:bg-stone-50 transition-colors shadow-sm"
-            aria-label="Notifications"
-          >
-            <Bell className="h-5 w-5 text-on-surface" />
-            {notificationsCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
-                {notificationsCount}
-              </span>
-            )}
-          </button>
-
-          {/* Settings Icon */}
-          <button
-            className="rounded-full bg-white p-3 border border-border-subtle hover:bg-stone-50 transition-colors shadow-sm"
-            aria-label="Dashboard settings"
-          >
-            <GearIcon className="h-5 w-5 text-on-surface" />
-          </button>
 
           {/* + Add Venue Button */}
           <Link
@@ -159,7 +130,7 @@ export default function OverviewPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between pt-2">
         <div>
           <h1 className="text-4xl font-bold tracking-tight text-on-surface md:text-5xl">
-            Welcome back, Sarah
+            Welcome back, {user?.fullName ? user.fullName.split(" ")[0] : "Owner"}
           </h1>
           <p className="mt-2 text-body-md text-text-muted">
             Here&apos;s what&apos;s happening with your venues today.
@@ -185,8 +156,8 @@ export default function OverviewPage() {
         </div>
       )}
 
-      {/* ─── HIGH-LEVEL STATS GRID (4 COLUMNS) ─────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ─── HIGH-LEVEL STATS GRID (3 COLUMNS) ─────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {/* Metric 1: Total Revenue */}
         <div className="rounded-2xl bg-white border border-border-subtle p-6 shadow-elevation-card hover:shadow-elevation-card-hover transition-all duration-200 group hover:-translate-y-0.5">
           <div className="flex items-center justify-between">
@@ -196,7 +167,9 @@ export default function OverviewPage() {
             </div>
           </div>
           <div className="mt-4">
-            <span className="text-3xl font-bold tracking-tight text-on-surface">$42,500</span>
+            <span className="text-3xl font-bold tracking-tight text-on-surface">
+              ₹{(dashboardData?.totalRevenue || 0).toLocaleString()}
+            </span>
             <div className="mt-3.5 flex items-center gap-2">
               <span className="inline-flex items-center gap-0.5 rounded-full bg-[#fcf2ed] px-2.5 py-1 text-[11px] font-bold text-primary-container">
                 +12.5%
@@ -215,7 +188,9 @@ export default function OverviewPage() {
             </div>
           </div>
           <div className="mt-4">
-            <span className="text-3xl font-bold tracking-tight text-on-surface">24</span>
+            <span className="text-3xl font-bold tracking-tight text-on-surface">
+              {dashboardData?.activeBookings || 0}
+            </span>
             <div className="mt-3.5 flex items-center gap-2">
               <span className="inline-flex items-center gap-0.5 rounded-full bg-[#fcf2ed] px-2.5 py-1 text-[11px] font-bold text-primary-container">
                 +3
@@ -225,28 +200,7 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* Metric 3: Average Rating */}
-        <div className="rounded-2xl bg-white border border-border-subtle p-6 shadow-elevation-card hover:shadow-elevation-card-hover transition-all duration-200 group hover:-translate-y-0.5">
-          <div className="flex items-center justify-between">
-            <span className="text-label-md text-text-muted">Average Rating</span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-container-low text-primary-container">
-              <Star className="h-5 w-5 fill-current" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <span className="text-3xl font-bold tracking-tight text-on-surface">4.9</span>
-            <div className="mt-3.5 flex items-center gap-1.5 text-label-sm text-text-muted">
-              <div className="flex gap-0.5 text-primary-container">
-                <Star className="h-3.5 w-3.5 fill-current" />
-                <Star className="h-3.5 w-3.5 fill-current" />
-                <Star className="h-3.5 w-3.5 fill-current" />
-                <Star className="h-3.5 w-3.5 fill-current" />
-                <Star className="h-3.5 w-3.5 fill-current" />
-              </div>
-              <span className="font-semibold text-on-surface ml-1">(128 reviews)</span>
-            </div>
-          </div>
-        </div>
+
 
         {/* Metric 4: Pending Inquiries */}
         <div className="rounded-2xl bg-white border border-border-subtle p-6 shadow-elevation-card hover:shadow-elevation-card-hover transition-all duration-200 group hover:-translate-y-0.5">
@@ -257,7 +211,9 @@ export default function OverviewPage() {
             </div>
           </div>
           <div className="mt-4">
-            <span className="text-3xl font-bold tracking-tight text-on-surface">7</span>
+            <span className="text-3xl font-bold tracking-tight text-on-surface">
+              {dashboardData?.pendingInquiries || 0}
+            </span>
             <div className="mt-3.5">
               <Link
                 href="/owner/venues"
@@ -296,8 +252,8 @@ export default function OverviewPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle/40">
-                {bookings.length > 0 ? (
-                  bookings.map((booking) => (
+                {filteredBookings.length > 0 ? (
+                  filteredBookings.map((booking) => (
                     <tr key={booking.id} className="group/row">
                       <td className="py-4 pr-3">
                         <div className="flex items-center gap-3">
@@ -323,7 +279,7 @@ export default function OverviewPage() {
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold",
-                            booking.status === "Confirmed"
+                            booking.status.toUpperCase() === "CONFIRMED"
                               ? "bg-sky-50 text-sky-700"
                               : "bg-orange-50 text-orange-700"
                           )}
@@ -363,36 +319,40 @@ export default function OverviewPage() {
 
             {/* List of Events */}
             <div className="space-y-5">
-              {upcomingEvents.map((event) => (
-                <div key={event.id} className="flex items-center gap-4 group/event">
-                  {/* Styled Date Block */}
-                  <div
-                    className={cn(
-                      "flex h-[60px] w-[60px] shrink-0 flex-col items-center justify-center rounded-2xl shadow-sm transition-all duration-200 group-hover/event:-translate-y-0.5",
-                      event.isPrimary
-                        ? "bg-primary-container text-white"
-                        : "bg-surface-container-high text-primary-container border border-border-subtle/50"
-                    )}
-                  >
-                    <span className="text-[10px] font-bold tracking-wider uppercase leading-none opacity-90">
-                      {event.month}
-                    </span>
-                    <span className="text-lg font-bold mt-1 leading-none">
-                      {event.day}
-                    </span>
-                  </div>
+              {resolvedUpcomingEvents.length > 0 ? (
+                resolvedUpcomingEvents.map((event) => (
+                  <div key={event.id} className="flex items-center gap-4 group/event">
+                    {/* Styled Date Block */}
+                    <div
+                      className={cn(
+                        "flex h-[60px] w-[60px] shrink-0 flex-col items-center justify-center rounded-2xl shadow-sm transition-all duration-200 group-hover/event:-translate-y-0.5",
+                        event.isPrimary
+                          ? "bg-primary-container text-white"
+                          : "bg-surface-container-high text-primary-container border border-border-subtle/50"
+                      )}
+                    >
+                      <span className="text-[10px] font-bold tracking-wider uppercase leading-none opacity-90">
+                        {event.month}
+                      </span>
+                      <span className="text-lg font-bold mt-1 leading-none">
+                        {event.day}
+                      </span>
+                    </div>
 
-                  {/* Event details */}
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-label-md font-bold text-on-surface truncate group-hover/event:text-primary-container transition-colors">
-                      {event.title}
-                    </span>
-                    <span className="text-label-sm text-text-muted mt-1 truncate">
-                      {event.venue} &bull; {event.time}
-                    </span>
+                    {/* Event details */}
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-label-md font-bold text-on-surface truncate group-hover/event:text-primary-container transition-colors">
+                        {event.title}
+                      </span>
+                      <span className="text-label-sm text-text-muted mt-1 truncate">
+                        {event.venue} &bull; {event.time}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="py-8 text-center text-text-muted">No upcoming events.</div>
+              )}
             </div>
           </div>
 

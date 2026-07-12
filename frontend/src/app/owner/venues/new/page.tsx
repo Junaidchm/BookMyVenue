@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   ArrowRight,
@@ -25,11 +25,16 @@ import {
   Sparkles,
   AlertCircle,
   MapPin,
+  Projector,
+  Speaker,
+  Utensils,
+  TreePine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   createVenue,
   uploadToCloudinary,
+  getAmenities,
   type CreateVenuePayload,
 } from "@/lib/venues/api";
 import { venueKeys } from "@/lib/venues/keys";
@@ -53,12 +58,19 @@ const CATEGORIES = [
   { value: "cafe", label: "Café" },
 ] as const;
 
-const AMENITIES = [
-  { id: 1, name: "Wifi", icon: Wifi },
-  { id: 2, name: "AC", icon: Wind },
-  { id: 3, name: "Projector", icon: Monitor },
-  { id: 4, name: "Parking", icon: Car },
-] as const;
+const AMENITY_ICONS: Record<string, React.ElementType> = {
+  wifi: Wifi,
+  ac: Wind,
+  monitor: Monitor,
+  parking: Car,
+  catering: Utensils,
+  av: Monitor,
+  outdoor: TreePine,
+  projector: Projector,
+  audio: Speaker,
+  utensils: Utensils,
+  tree: TreePine,
+};
 
 const CAPACITY_TYPES = ["Seating", "Dining", "Floating", "Standing", "Theatre"] as const;
 
@@ -94,7 +106,7 @@ type FormData = {
   basePrice: string;
   pricingType: "PER_HOUR" | "PER_SESSION";
   bufferTimeMinutes: string;
-  amenities: number[];
+  amenities: string[];
   capacities: CapacityEntry[];
   sessions: SessionEntry[];
   imageUrls: string[];
@@ -207,6 +219,12 @@ export default function NewVenuePage() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
+  // ── Queries ──
+  const { data: amenitiesOptions = [], isLoading: isLoadingAmenities } = useQuery({
+    queryKey: ['amenities'],
+    queryFn: getAmenities,
+  });
+
   // ── Mutation ──
   const createMutation = useMutation({
     mutationKey: venueKeys.create(),
@@ -316,7 +334,7 @@ export default function NewVenuePage() {
   };
 
   // ── Amenities ──
-  const toggleAmenity = (id: number) => {
+  const toggleAmenity = (id: string) => {
     setForm((prev) => ({
       ...prev,
       amenities: prev.amenities.includes(id)
@@ -488,6 +506,7 @@ export default function NewVenuePage() {
             removeCapacity={removeCapacity}
             updateCapacity={updateCapacity}
             toggleAmenity={toggleAmenity}
+            amenitiesOptions={amenitiesOptions}
           />
         )}
         {currentStep === 5 && (
@@ -497,6 +516,7 @@ export default function NewVenuePage() {
             uploadingImages={uploadingImages}
             handleImageUpload={handleImageUpload}
             removeImage={removeImage}
+            amenitiesOptions={amenitiesOptions}
           />
         )}
       </div>
@@ -1063,7 +1083,7 @@ function StepPricingSchedule({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// STEP 3 — Capacity & Amenities
+// STEP 4 — Capacity & Amenities
 // ═══════════════════════════════════════════════════════════════════════════
 
 function StepCapacityAmenities({
@@ -1073,13 +1093,15 @@ function StepCapacityAmenities({
   removeCapacity,
   updateCapacity,
   toggleAmenity,
+  amenitiesOptions,
 }: {
   form: FormData;
   errors: StepErrors;
   addCapacity: () => void;
   removeCapacity: (i: number) => void;
   updateCapacity: (i: number, field: keyof CapacityEntry, value: string | boolean) => void;
-  toggleAmenity: (id: number) => void;
+  toggleAmenity: (id: string) => void;
+  amenitiesOptions: { id: string; name: string; iconKey: string | null }[];
 }) {
   return (
     <div className="space-y-8 animate-fade-in">
@@ -1185,9 +1207,9 @@ function StepCapacityAmenities({
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {AMENITIES.map((amenity) => {
+          {amenitiesOptions.map((amenity) => {
             const selected = form.amenities.includes(amenity.id);
-            const Icon = amenity.icon;
+            const Icon = AMENITY_ICONS[amenity.iconKey || ""] || Check;
             return (
               <button
                 key={amenity.id}
@@ -1237,12 +1259,14 @@ function StepImagesReview({
   uploadingImages,
   handleImageUpload,
   removeImage,
+  amenitiesOptions,
 }: {
   form: FormData;
   errors: StepErrors;
   uploadingImages: boolean;
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeImage: (i: number) => void;
+  amenitiesOptions: { id: string; name: string }[];
 }) {
   const categoryLabel =
     CATEGORIES.find((c) => c.value === form.category)?.label ?? form.category;
@@ -1348,7 +1372,7 @@ function StepImagesReview({
           />
           <ReviewItem label="Amenities"
             value={
-              AMENITIES.filter((a) => form.amenities.includes(a.id))
+              amenitiesOptions.filter((a) => form.amenities.includes(a.id))
                 .map((a) => a.name)
                 .join(", ") || "None selected"
             }

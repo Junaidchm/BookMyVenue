@@ -660,6 +660,178 @@ export const getBookings = async (
   }
 };
 
+export const getOwnerDashboard = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    // Extract authenticated owner's user ID
+    const ownerUserId = req.headers['x-user-id'] as string;
+    if (!ownerUserId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized: User ID is missing',
+      });
+    }
+
+    // Fetch venues owned by this owner from venue-service
+    let ownedVenues: any[] = [];
+    try {
+      const venuesRes = await axios.get(`${env.VENUE_SERVICE_URL}/venues/my-venues`, {
+        headers: {
+          'x-user-id': ownerUserId,
+          'x-user-roles': req.headers['x-user-roles'] || '',
+        },
+        timeout: 5000,
+      });
+      ownedVenues = venuesRes.data?.data || [];
+    } catch (err: any) {
+      console.error('Failed to fetch owned venues for dashboard:', err.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch venue ownership data',
+      });
+    }
+
+    const ownedVenueIds = ownedVenues.map((v: any) => String(v.id));
+
+    // If venueIds are provided as a filter, validate they're all owned by this owner
+    const venueIdsQuery = req.query.venueIds as string | undefined;
+    let venueIds = ownedVenueIds;
+    if (venueIdsQuery) {
+      const requestedIds = venueIdsQuery.split(',');
+      // Ensure all requested IDs are in the owned set
+      const unauthorized = requestedIds.filter((id) => !ownedVenueIds.includes(id));
+      if (unauthorized.length > 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not own one or more of the requested venues',
+        });
+      }
+      venueIds = requestedIds;
+    }
+
+    // Fetch all bookings for the owned venues
+    const allBookings = await prisma.booking.findMany({
+      where: { venueId: { in: venueIds } },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    let totalRevenue = 0;
+    let activeBookings = 0;
+    let pendingInquiries = 0;
+
+    allBookings.forEach((b) => {
+      if (b.status === 'CONFIRMED') {
+        totalRevenue += Number(b.totalPrice);
+        activeBookings += 1;
+      } else if (b.status === 'PENDING_PAYMENT') {
+        pendingInquiries += 1;
+      }
+    });
+
+    // Recent bookings (last 5 created)
+    const recentBookings = allBookings.slice(0, 5);
+
+    // Upcoming events (next 5 confirmed bookings based on startTime)
+    const now = new Date();
+    const upcomingEvents = [...allBookings]
+      .filter((b) => b.status === 'CONFIRMED' && new Date(b.startTime) >= now)
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+      .slice(0, 5);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalRevenue,
+        activeBookings,
+        pendingInquiries,
+        recentBookings,
+        upcomingEvents,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error fetching owner dashboard:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch owner dashboard data',
+    });
+  }
+};
+
+export const getOwnerBookings = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    // Extract authenticated owner's user ID
+    const ownerUserId = req.headers['x-user-id'] as string;
+    if (!ownerUserId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized: User ID is missing',
+      });
+    }
+
+    // Fetch venues owned by this owner from venue-service
+    let ownedVenues: any[] = [];
+    try {
+      const venuesRes = await axios.get(`${env.VENUE_SERVICE_URL}/venues/my-venues`, {
+        headers: {
+          'x-user-id': ownerUserId,
+          'x-user-roles': req.headers['x-user-roles'] || '',
+        },
+        timeout: 5000,
+      });
+      ownedVenues = venuesRes.data?.data || [];
+    } catch (err: any) {
+      console.error('Failed to fetch owned venues for bookings:', err.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch venue ownership data',
+      });
+    }
+
+    const ownedVenueIds = ownedVenues.map((v: any) => String(v.id));
+
+    // If venueIds are provided as a filter, validate they're all owned by this owner
+    const venueIdsQuery = req.query.venueIds as string | undefined;
+    let venueIds = ownedVenueIds;
+    if (venueIdsQuery) {
+      const requestedIds = venueIdsQuery.split(',');
+      // Ensure all requested IDs are in the owned set
+      const unauthorized = requestedIds.filter((id) => !ownedVenueIds.includes(id));
+      if (unauthorized.length > 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You do not own one or more of the requested venues',
+        });
+      }
+      venueIds = requestedIds;
+    }
+
+    const bookings = await prisma.booking.findMany({
+      where: { venueId: { in: venueIds } },
+      orderBy: { startTime: 'asc' },
+    });
+
+    const bookingsData = bookings.map(({ riskScore: _, ...b }) => b);
+
+    return res.status(200).json({
+      success: true,
+      data: bookingsData,
+    });
+  } catch (error: any) {
+    console.error('Error fetching owner bookings:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch owner bookings',
+    });
+  }
+};
+
+
+
 export const cancelBooking = async (
   req: Request,
   res: Response,

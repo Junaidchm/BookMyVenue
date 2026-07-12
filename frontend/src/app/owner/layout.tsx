@@ -7,7 +7,7 @@ import {
   LayoutDashboard,
   Building2,
   Calendar,
-  BarChart3,
+  ClipboardList,
   Wallet,
   Settings,
   LogOut,
@@ -22,8 +22,8 @@ import { useAuth } from "@/components/auth/session-provider";
 const navigationItems = [
   { name: "Overview", href: "/owner", icon: LayoutDashboard },
   { name: "My Venues", href: "/owner/venues", icon: Building2 },
+  { name: "Bookings", href: "/owner/bookings", icon: ClipboardList },
   { name: "Calendar", href: "/owner/calendar", icon: Calendar },
-  { name: "Analytics", href: "/owner/analytics", icon: BarChart3 },
 ];
 
 export default function DashboardLayout({

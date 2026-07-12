@@ -22,9 +22,10 @@ const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 const AMENITIES = [
   { name: 'WiFi', iconKey: 'wifi' },
   { name: 'Parking', iconKey: 'parking' },
-  { name: 'Catering', iconKey: 'catering' },
-  { name: 'AV Equipment', iconKey: 'av' },
-  { name: 'Outdoor Space', iconKey: 'outdoor' },
+  { name: 'Catering', iconKey: 'utensils' },
+  { name: 'Projector', iconKey: 'projector' },
+  { name: 'Audio System', iconKey: 'audio' },
+  { name: 'Outdoor Space', iconKey: 'treePine' },
   { name: 'Air Conditioning', iconKey: 'ac' },
 ] as const;
 
@@ -47,7 +48,7 @@ const VENUES = [
     imageUrls: [
       'https://lh3.googleusercontent.com/aida-public/AB6AXuD0cmtFtqQDxCCb8cbolHEKsH-g0aC7KDk6A5mEbBqspfIdywH408161WwZfApMRXr1cvH_bD__hbY7IDRZbCsBaIJKS0UjHt2WlVhfSP3O5WVAQMopYHwvlIA0kKVKPRz-Z2WcCL-dbmb21d9whOM5d4jtpv4dUPNm60wC9FhjRLsCDf0iFGsyi2-HFz8vgQoVFSekqOLVKVOX-carvQz-nTvIr65N14u98FUm343L3KTP1tqF4uJ_flGGWFlSFvJVaMvti0HFhgq_',
     ],
-    amenityNames: ['WiFi', 'Parking', 'AV Equipment', 'Air Conditioning'],
+    amenityNames: ['WiFi', 'Parking', 'Projector', 'Audio System', 'Air Conditioning'],
     capacities: [
       { type: 'SEATING', maxPeople: 200 },
       { type: 'DINING', maxPeople: 150 },
@@ -104,7 +105,7 @@ const VENUES = [
     imageUrls: [
       'https://lh3.googleusercontent.com/aida-public/AB6AXuBibvpo-lF8BCRfgGCk6QbyBK1H9VujIS7MJM6FzIGe2v9neX8ko3K0eDG2X2fqLZfemRdhGoJ3iCbnd7e6SfwkerPRUD6LWM7zrkSVz5YlXd_fvnKriXmcZPunqiBQUiNJlf2wr85dyBVSg5sJD6HCJuirg4XQqBtx8BTv-qg-q41Ga7xYrWrLMk2m5iy7arkADM_teNqza84cqckpWvqtFhrS__7zSz0Vuzbc_Lo4yAz7aZ8rHSFH05ffeQbWrlCx0XON9THwiqGk',
     ],
-    amenityNames: ['WiFi', 'AV Equipment'],
+    amenityNames: ['WiFi', 'Projector', 'Audio System'],
     capacities: [{ type: 'FLOATING', maxPeople: 50 }],
     sessions: [
       { name: 'Half Day', startTime: '09:00', endTime: '13:00', sessionPrice: 500 },
@@ -157,7 +158,7 @@ const VENUES = [
     imageUrls: [
       'https://images.unsplash.com/photo-1519167758481-83f29da8c2f3?w=800',
     ],
-    amenityNames: ['WiFi', 'Parking', 'Catering', 'AV Equipment', 'Air Conditioning'],
+    amenityNames: ['WiFi', 'Parking', 'Catering', 'Projector', 'Audio System', 'Air Conditioning'],
     capacities: [
       { type: 'SEATING', maxPeople: 250 },
       { type: 'DINING', maxPeople: 200 },

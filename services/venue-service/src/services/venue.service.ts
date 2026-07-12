@@ -97,6 +97,15 @@ export class VenueService {
   }
 
   /**
+   * Fetch all amenities
+   */
+  async getAllAmenities() {
+    return prisma.amenity.findMany({
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  /**
    * Creates a new venue and its related records (capacities, sessions, amenities)
    * in a single atomic transaction.
    */

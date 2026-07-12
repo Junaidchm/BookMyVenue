@@ -70,7 +70,7 @@ export function HeroSection() {
 
             {/* Eyebrow label */}
             <p className="text-white/55 text-xs font-sans uppercase tracking-[0.35em] font-medium">
-              Premium Event Spaces · Pakistan
+              Premium Event Spaces
             </p>
 
             {/* 3-line stacked headline */}
